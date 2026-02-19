@@ -1,6 +1,4 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,42 +16,24 @@ import { format } from "date-fns";
 export default function ReportsPage() {
   const [date, setDate] = useState(format(new Date(), "yyyy-MM-dd"));
 
-  const { data: attendanceData } = useQuery({
-    queryKey: ["report-attendance", date],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("attendance_sessions")
-        .select("*, trainees(full_name, rank, civil_id), shifts(name)")
-        .eq("day_date", date)
-        .order("created_at", { ascending: false });
-      return data ?? [];
+  // Mock data
+  const attendanceData = [
+    {
+      id: "1",
+      trainees: { full_name: "أحمد محمد", rank: "جندي", civil_id: "123456789" },
+      shifts: { name: "النوبة الأولى" },
+      check_in_at: new Date().toISOString(),
+      check_out_at: new Date().toISOString(),
+      late_minutes: 5,
+      actual_minutes: 480,
+      lost_minutes: 0,
+      status: "late",
     },
-  });
+  ];
 
-  const { data: absences } = useQuery({
-    queryKey: ["report-absences", date],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("attendance_sessions")
-        .select("*, trainees(full_name, rank, civil_id), shifts(name)")
-        .eq("day_date", date)
-        .eq("status", "absent");
-      return data ?? [];
-    },
-  });
+  const absences: Array<{ id: string }> = [];
 
-  const { data: escapes } = useQuery({
-    queryKey: ["report-escapes", date],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("escape_events")
-        .select("*, trainees(full_name, rank)")
-        .gte("detected_at", `${date}T00:00:00`)
-        .lte("detected_at", `${date}T23:59:59`)
-        .order("detected_at", { ascending: false });
-      return data ?? [];
-    },
-  });
+  const escapes: Array<{ id: string }> = [];
 
   return (
     <div className="space-y-6 animate-slide-in">

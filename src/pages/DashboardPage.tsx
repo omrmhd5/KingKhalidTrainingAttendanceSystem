@@ -1,5 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, UserCheck, UserX, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
@@ -10,71 +8,44 @@ import { Label } from "@/components/ui/label";
 export default function DashboardPage() {
   const [date, setDate] = useState(format(new Date(), "yyyy-MM-dd"));
 
-  const { data: traineesCount } = useQuery({
-    queryKey: ["trainees-count"],
-    queryFn: async () => {
-      const { count } = await supabase
-        .from("trainees")
-        .select("*", { count: "exact", head: true })
-        .eq("status", "active");
-      return count ?? 0;
-    },
-  });
-
-  const { data: attendance } = useQuery({
-    queryKey: ["attendance-summary", date],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("attendance_sessions")
-        .select("status")
-        .eq("day_date", date);
-      const sessions = data ?? [];
-      return {
-        present: sessions.filter((s) => s.status === "present").length,
-        late: sessions.filter((s) => s.status === "late").length,
-        absent: sessions.filter((s) => s.status === "absent").length,
-        escaped: sessions.filter((s) => s.status === "escaped").length,
-        total: sessions.length,
-      };
-    },
-  });
-
-  const { data: recentEscapes } = useQuery({
-    queryKey: ["recent-escapes", date],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("escape_events")
-        .select("*, trainees(full_name, rank)")
-        .gte("detected_at", `${date}T00:00:00`)
-        .lte("detected_at", `${date}T23:59:59`)
-        .order("detected_at", { ascending: false })
-        .limit(5);
-      return data ?? [];
-    },
-  });
+  // Mock data (previously from Supabase)
+  const traineesCount = 20;
+  const attendance = {
+    present: 15,
+    late: 2,
+    absent: 3,
+    escaped: 0,
+    total: 20,
+  };
+  const recentEscapes: Array<{
+    id: string;
+    trainees?: { full_name: string; rank?: string };
+    type?: string;
+    detected_at?: string;
+  }> = [];
 
   const stats = [
     {
       title: "إجمالي المتدربين",
-      value: traineesCount ?? 0,
+      value: traineesCount,
       icon: Users,
       color: "text-primary",
     },
     {
       title: "حاضرون",
-      value: (attendance?.present ?? 0) + (attendance?.late ?? 0),
+      value: attendance.present + attendance.late,
       icon: UserCheck,
       color: "text-success",
     },
     {
       title: "غائبون",
-      value: attendance?.absent ?? 0,
+      value: attendance.absent,
       icon: UserX,
       color: "text-destructive",
     },
     {
       title: "هاربون",
-      value: attendance?.escaped ?? 0,
+      value: attendance.escaped,
       icon: AlertTriangle,
       color: "text-warning",
     },
@@ -126,7 +97,7 @@ export default function DashboardPage() {
         <CardContent>
           {recentEscapes && recentEscapes.length > 0 ? (
             <div className="space-y-3">
-              {recentEscapes.map((e: any) => (
+              {recentEscapes.map((e) => (
                 <div
                   key={e.id}
                   className="flex items-center justify-between rounded-md border p-3">

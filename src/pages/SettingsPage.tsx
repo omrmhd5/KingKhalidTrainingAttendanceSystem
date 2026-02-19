@@ -1,6 +1,4 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,49 +32,42 @@ import { format } from "date-fns";
 
 export default function SettingsPage() {
   const { toast } = useToast();
-  const qc = useQueryClient();
 
   // Groups
   const [groupName, setGroupName] = useState("");
   const [groupDesc, setGroupDesc] = useState("");
   const [groupDialogOpen, setGroupDialogOpen] = useState(false);
 
-  const { data: groups } = useQuery({
-    queryKey: ["groups"],
-    queryFn: async () => {
-      const { data } = await supabase.from("groups").select("*").order("name");
-      return data ?? [];
-    },
-  });
+  // Mock data
+  const [groups, setGroups] = useState([
+    { id: "1", name: "المجموعة الأولى", description: "المجموعة الأولى" },
+  ]);
 
-  const addGroup = useMutation({
-    mutationFn: async () => {
-      const { error } = await supabase
-        .from("groups")
-        .insert({ name: groupName, description: groupDesc || null });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["groups"] });
-      setGroupDialogOpen(false);
-      setGroupName("");
-      setGroupDesc("");
-      toast({ title: "تم إنشاء المجموعة" });
-    },
-    onError: (e: any) =>
-      toast({ title: "خطأ", description: e.message, variant: "destructive" }),
-  });
+  const handleAddGroup = () => {
+    if (!groupName.trim()) {
+      toast({
+        title: "خطأ",
+        description: "الرجاء إدخال اسم المجموعة",
+        variant: "destructive",
+      });
+      return;
+    }
+    const newGroup = {
+      id: String(groups.length + 1),
+      name: groupName,
+      description: groupDesc || "",
+    };
+    setGroups([...groups, newGroup]);
+    setGroupDialogOpen(false);
+    setGroupName("");
+    setGroupDesc("");
+    toast({ title: "تم إنشاء المجموعة" });
+  };
 
-  const deleteGroup = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("groups").delete().eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["groups"] });
-      toast({ title: "تم حذف المجموعة" });
-    },
-  });
+  const handleDeleteGroup = (id: string) => {
+    setGroups(groups.filter((g) => g.id !== id));
+    toast({ title: "تم حذف المجموعة" });
+  };
 
   // Shifts
   const [shiftName, setShiftName] = useState("");
@@ -85,85 +76,94 @@ export default function SettingsPage() {
   const [shiftGrace, setShiftGrace] = useState("10");
   const [shiftDialogOpen, setShiftDialogOpen] = useState(false);
 
-  const { data: shifts } = useQuery({
-    queryKey: ["shifts"],
-    queryFn: async () => {
-      const { data } = await supabase.from("shifts").select("*").order("name");
-      return data ?? [];
+  const [shifts, setShifts] = useState([
+    {
+      id: "1",
+      name: "الصباح",
+      start_time: "08:00",
+      end_time: "16:00",
+      grace_minutes: 10,
     },
-  });
+    {
+      id: "2",
+      name: "المساء",
+      start_time: "16:00",
+      end_time: "00:00",
+      grace_minutes: 15,
+    },
+  ]);
 
-  const addShift = useMutation({
-    mutationFn: async () => {
-      const { error } = await supabase
-        .from("shifts")
-        .insert({
-          name: shiftName,
-          start_time: shiftStart,
-          end_time: shiftEnd,
-          grace_minutes: parseInt(shiftGrace) || 0,
-        });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["shifts"] });
-      setShiftDialogOpen(false);
-      setShiftName("");
-      setShiftStart("");
-      setShiftEnd("");
-      setShiftGrace("10");
-      toast({ title: "تم إنشاء النوبة" });
-    },
-    onError: (e: any) =>
-      toast({ title: "خطأ", description: e.message, variant: "destructive" }),
-  });
+  const handleAddShift = () => {
+    if (!shiftName.trim() || !shiftStart || !shiftEnd) {
+      toast({
+        title: "خطأ",
+        description: "الرجاء ملء جميع الحقول",
+        variant: "destructive",
+      });
+      return;
+    }
+    const newShift = {
+      id: String(shifts.length + 1),
+      name: shiftName,
+      start_time: shiftStart,
+      end_time: shiftEnd,
+      grace_minutes: parseInt(shiftGrace) || 0,
+    };
+    setShifts([...shifts, newShift]);
+    setShiftDialogOpen(false);
+    setShiftName("");
+    setShiftStart("");
+    setShiftEnd("");
+    setShiftGrace("10");
+    toast({ title: "تم إنشاء النوبة" });
+  };
 
-  const deleteShift = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("shifts").delete().eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["shifts"] });
-      toast({ title: "تم حذف النوبة" });
-    },
-  });
+  const handleDeleteShift = (id: string) => {
+    setShifts(shifts.filter((s) => s.id !== id));
+    toast({ title: "تم حذف النوبة" });
+  };
 
   // Schedule
   const [schedGroupId, setSchedGroupId] = useState("");
   const [schedShiftId, setSchedShiftId] = useState("");
   const [schedDate, setSchedDate] = useState(format(new Date(), "yyyy-MM-dd"));
 
-  const { data: schedules } = useQuery({
-    queryKey: ["schedules"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("group_schedules")
-        .select("*, groups(name), shifts(name)")
-        .order("day_date", { ascending: false })
-        .limit(50);
-      return data ?? [];
+  const [schedules, setSchedules] = useState([
+    {
+      id: "1",
+      group_id: "1",
+      shift_id: "1",
+      day_date: format(new Date(), "yyyy-MM-dd"),
+      groups: { name: "المجموعة الأولى" },
+      shifts: { name: "الصباح" },
     },
-  });
+  ]);
 
-  const addSchedule = useMutation({
-    mutationFn: async () => {
-      const { error } = await supabase
-        .from("group_schedules")
-        .insert({
-          group_id: schedGroupId,
-          shift_id: schedShiftId,
-          day_date: schedDate,
-        });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["schedules"] });
-      toast({ title: "تم تعيين الجدول الزمني" });
-    },
-    onError: (e: any) =>
-      toast({ title: "خطأ", description: e.message, variant: "destructive" }),
-  });
+  const handleAddSchedule = () => {
+    if (!schedGroupId || !schedShiftId) {
+      toast({
+        title: "خطأ",
+        description: "الرجاء اختيار المجموعة والنوبة",
+        variant: "destructive",
+      });
+      return;
+    }
+    const selectedGroup = groups.find((g) => g.id === schedGroupId);
+    const selectedShift = shifts.find((s) => s.id === schedShiftId);
+
+    if (!selectedGroup || !selectedShift) return;
+
+    const newSchedule = {
+      id: String(schedules.length + 1),
+      group_id: schedGroupId,
+      shift_id: schedShiftId,
+      day_date: schedDate,
+      groups: { name: selectedGroup.name },
+      shifts: { name: selectedShift.name },
+    };
+    setSchedules([newSchedule, ...schedules]);
+    toast({ title: "تم تعيين الجدول الزمني" });
+  };
 
   return (
     <div className="space-y-6 animate-slide-in">
@@ -195,7 +195,7 @@ export default function SettingsPage() {
                   <form
                     onSubmit={(e) => {
                       e.preventDefault();
-                      addGroup.mutate();
+                      handleAddGroup();
                     }}
                     className="space-y-4">
                     <div>
@@ -240,7 +240,7 @@ export default function SettingsPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => deleteGroup.mutate(g.id)}>
+                          onClick={() => handleDeleteGroup(g.id)}>
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </TableCell>
@@ -271,7 +271,7 @@ export default function SettingsPage() {
                   <form
                     onSubmit={(e) => {
                       e.preventDefault();
-                      addShift.mutate();
+                      handleAddShift();
                     }}
                     className="space-y-4">
                     <div>
@@ -344,7 +344,7 @@ export default function SettingsPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => deleteShift.mutate(s.id)}>
+                          onClick={() => handleDeleteShift(s.id)}>
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </TableCell>
@@ -366,7 +366,7 @@ export default function SettingsPage() {
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
-                  addSchedule.mutate();
+                  handleAddSchedule();
                 }}
                 className="grid gap-4 sm:grid-cols-4 mb-6">
                 <div>

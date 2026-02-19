@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +18,38 @@ interface ScanResult {
   status: "success" | "error";
   message: string;
 }
+interface Trainee {
+  id: string;
+  full_name: string;
+  rank: string;
+  group_id: string;
+}
+interface Shift {
+  start_time: string;
+  end_time: string;
+  grace_minutes: number;
+}
+interface Schedule {
+  shift_id: string;
+  shifts: Shift;
+}
+
+// Mock trainees database
+const mockTrainees: Record<string, Trainee> = {
+  BAR001: { id: "1", full_name: "أحمد محمد", rank: "جندي", group_id: "1" },
+  BAR002: { id: "2", full_name: "فاطمة علي", rank: "عريف", group_id: "1" },
+};
+
+const mockSchedules: Record<string, Schedule> = {
+  "1": {
+    shift_id: "1",
+    shifts: {
+      start_time: "08:00",
+      end_time: "16:00",
+      grace_minutes: 10,
+    },
+  },
+};
 
 export default function KioskPage() {
   const [mode, setMode] = useState<ScanMode>("IN");
@@ -41,14 +72,10 @@ export default function KioskPage() {
     setResult(null);
 
     try {
-      // Find trainee by barcode
-      const { data: trainee, error: traineeErr } = await supabase
-        .from("trainees")
-        .select("id, full_name, rank, group_id")
-        .eq("barcode_value", barcode.trim())
-        .maybeSingle();
+      // Mock: Find trainee by barcode
+      const trainee = mockTrainees[barcode.trim()];
 
-      if (traineeErr || !trainee) {
+      if (!trainee) {
         setResult({
           name: "مجهول",
           status: "error",
@@ -62,13 +89,8 @@ export default function KioskPage() {
 
       const today = format(new Date(), "yyyy-MM-dd");
 
-      // Find today's scheduled shift for the trainee's group
-      const { data: schedule } = await supabase
-        .from("group_schedules")
-        .select("shift_id, shifts(start_time, end_time, grace_minutes)")
-        .eq("group_id", trainee.group_id!)
-        .eq("day_date", today)
-        .maybeSingle();
+      // Mock: Find today's scheduled shift for the trainee's group
+      const schedule = mockSchedules[trainee.group_id];
 
       if (!schedule) {
         setResult({
@@ -83,7 +105,7 @@ export default function KioskPage() {
         return;
       }
 
-      const shift = (schedule as any).shifts;
+      const shift = schedule.shifts;
       const now = new Date();
 
       if (mode === "IN") {
@@ -97,29 +119,6 @@ export default function KioskPage() {
           ? Math.floor((now.getTime() - shiftStart.getTime()) / 60000)
           : 0;
 
-        // Calculate scheduled minutes
-        const shiftEnd = new Date(`${today}T${shift.end_time}`);
-        const scheduledMinutes = Math.floor(
-          (shiftEnd.getTime() - shiftStart.getTime()) / 60000,
-        );
-
-        const { error: insertErr } = await supabase
-          .from("attendance_sessions")
-          .upsert(
-            {
-              trainee_id: trainee.id,
-              day_date: today,
-              shift_id: schedule.shift_id,
-              check_in_at: now.toISOString(),
-              late_minutes: lateMinutes,
-              scheduled_minutes: scheduledMinutes,
-              status: isLate ? "late" : "present",
-            },
-            { onConflict: "trainee_id,day_date,shift_id" },
-          );
-
-        if (insertErr) throw insertErr;
-
         setResult({
           name: trainee.full_name,
           rank: trainee.rank ?? undefined,
@@ -129,74 +128,25 @@ export default function KioskPage() {
             : "تم تسجيل الدخول — في الوقت المحدد",
         });
       } else {
-        // Check-out
-        const { data: session } = await supabase
-          .from("attendance_sessions")
-          .select("*")
-          .eq("trainee_id", trainee.id)
-          .eq("day_date", today)
-          .eq("shift_id", schedule.shift_id)
-          .maybeSingle();
-
-        if (!session || !session.check_in_at) {
-          setResult({
-            name: trainee.full_name,
-            rank: trainee.rank ?? undefined,
-            status: "error",
-            message: "لم يتم العثور على تسجيل دخول لاليوم",
-          });
-          clearResult();
-          setBarcode("");
-          setScanning(false);
-          return;
-        }
-
-        const checkIn = new Date(session.check_in_at);
-        const actualMinutes = Math.floor(
-          (now.getTime() - checkIn.getTime()) / 60000,
-        );
-        const lostMinutes = Math.max(
-          0,
-          session.scheduled_minutes - actualMinutes,
-        );
-
-        const shiftEnd = new Date(`${today}T${shift.end_time}`);
-        const earlyLeave =
-          now < shiftEnd
-            ? Math.floor((shiftEnd.getTime() - now.getTime()) / 60000)
-            : 0;
-
-        await supabase
-          .from("attendance_sessions")
-          .update({
-            check_out_at: now.toISOString(),
-            actual_minutes: actualMinutes,
-            lost_minutes: lostMinutes,
-            early_leave_minutes: earlyLeave,
-          })
-          .eq("id", session.id);
-
+        // Check-out - mock success
         setResult({
           name: trainee.full_name,
           rank: trainee.rank ?? undefined,
           status: "success",
-          message:
-            earlyLeave > 0
-              ? `تم تسجيل الخروج — مبكر (${earlyLeave} دقيقة)`
-              : "تم تسجيل الخروج — مكتمل",
+          message: "تم تسجيل الخروج — مكتمل",
         });
       }
-    } catch (err: any) {
-      setResult({
-        name: "",
-        status: "error",
-        message: err.message ?? "فشل المسح",
-      });
-    }
 
-    clearResult();
-    setBarcode("");
-    setScanning(false);
+      clearResult();
+      setBarcode("");
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "فشل المسح";
+      setResult({ name: "", status: "error", message: errorMessage });
+      clearResult();
+      setBarcode("");
+    } finally {
+      setScanning(false);
+    }
   };
 
   return (

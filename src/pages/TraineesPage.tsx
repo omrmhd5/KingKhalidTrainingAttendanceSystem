@@ -1,6 +1,4 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,58 +54,43 @@ const emptyForm: TraineeForm = {
 export default function TraineesPage() {
   const { role } = useAuth();
   const { toast } = useToast();
-  const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
   const [form, setForm] = useState<TraineeForm>(emptyForm);
 
-  const { data: trainees, isLoading } = useQuery({
-    queryKey: ["trainees"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("trainees")
-        .select("*, groups(name)")
-        .order("full_name");
-      if (error) throw error;
-      return data;
+  // Mock data
+  const trainees = [
+    {
+      id: "1",
+      full_name: "أحمد محمد",
+      rank: "جندي",
+      civil_id: "123456789",
+      military_id: "M123456",
+      barcode_value: "BAR001",
+      group_id: "1",
+      status: "active",
+      specialty: "تقني",
+      groups: { name: "المجموعة الأولى" },
     },
-  });
+  ];
+  const isLoading = false;
 
-  const { data: groups } = useQuery({
-    queryKey: ["groups"],
-    queryFn: async () => {
-      const { data } = await supabase.from("groups").select("*").order("name");
-      return data ?? [];
-    },
-  });
+  const groups = [
+    { id: "1", name: "المجموعة الأولى", description: "المجموعة الأولى" },
+  ];
 
-  const saveMutation = useMutation({
-    mutationFn: async (form: TraineeForm) => {
-      const payload = { ...form, group_id: form.group_id || null };
-      if (editing) {
-        const { error } = await supabase
-          .from("trainees")
-          .update(payload)
-          .eq("id", editing);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.from("trainees").insert(payload);
-        if (error) throw error;
-      }
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["trainees"] });
+  const saveMutation = {
+    mutate: (form: TraineeForm) => {
+      toast({ title: editing ? "تم تحديث المتدرب" : "تم إنشاء المتدرب" });
       setDialogOpen(false);
       setEditing(null);
       setForm(emptyForm);
-      toast({ title: editing ? "تم تحديث المتدرب" : "تم إنشاء المتدرب" });
     },
-    onError: (err: any) =>
-      toast({ title: "خطأ", description: err.message, variant: "destructive" }),
-  });
+    isPending: false,
+  };
 
-  const filtered = trainees?.filter((t: any) =>
+  const filtered = trainees.filter((t: any) =>
     [t.full_name, t.civil_id, t.military_id, t.barcode_value].some((v) =>
       v?.toLowerCase().includes(search.toLowerCase()),
     ),
