@@ -1,23 +1,36 @@
-import { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { Navigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield, LogIn } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Navigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Shield, LogIn } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function AuthPage() {
   const { user, loading, signIn, signUp } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const { toast } = useToast();
 
-  if (loading) return <div className="flex h-screen items-center justify-center"><div className="animate-scan-pulse text-muted-foreground">جاري التحميل...</div></div>;
+  if (loading)
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="animate-scan-pulse text-muted-foreground">
+          جاري التحميل...
+        </div>
+      </div>
+    );
   if (user) return <Navigate to="/" replace />;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -28,9 +41,16 @@ export default function AuthPage() {
       : await signUp(email, password, fullName);
     setSubmitting(false);
     if (error) {
-      toast({ title: 'خطأ', description: error.message, variant: 'destructive' });
+      toast({
+        title: "خطأ",
+        description: error.message,
+        variant: "destructive",
+      });
     } else if (!isLogin) {
-      toast({ title: 'تم إنشاء الحساب', description: 'يرجى التحقق من بريدك الإلكتروني للتحقق من حسابك.' });
+      toast({
+        title: "تم إنشاء الحساب",
+        description: "يرجى التحقق من بريدك الإلكتروني للتحقق من حسابك.",
+      });
     }
   };
 
@@ -49,25 +69,50 @@ export default function AuthPage() {
             {!isLogin && (
               <div className="space-y-2">
                 <Label htmlFor="fullName">الاسم الكامل</Label>
-                <Input id="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+                <Input
+                  id="fullName"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  required
+                />
               </div>
             )}
             <div className="space-y-2">
               <Label htmlFor="email">البريد الإلكتروني</Label>
-              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">كلمة المرور</Label>
-              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
+              />
             </div>
             <Button type="submit" className="w-full" disabled={submitting}>
               <LogIn className="ml-2 h-4 w-4" />
-              {submitting ? 'الرجاء الانتظار...' : isLogin ? 'تسجيل الدخول' : 'إنشاء حساب'}
+              {submitting
+                ? "الرجاء الانتظار..."
+                : isLogin
+                  ? "تسجيل الدخول"
+                  : "إنشاء حساب"}
             </Button>
             <p className="text-center text-sm text-muted-foreground">
-              {isLogin ? "ليس لديك حساب؟" : 'هل لديك حساب بالفعل?'}{' '}
-              <button type="button" onClick={() => setIsLogin(!isLogin)} className="text-accent underline hover:opacity-80">
-                {isLogin ? 'إنشاء حساب' : 'تسجيل الدخول'}
+              {isLogin ? "ليس لديك حساب؟" : "هل لديك حساب بالفعل?"}{" "}
+              <button
+                type="button"
+                onClick={() => setIsLogin(!isLogin)}
+                className="text-accent underline hover:opacity-80">
+                {isLogin ? "إنشاء حساب" : "تسجيل الدخول"}
               </button>
             </p>
           </form>
