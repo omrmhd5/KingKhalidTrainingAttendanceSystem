@@ -1,22 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -26,48 +10,21 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Edit } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
+import { ShiftTimeModal } from "@/components/settings/ShiftTimeModal";
+import { ConfirmDeleteModal } from "@/components/settings/ConfirmDeleteModal";
+// Helper function to convert 24-hour format to 12-hour Arabic format
+const convertTo12HourArabic = (time24: string): string => {
+  if (!time24) return "";
+  const [hours, minutes] = time24.split(":").map(Number);
+  const period = hours >= 12 ? "م" : "ص";
+  const hours12 = hours % 12 || 12;
+  return `${String(hours12).padStart(2, "0")}:${String(minutes).padStart(2, "0")} ${period}`;
+};
 
 export default function SettingsPage() {
   const { toast } = useToast();
-
-  // Groups
-  const [groupName, setGroupName] = useState("");
-  const [groupDesc, setGroupDesc] = useState("");
-  const [groupDialogOpen, setGroupDialogOpen] = useState(false);
-
-  // Mock data
-  const [groups, setGroups] = useState([
-    { id: "1", name: "المجموعة الأولى", description: "المجموعة الأولى" },
-  ]);
-
-  const handleAddGroup = () => {
-    if (!groupName.trim()) {
-      toast({
-        title: "خطأ",
-        description: "الرجاء إدخال اسم المجموعة",
-        variant: "destructive",
-      });
-      return;
-    }
-    const newGroup = {
-      id: String(groups.length + 1),
-      name: groupName,
-      description: groupDesc || "",
-    };
-    setGroups([...groups, newGroup]);
-    setGroupDialogOpen(false);
-    setGroupName("");
-    setGroupDesc("");
-    toast({ title: "تم إنشاء المجموعة" });
-  };
-
-  const handleDeleteGroup = (id: string) => {
-    setGroups(groups.filter((g) => g.id !== id));
-    toast({ title: "تم حذف المجموعة" });
-  };
 
   // Shifts
   const [shiftName, setShiftName] = useState("");
@@ -118,322 +75,197 @@ export default function SettingsPage() {
     toast({ title: "تم إنشاء النوبة" });
   };
 
-  const handleDeleteShift = (id: string) => {
-    setShifts(shifts.filter((s) => s.id !== id));
-    toast({ title: "تم حذف النوبة" });
+  const handleDeleteShift = (id: string, name: string) => {
+    setDeleteTargetId(id);
+    setDeleteTargetName(name);
+    setDeleteConfirmOpen(true);
   };
 
-  // Schedule
-  const [schedGroupId, setSchedGroupId] = useState("");
-  const [schedShiftId, setSchedShiftId] = useState("");
-  const [schedDate, setSchedDate] = useState(format(new Date(), "yyyy-MM-dd"));
+  const confirmDelete = () => {
+    if (deleteTargetId) {
+      setShifts(shifts.filter((s) => s.id !== deleteTargetId));
+      toast({ title: "تم حذف النوبة" });
+      setDeleteTargetId(null);
+      setDeleteTargetName("");
+    }
+  };
 
-  const [schedules, setSchedules] = useState([
-    {
-      id: "1",
-      group_id: "1",
-      shift_id: "1",
-      day_date: format(new Date(), "yyyy-MM-dd"),
-      groups: { name: "المجموعة الأولى" },
-      shifts: { name: "الصباح" },
-    },
-  ]);
+  const [editingShiftId, setEditingShiftId] = useState<string | null>(null);
+  const [editingShiftName, setEditingShiftName] = useState("");
+  const [editingShiftStart, setEditingShiftStart] = useState("");
+  const [editingShiftEnd, setEditingShiftEnd] = useState("");
+  const [editingShiftGrace, setEditingShiftGrace] = useState("10");
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
-  const handleAddSchedule = () => {
-    if (!schedGroupId || !schedShiftId) {
+  // Delete confirmation
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [deleteTargetName, setDeleteTargetName] = useState("");
+
+  const handleEditShift = (shift: any) => {
+    setEditingShiftId(shift.id);
+    setEditingShiftName(shift.name);
+    setEditingShiftStart(shift.start_time);
+    setEditingShiftEnd(shift.end_time);
+    setEditingShiftGrace(String(shift.grace_minutes));
+    setEditDialogOpen(true);
+  };
+
+  const handleUpdateShift = () => {
+    if (
+      !editingShiftName.trim() ||
+      !editingShiftStart ||
+      !editingShiftEnd ||
+      !editingShiftId
+    ) {
       toast({
         title: "خطأ",
-        description: "الرجاء اختيار المجموعة والنوبة",
+        description: "الرجاء ملء جميع الحقول",
         variant: "destructive",
       });
       return;
     }
-    const selectedGroup = groups.find((g) => g.id === schedGroupId);
-    const selectedShift = shifts.find((s) => s.id === schedShiftId);
-
-    if (!selectedGroup || !selectedShift) return;
-
-    const newSchedule = {
-      id: String(schedules.length + 1),
-      group_id: schedGroupId,
-      shift_id: schedShiftId,
-      day_date: schedDate,
-      groups: { name: selectedGroup.name },
-      shifts: { name: selectedShift.name },
-    };
-    setSchedules([newSchedule, ...schedules]);
-    toast({ title: "تم تعيين الجدول الزمني" });
+    setShifts(
+      shifts.map((s) =>
+        s.id === editingShiftId
+          ? {
+              ...s,
+              name: editingShiftName,
+              start_time: editingShiftStart,
+              end_time: editingShiftEnd,
+              grace_minutes: parseInt(editingShiftGrace) || 0,
+            }
+          : s,
+      ),
+    );
+    setEditDialogOpen(false);
+    setEditingShiftId(null);
+    setEditingShiftName("");
+    setEditingShiftStart("");
+    setEditingShiftEnd("");
+    setEditingShiftGrace("10");
+    toast({ title: "تم تحديث النوبة" });
   };
 
   return (
-    <div className="space-y-6 animate-slide-in">
-      <h1 className="text-2xl font-bold">الإعدادات</h1>
+    <div className="space-y-6 animate-slide-in" dir="rtl">
+      <h1 className="text-2xl font-bold text-right">الإعدادات</h1>
 
-      <Tabs defaultValue="groups">
+      <Tabs defaultValue="shifts" dir="rtl">
         <TabsList>
-          <TabsTrigger value="groups">المجموعات</TabsTrigger>
-          <TabsTrigger value="shifts">النوبات</TabsTrigger>
-          <TabsTrigger value="schedule">الجدول الزمني</TabsTrigger>
+          <TabsTrigger value="shifts">ادارة الشفتات</TabsTrigger>
         </TabsList>
-
-        {/* Groups */}
-        <TabsContent value="groups">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>المجموعات</CardTitle>
-              <Dialog open={groupDialogOpen} onOpenChange={setGroupDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button size="sm">
-                    <Plus className="ml-2 h-4 w-4" />
-                    إضافة
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>مجموعة جديدة</DialogTitle>
-                  </DialogHeader>
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      handleAddGroup();
-                    }}
-                    className="space-y-4">
-                    <div>
-                      <Label>الاسم</Label>
-                      <Input
-                        value={groupName}
-                        onChange={(e) => setGroupName(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label>الوصف</Label>
-                      <Input
-                        value={groupDesc}
-                        onChange={(e) => setGroupDesc(e.target.value)}
-                      />
-                    </div>
-                    <Button type="submit" className="w-full">
-                      إنشاء
-                    </Button>
-                  </form>
-                </DialogContent>
-              </Dialog>
-            </CardHeader>
-            <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>الاسم</TableHead>
-                    <TableHead>الوصف</TableHead>
-                    <TableHead />
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {groups?.map((g: any) => (
-                    <TableRow key={g.id}>
-                      <TableCell className="font-medium">{g.name}</TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {g.description ?? "—"}
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDeleteGroup(g.id)}>
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
 
         {/* Shifts */}
         <TabsContent value="shifts">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>النوبات</CardTitle>
-              <Dialog open={shiftDialogOpen} onOpenChange={setShiftDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button size="sm">
-                    <Plus className="ml-2 h-4 w-4" />
-                    إضافة
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>نوبة جديدة</DialogTitle>
-                  </DialogHeader>
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      handleAddShift();
-                    }}
-                    className="space-y-4">
-                    <div>
-                      <Label>الاسم</Label>
-                      <Input
-                        value={shiftName}
-                        onChange={(e) => setShiftName(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label>وقت البداية</Label>
-                        <Input
-                          type="time"
-                          value={shiftStart}
-                          onChange={(e) => setShiftStart(e.target.value)}
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label>وقت النهاية</Label>
-                        <Input
-                          type="time"
-                          value={shiftEnd}
-                          onChange={(e) => setShiftEnd(e.target.value)}
-                          required
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <Label>دقائق السماح</Label>
-                      <Input
-                        type="number"
-                        value={shiftGrace}
-                        onChange={(e) => setShiftGrace(e.target.value)}
-                        min={0}
-                      />
-                    </div>
-                    <Button type="submit" className="w-full">
-                      إنشاء
-                    </Button>
-                  </form>
-                </DialogContent>
-              </Dialog>
+            <CardHeader
+              className="flex flex-row items-center justify-between"
+              dir="rtl">
+              <CardTitle>ادارة الشفتات</CardTitle>
+              <Button
+                size="sm"
+                onClick={() => {
+                  setShiftName("");
+                  setShiftStart("");
+                  setShiftEnd("");
+                  setShiftGrace("10");
+                  setShiftDialogOpen(true);
+                }}>
+                <Plus className="ml-2 h-4 w-4" />
+                اضافة شفت
+              </Button>
             </CardHeader>
             <CardContent className="p-0">
-              <Table>
+              <ShiftTimeModal
+                open={shiftDialogOpen}
+                onOpenChange={setShiftDialogOpen}
+                onSubmit={handleAddShift}
+                shiftName={shiftName}
+                setShiftName={setShiftName}
+                shiftStart={shiftStart}
+                setShiftStart={setShiftStart}
+                shiftEnd={shiftEnd}
+                setShiftEnd={setShiftEnd}
+                shiftGrace={shiftGrace}
+                setShiftGrace={setShiftGrace}
+              />
+              <ShiftTimeModal
+                open={editDialogOpen}
+                onOpenChange={setEditDialogOpen}
+                onSubmit={handleUpdateShift}
+                isEditing={true}
+                shiftName={editingShiftName}
+                setShiftName={setEditingShiftName}
+                shiftStart={editingShiftStart}
+                setShiftStart={setEditingShiftStart}
+                shiftEnd={editingShiftEnd}
+                setShiftEnd={setEditingShiftEnd}
+                shiftGrace={editingShiftGrace}
+                setShiftGrace={setEditingShiftGrace}
+              />
+              <ConfirmDeleteModal
+                open={deleteConfirmOpen}
+                onOpenChange={setDeleteConfirmOpen}
+                onConfirm={confirmDelete}
+                itemName={deleteTargetName}
+                itemType="النوبة"
+              />
+              <Table dir="rtl">
                 <TableHeader>
                   <TableRow>
-                    <TableHead>الاسم</TableHead>
-                    <TableHead>البداية</TableHead>
-                    <TableHead>النهاية</TableHead>
-                    <TableHead>السماح</TableHead>
-                    <TableHead />
+                    <TableHead className="text-right">الاسم</TableHead>
+                    <TableHead className="text-right">البداية</TableHead>
+                    <TableHead className="text-right">النهاية</TableHead>
+                    <TableHead className="text-right">السماح</TableHead>
+                    <TableHead className="text-left" />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {shifts?.map((s: any) => (
-                    <TableRow key={s.id}>
-                      <TableCell className="font-medium">{s.name}</TableCell>
-                      <TableCell className="font-mono text-xs">
-                        {s.start_time}
-                      </TableCell>
-                      <TableCell className="font-mono text-xs">
-                        {s.end_time}
-                      </TableCell>
-                      <TableCell>{s.grace_minutes} دقيقة</TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDeleteShift(s.id)}>
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Schedule */}
-        <TabsContent value="schedule">
-          <Card>
-            <CardHeader>
-              <CardTitle>تعيين الجدول الزمني</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleAddSchedule();
-                }}
-                className="grid gap-4 sm:grid-cols-4 mb-6">
-                <div>
-                  <Label>المجموعة</Label>
-                  <Select value={schedGroupId} onValueChange={setSchedGroupId}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="المجموعة" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {groups?.map((g: any) => (
-                        <SelectItem key={g.id} value={g.id}>
-                          {g.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>النوبة</Label>
-                  <Select value={schedShiftId} onValueChange={setSchedShiftId}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="النوبة" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {shifts?.map((s: any) => (
-                        <SelectItem key={s.id} value={s.id}>
+                  {shifts?.map((s: any) => {
+                    const startTime12 = convertTo12HourArabic(s.start_time);
+                    const endTime12 = convertTo12HourArabic(s.end_time);
+                    const [startTimeNum, startPeriod] = startTime12.split(" ");
+                    const [endTimeNum, endPeriod] = endTime12.split(" ");
+                    return (
+                      <TableRow key={s.id}>
+                        <TableCell className="font-medium text-right">
                           {s.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>التاريخ</Label>
-                  <Input
-                    type="date"
-                    value={schedDate}
-                    onChange={(e) => setSchedDate(e.target.value)}
-                  />
-                </div>
-                <div className="flex items-end">
-                  <Button
-                    type="submit"
-                    className="w-full"
-                    disabled={!schedGroupId || !schedShiftId}>
-                    تعيين
-                  </Button>
-                </div>
-              </form>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>المجموعة</TableHead>
-                    <TableHead>النوبة</TableHead>
-                    <TableHead>التاريخ</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {schedules?.map((s: any) => (
-                    <TableRow key={s.id}>
-                      <TableCell>{(s as any).groups?.name}</TableCell>
-                      <TableCell>{(s as any).shifts?.name}</TableCell>
-                      <TableCell className="font-mono text-xs">
-                        {s.day_date}
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                        </TableCell>
+                        <TableCell className="font-mono text-right">
+                          {startTimeNum}
+                          <span className="text-md font-semibold">
+                            {" "}
+                            {startPeriod}
+                          </span>
+                        </TableCell>
+                        <TableCell className="font-mono text-right">
+                          {endTimeNum}
+                          <span className="text-md font-semibold">
+                            {" "}
+                            {endPeriod}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {s.grace_minutes} دقائق
+                        </TableCell>
+                        <TableCell className="text-left flex gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleEditShift(s)}>
+                            <Edit className="h-4 w-4 text-blue-500" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDeleteShift(s.id, s.name)}>
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </CardContent>
