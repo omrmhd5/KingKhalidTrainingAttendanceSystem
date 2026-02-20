@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -14,6 +14,7 @@ import { Plus, Trash2, Edit } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ShiftTimeModal } from "@/components/settings/ShiftTimeModal";
 import { ConfirmDeleteModal } from "@/components/settings/ConfirmDeleteModal";
+import { shiftApi } from "@/lib/shiftApi";
 // Helper function to convert 24-hour format to 12-hour Arabic format
 const convertTo12HourArabic = (time24: string): string => {
   if (!time24) return "";
@@ -25,6 +26,7 @@ const convertTo12HourArabic = (time24: string): string => {
 
 export default function SettingsPage() {
   const { toast } = useToast();
+  const [loading, setLoading] = useState(true);
 
   // Shifts
   const [shiftName, setShiftName] = useState("");
@@ -33,63 +35,9 @@ export default function SettingsPage() {
   const [shiftGrace, setShiftGrace] = useState("10");
   const [shiftDialogOpen, setShiftDialogOpen] = useState(false);
 
-  const [shifts, setShifts] = useState([
-    {
-      id: "1",
-      name: "الصباح",
-      start_time: "08:00",
-      end_time: "16:00",
-      grace_minutes: 10,
-    },
-    {
-      id: "2",
-      name: "المساء",
-      start_time: "16:00",
-      end_time: "00:00",
-      grace_minutes: 15,
-    },
-  ]);
+  const [shifts, setShifts] = useState<any[]>([]);
 
-  const handleAddShift = () => {
-    if (!shiftName.trim() || !shiftStart || !shiftEnd) {
-      toast({
-        title: "خطأ",
-        description: "الرجاء ملء جميع الحقول",
-        variant: "destructive",
-      });
-      return;
-    }
-    const newShift = {
-      id: String(shifts.length + 1),
-      name: shiftName,
-      start_time: shiftStart,
-      end_time: shiftEnd,
-      grace_minutes: parseInt(shiftGrace) || 0,
-    };
-    setShifts([...shifts, newShift]);
-    setShiftDialogOpen(false);
-    setShiftName("");
-    setShiftStart("");
-    setShiftEnd("");
-    setShiftGrace("10");
-    toast({ title: "تم إنشاء الشفت" });
-  };
-
-  const handleDeleteShift = (id: string, name: string) => {
-    setDeleteTargetId(id);
-    setDeleteTargetName(name);
-    setDeleteConfirmOpen(true);
-  };
-
-  const confirmDelete = () => {
-    if (deleteTargetId) {
-      setShifts(shifts.filter((s) => s.id !== deleteTargetId));
-      toast({ title: "تم حذف الشفت" });
-      setDeleteTargetId(null);
-      setDeleteTargetName("");
-    }
-  };
-
+  // Edit Shift
   const [editingShiftId, setEditingShiftId] = useState<string | null>(null);
   const [editingShiftName, setEditingShiftName] = useState("");
   const [editingShiftStart, setEditingShiftStart] = useState("");
@@ -102,8 +50,85 @@ export default function SettingsPage() {
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [deleteTargetName, setDeleteTargetName] = useState("");
 
+  // Load shifts on component mount
+  useEffect(() => {
+    loadShifts();
+  }, []);
+
+  const loadShifts = async () => {
+    try {
+      setLoading(true);
+      const data = await shiftApi.getAllShifts();
+      setShifts(data);
+    } catch (error) {
+      toast({
+        title: "خطأ",
+        description: "فشل تحميل الشفتات",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddShift = async () => {
+    if (!shiftName.trim() || !shiftStart || !shiftEnd) {
+      toast({
+        title: "خطأ",
+        description: "الرجاء ملء جميع الحقول",
+        variant: "destructive",
+      });
+      return;
+    }
+    try {
+      const newShift = await shiftApi.createShift({
+        name: shiftName,
+        start_time: shiftStart,
+        end_time: shiftEnd,
+        grace_minutes: parseInt(shiftGrace) || 0,
+      });
+      setShifts([...shifts, newShift]);
+      setShiftDialogOpen(false);
+      setShiftName("");
+      setShiftStart("");
+      setShiftEnd("");
+      setShiftGrace("10");
+      toast({ title: "تم إنشاء الشفت" });
+    } catch (error) {
+      toast({
+        title: "خطأ",
+        description: "فشل إنشاء الشفت",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteShift = (id: string, name: string) => {
+    setDeleteTargetId(id);
+    setDeleteTargetName(name);
+    setDeleteConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (deleteTargetId) {
+      try {
+        await shiftApi.deleteShift(deleteTargetId);
+        setShifts(shifts.filter((s) => s._id !== deleteTargetId));
+        toast({ title: "تم حذف الشفت" });
+        setDeleteTargetId(null);
+        setDeleteTargetName("");
+      } catch (error) {
+        toast({
+          title: "خطأ",
+          description: "فشل حذف الشفت",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
   const handleEditShift = (shift: any) => {
-    setEditingShiftId(shift.id);
+    setEditingShiftId(shift._id);
     setEditingShiftName(shift.name);
     setEditingShiftStart(shift.start_time);
     setEditingShiftEnd(shift.end_time);
@@ -111,7 +136,7 @@ export default function SettingsPage() {
     setEditDialogOpen(true);
   };
 
-  const handleUpdateShift = () => {
+  const handleUpdateShift = async () => {
     if (
       !editingShiftName.trim() ||
       !editingShiftStart ||
@@ -125,26 +150,30 @@ export default function SettingsPage() {
       });
       return;
     }
-    setShifts(
-      shifts.map((s) =>
-        s.id === editingShiftId
-          ? {
-              ...s,
-              name: editingShiftName,
-              start_time: editingShiftStart,
-              end_time: editingShiftEnd,
-              grace_minutes: parseInt(editingShiftGrace) || 0,
-            }
-          : s,
-      ),
-    );
-    setEditDialogOpen(false);
-    setEditingShiftId(null);
-    setEditingShiftName("");
-    setEditingShiftStart("");
-    setEditingShiftEnd("");
-    setEditingShiftGrace("10");
-    toast({ title: "تم تحديث الشفت" });
+    try {
+      const updatedShift = await shiftApi.updateShift(editingShiftId, {
+        name: editingShiftName,
+        start_time: editingShiftStart,
+        end_time: editingShiftEnd,
+        grace_minutes: parseInt(editingShiftGrace) || 0,
+      });
+      setShifts(
+        shifts.map((s) => (s._id === editingShiftId ? updatedShift : s)),
+      );
+      setEditDialogOpen(false);
+      setEditingShiftId(null);
+      setEditingShiftName("");
+      setEditingShiftStart("");
+      setEditingShiftEnd("");
+      setEditingShiftGrace("10");
+      toast({ title: "تم تحديث الشفت" });
+    } catch (error) {
+      toast({
+        title: "خطأ",
+        description: "فشل تحديث الشفت",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -222,50 +251,65 @@ export default function SettingsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {shifts?.map((s: any) => {
-                    const startTime12 = convertTo12HourArabic(s.start_time);
-                    const endTime12 = convertTo12HourArabic(s.end_time);
-                    const [startTimeNum, startPeriod] = startTime12.split(" ");
-                    const [endTimeNum, endPeriod] = endTime12.split(" ");
-                    return (
-                      <TableRow key={s.id}>
-                        <TableCell className="font-medium text-right">
-                          {s.name}
-                        </TableCell>
-                        <TableCell className="font-mono text-right">
-                          {startTimeNum}
-                          <span className="text-md font-semibold">
-                            {" "}
-                            {startPeriod}
-                          </span>
-                        </TableCell>
-                        <TableCell className="font-mono text-right">
-                          {endTimeNum}
-                          <span className="text-md font-semibold">
-                            {" "}
-                            {endPeriod}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {s.grace_minutes} دقائق
-                        </TableCell>
-                        <TableCell className="text-left flex gap-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleEditShift(s)}>
-                            <Edit className="h-4 w-4 text-blue-500" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDeleteShift(s.id, s.name)}>
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
+                  {loading ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-4">
+                        جاري التحميل...
+                      </TableCell>
+                    </TableRow>
+                  ) : shifts.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-4">
+                        لا توجد شفتات
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    shifts.map((s: any) => {
+                      const startTime12 = convertTo12HourArabic(s.start_time);
+                      const endTime12 = convertTo12HourArabic(s.end_time);
+                      const [startTimeNum, startPeriod] =
+                        startTime12.split(" ");
+                      const [endTimeNum, endPeriod] = endTime12.split(" ");
+                      return (
+                        <TableRow key={s._id}>
+                          <TableCell className="font-medium text-right">
+                            {s.name}
+                          </TableCell>
+                          <TableCell className="font-mono text-right">
+                            {startTimeNum}
+                            <span className="text-md font-semibold">
+                              {" "}
+                              {startPeriod}
+                            </span>
+                          </TableCell>
+                          <TableCell className="font-mono text-right">
+                            {endTimeNum}
+                            <span className="text-md font-semibold">
+                              {" "}
+                              {endPeriod}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {s.grace_minutes} دقائق
+                          </TableCell>
+                          <TableCell className="text-left flex gap-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleEditShift(s)}>
+                              <Edit className="h-4 w-4 text-blue-500" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDeleteShift(s._id, s.name)}>
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  )}
                 </TableBody>
               </Table>
             </CardContent>

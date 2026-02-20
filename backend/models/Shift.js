@@ -20,6 +20,9 @@ const shiftSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
+    effective_start_time: {
+      type: String,
+    },
   },
   {
     timestamps: true,
