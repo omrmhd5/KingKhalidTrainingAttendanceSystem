@@ -1,0 +1,1 @@
+export { TraineeFormModal } from "./TraineeFormModal";

@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -12,22 +11,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Plus, Search, Edit } from "lucide-react";
+import { Search, Edit, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { TraineeFormModal } from "@/components/trainees/TraineeFormModal";
+import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
 
 interface TraineeForm {
   civil_id: string;
@@ -35,9 +22,7 @@ interface TraineeForm {
   full_name: string;
   rank: string;
   specialty: string;
-  barcode_value: string;
-  group_id: string;
-  status: string;
+  shift_id: string;
 }
 
 const emptyForm: TraineeForm = {
@@ -46,9 +31,7 @@ const emptyForm: TraineeForm = {
   full_name: "",
   rank: "",
   specialty: "",
-  barcode_value: "",
-  group_id: "",
-  status: "active",
+  shift_id: "",
 };
 
 export default function TraineesPage() {
@@ -56,7 +39,10 @@ export default function TraineesPage() {
   const { toast } = useToast();
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [deleteTargetName, setDeleteTargetName] = useState("");
   const [form, setForm] = useState<TraineeForm>(emptyForm);
 
   // Mock data
@@ -67,18 +53,12 @@ export default function TraineesPage() {
       rank: "جندي",
       civil_id: "123456789",
       military_id: "M123456",
-      barcode_value: "BAR001",
-      group_id: "1",
-      status: "active",
+      shift_id: "1",
       specialty: "تقني",
-      groups: { name: "المجموعة الأولى" },
+      shift: { name: "الصباحي" },
     },
   ];
   const isLoading = false;
-
-  const groups = [
-    { id: "1", name: "المجموعة الأولى", description: "المجموعة الأولى" },
-  ];
 
   const saveMutation = {
     mutate: (form: TraineeForm) => {
@@ -91,7 +71,7 @@ export default function TraineesPage() {
   };
 
   const filtered = trainees.filter((t: any) =>
-    [t.full_name, t.civil_id, t.military_id, t.barcode_value].some((v) =>
+    [t.full_name, t.civil_id, t.military_id].some((v) =>
       v?.toLowerCase().includes(search.toLowerCase()),
     ),
   );
@@ -104,11 +84,26 @@ export default function TraineesPage() {
       full_name: t.full_name,
       rank: t.rank ?? "",
       specialty: t.specialty ?? "",
-      barcode_value: t.barcode_value,
-      group_id: t.group_id ?? "",
-      status: t.status,
+      shift_id: t.shift_id ?? "",
     });
     setDialogOpen(true);
+  };
+
+  const openDelete = (id: string, name: string) => {
+    setDeleteTargetId(id);
+    setDeleteTargetName(name);
+    setDeleteOpen(true);
+  };
+
+  const handleSubmit = (formData: TraineeForm) => {
+    saveMutation.mutate(formData);
+  };
+
+  const confirmDelete = () => {
+    toast({ title: "تم حذف المتدرب" });
+    setDeleteOpen(false);
+    setDeleteTargetId(null);
+    setDeleteTargetName("");
   };
 
   const canWrite = role === "admin";
@@ -123,132 +118,30 @@ export default function TraineesPage() {
           </p>
         </div>
         {canWrite && (
-          <Dialog
-            open={dialogOpen}
-            onOpenChange={(o) => {
-              setDialogOpen(o);
-              if (!o) {
-                setEditing(null);
-                setForm(emptyForm);
-              }
-            }}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="ml-2 h-4 w-4" />
-                إضافة متدرب
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-lg">
-              <DialogHeader>
-                <DialogTitle>
-                  {editing ? "تعديل المتدرب" : "متدرب جديد"}
-                </DialogTitle>
-              </DialogHeader>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  saveMutation.mutate(form);
-                }}
-                className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-1">
-                  <Label>الاسم الكامل</Label>
-                  <Input
-                    value={form.full_name}
-                    onChange={(e) =>
-                      setForm({ ...form, full_name: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label>الرتبة</Label>
-                  <Input
-                    value={form.rank}
-                    onChange={(e) => setForm({ ...form, rank: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label>رقم الهوية المدنية</Label>
-                  <Input
-                    value={form.civil_id}
-                    onChange={(e) =>
-                      setForm({ ...form, civil_id: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label>رقم الهوية العسكرية</Label>
-                  <Input
-                    value={form.military_id}
-                    onChange={(e) =>
-                      setForm({ ...form, military_id: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label>الرمز الشريطي</Label>
-                  <Input
-                    value={form.barcode_value}
-                    onChange={(e) =>
-                      setForm({ ...form, barcode_value: e.target.value })
-                    }
-                    required
-                    className="font-mono"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label>التخصص</Label>
-                  <Input
-                    value={form.specialty}
-                    onChange={(e) =>
-                      setForm({ ...form, specialty: e.target.value })
-                    }
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label>المجموعة</Label>
-                  <Select
-                    value={form.group_id}
-                    onValueChange={(v) => setForm({ ...form, group_id: v })}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="اختر المجموعة" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {groups?.map((g: any) => (
-                        <SelectItem key={g.id} value={g.id}>
-                          {g.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1">
-                  <Label>الحالة</Label>
-                  <Select
-                    value={form.status}
-                    onValueChange={(v) => setForm({ ...form, status: v })}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">نشط</SelectItem>
-                      <SelectItem value="inactive">غير نشط</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="sm:col-span-2">
-                  <Button
-                    type="submit"
-                    className="w-full"
-                    disabled={saveMutation.isPending}>
-                    {saveMutation.isPending ? "جاري الحفظ..." : "حفظ"}
-                  </Button>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
+          <>
+            <TraineeFormModal
+              open={dialogOpen}
+              onOpenChange={(o) => {
+                setDialogOpen(o);
+                if (!o) {
+                  setEditing(null);
+                  setForm(emptyForm);
+                }
+              }}
+              onSubmit={handleSubmit}
+              form={form}
+              setForm={setForm}
+              editing={editing}
+              isLoading={saveMutation.isPending}
+            />
+            <ConfirmDeleteModal
+              open={deleteOpen}
+              onOpenChange={setDeleteOpen}
+              onConfirm={confirmDelete}
+              itemName={deleteTargetName}
+              itemType="المتدرب"
+            />
+          </>
         )}
       </div>
 
@@ -257,7 +150,7 @@ export default function TraineesPage() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="ابحث بالاسم أو الرقم أو الرمز الشريطي..."
+              placeholder="ابحث بالاسم أو رقم الهوية..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"
@@ -268,21 +161,20 @@ export default function TraineesPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>الاسم</TableHead>
-                <TableHead>الرتبة</TableHead>
-                <TableHead>رقم الهوية المدنية</TableHead>
-                <TableHead>رقم الهوية العسكرية</TableHead>
-                <TableHead>الرمز الشريطي</TableHead>
-                <TableHead>المجموعة</TableHead>
-                <TableHead>الحالة</TableHead>
-                {canWrite && <TableHead />}
+                <TableHead className="text-right">الرقم العسكري</TableHead>
+                <TableHead className="text-right">السجل المدني</TableHead>
+                <TableHead className="text-right">الاسم</TableHead>
+                <TableHead className="text-right">الرتبة</TableHead>
+                <TableHead className="text-right">التخصص</TableHead>
+                <TableHead className="text-right">الشفت</TableHead>
+                <TableHead className="text-right">الإجراءات</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
                   <TableCell
-                    colSpan={8}
+                    colSpan={7}
                     className="text-center py-8 text-muted-foreground">
                     جاري التحميل...
                   </TableCell>
@@ -290,7 +182,7 @@ export default function TraineesPage() {
               ) : filtered?.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={8}
+                    colSpan={7}
                     className="text-center py-8 text-muted-foreground">
                     لم يتم العثور على متدربين
                   </TableCell>
@@ -298,34 +190,34 @@ export default function TraineesPage() {
               ) : (
                 filtered?.map((t: any) => (
                   <TableRow key={t.id}>
-                    <TableCell className="font-medium">{t.full_name}</TableCell>
-                    <TableCell>{t.rank}</TableCell>
-                    <TableCell className="font-mono text-xs">
-                      {t.civil_id}
-                    </TableCell>
-                    <TableCell className="font-mono text-xs">
+                    <TableCell className="font-medium text-right">
                       {t.military_id}
                     </TableCell>
-                    <TableCell className="font-mono text-xs">
-                      {t.barcode_value}
+                    <TableCell className="text-right">{t.civil_id}</TableCell>
+                    <TableCell className="font-medium text-right">
+                      {t.full_name}
                     </TableCell>
-                    <TableCell>{(t as any).groups?.name ?? "—"}</TableCell>
-                    <TableCell>
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${t.status === "active" ? "bg-success/15 text-success" : "bg-muted text-muted-foreground"}`}>
-                        {t.status === "active" ? "نشط" : "غير نشط"}
-                      </span>
+                    <TableCell className="text-right">{t.rank}</TableCell>
+                    <TableCell className="text-right">{t.specialty}</TableCell>
+                    <TableCell className="text-right">
+                      {(t as any).shift?.name ?? "—"}
                     </TableCell>
-                    {canWrite && (
-                      <TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center gap-2 justify-start">
                         <Button
                           variant="ghost"
                           size="icon"
                           onClick={() => openEdit(t)}>
                           <Edit className="h-4 w-4" />
                         </Button>
-                      </TableCell>
-                    )}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => openDelete(t.id, t.full_name)}>
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    </TableCell>
                   </TableRow>
                 ))
               )}

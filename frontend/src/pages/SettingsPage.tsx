@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Trash2, Edit } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ShiftTimeModal } from "@/components/settings/ShiftTimeModal";
-import { ConfirmDeleteModal } from "@/components/settings/ConfirmDeleteModal";
+import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
 import { shiftApi } from "@/lib/shiftApi";
 // Helper function to convert 24-hour format to 12-hour Arabic format
 const convertTo12HourArabic = (time24: string): string => {
@@ -247,7 +247,7 @@ export default function SettingsPage() {
                     <TableHead className="text-right">البداية</TableHead>
                     <TableHead className="text-right">النهاية</TableHead>
                     <TableHead className="text-right">السماح</TableHead>
-                    <TableHead className="text-left" />
+                    <TableHead className="text-right">الإجراءات</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -292,7 +292,7 @@ export default function SettingsPage() {
                           <TableCell className="text-right">
                             {s.grace_minutes} دقائق
                           </TableCell>
-                          <TableCell className="text-left flex gap-2">
+                          <TableCell className="text-right flex gap-2 justify-start">
                             <Button
                               variant="ghost"
                               size="icon"
