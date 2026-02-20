@@ -77,10 +77,10 @@ export function ShiftTimeModal({
                 value={shiftStart}
                 onChange={(e) => setShiftStart(e.target.value)}
                 required
-                className="text-left ms-auto block"
+                className="flex justify-end"
               />
               {shiftStart && (
-                <p className="text-xs text-muted-foreground mt-1 text-left">
+                <p className="text-xs text-muted-foreground mt-1 text-right">
                   {convertTo12HourArabic(shiftStart)}
                 </p>
               )}
@@ -92,10 +92,10 @@ export function ShiftTimeModal({
                 value={shiftEnd}
                 onChange={(e) => setShiftEnd(e.target.value)}
                 required
-                className="text-left ms-auto block"
+                className="flex justify-end"
               />
               {shiftEnd && (
-                <p className="text-xs text-muted-foreground mt-1 text-left">
+                <p className="text-xs text-muted-foreground mt-1 text-right">
                   {convertTo12HourArabic(shiftEnd)}
                 </p>
               )}
@@ -108,7 +108,7 @@ export function ShiftTimeModal({
               value={shiftGrace}
               onChange={(e) => setShiftGrace(e.target.value)}
               min={0}
-              className="text-right"
+              className="text-right [&::-webkit-outer-spin-button]:hidden [&::-webkit-inner-spin-button]:hidden [&::-moz-appearance]:textfield"
             />
           </div>
           <Button type="submit" className="w-full">

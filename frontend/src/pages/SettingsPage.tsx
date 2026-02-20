@@ -72,7 +72,7 @@ export default function SettingsPage() {
     setShiftStart("");
     setShiftEnd("");
     setShiftGrace("10");
-    toast({ title: "تم إنشاء النوبة" });
+    toast({ title: "تم إنشاء الشفت" });
   };
 
   const handleDeleteShift = (id: string, name: string) => {
@@ -84,7 +84,7 @@ export default function SettingsPage() {
   const confirmDelete = () => {
     if (deleteTargetId) {
       setShifts(shifts.filter((s) => s.id !== deleteTargetId));
-      toast({ title: "تم حذف النوبة" });
+      toast({ title: "تم حذف الشفت" });
       setDeleteTargetId(null);
       setDeleteTargetName("");
     }
@@ -144,7 +144,7 @@ export default function SettingsPage() {
     setEditingShiftStart("");
     setEditingShiftEnd("");
     setEditingShiftGrace("10");
-    toast({ title: "تم تحديث النوبة" });
+    toast({ title: "تم تحديث الشفت" });
   };
 
   return (
@@ -209,7 +209,7 @@ export default function SettingsPage() {
                 onOpenChange={setDeleteConfirmOpen}
                 onConfirm={confirmDelete}
                 itemName={deleteTargetName}
-                itemType="النوبة"
+                itemType="الشفت"
               />
               <Table dir="rtl">
                 <TableHeader>
