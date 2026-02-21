@@ -74,6 +74,13 @@ class TraineeService {
     });
     await trainee.save();
 
+    // Add trainee to shift's trainees array
+    await Shift.findByIdAndUpdate(
+      data.shift_id,
+      { $push: { trainees: trainee._id } },
+      { new: true },
+    );
+
     // Fetch with populated references
     const populated = await Trainee.findById(trainee._id)
       .populate("shift_id", "name start_time end_time")
@@ -100,6 +107,12 @@ class TraineeService {
       throw new Error("Full name cannot be empty");
     }
 
+    // Get current trainee to check if shift is changing
+    const currentTrainee = await Trainee.findById(id);
+    if (!currentTrainee) {
+      throw new Error("Trainee not found");
+    }
+
     if (data.rank_id) {
       const rank = await Rank.findById(data.rank_id);
       if (!rank) {
@@ -119,6 +132,22 @@ class TraineeService {
       if (!shift) {
         throw new Error("Shift not found");
       }
+
+      // If shift is changing, update both shifts
+      if (currentTrainee.shift_id.toString() !== data.shift_id) {
+        // Remove trainee from old shift
+        await Shift.findByIdAndUpdate(
+          currentTrainee.shift_id,
+          { $pull: { trainees: id } },
+          { new: true },
+        );
+        // Add trainee to new shift
+        await Shift.findByIdAndUpdate(
+          data.shift_id,
+          { $push: { trainees: id } },
+          { new: true },
+        );
+      }
     }
 
     return await Trainee.findByIdAndUpdate(id, data, { new: true })
@@ -133,6 +162,14 @@ class TraineeService {
     if (!trainee) {
       throw new Error("Trainee not found");
     }
+
+    // Remove trainee from shift's trainees array
+    await Shift.findByIdAndUpdate(
+      trainee.shift_id,
+      { $pull: { trainees: id } },
+      { new: true },
+    );
+
     return trainee;
   }
 }

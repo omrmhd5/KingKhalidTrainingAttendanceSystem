@@ -11,11 +11,21 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Search, Edit, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { TraineeFormModal } from "@/components/trainees/TraineeFormModal";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
 import { traineeApi } from "@/lib/traineeApi";
+import { rankApi } from "@/lib/rankApi";
+import { specializationApi } from "@/lib/specializationApi";
+import { shiftApi } from "@/lib/shiftApi";
 
 interface TraineeForm {
   civil_id: string;
@@ -39,6 +49,9 @@ export default function TraineesPage() {
   const { role } = useAuth();
   const { toast } = useToast();
   const [search, setSearch] = useState("");
+  const [filterRank, setFilterRank] = useState("all");
+  const [filterSpecialty, setFilterSpecialty] = useState("all");
+  const [filterShift, setFilterShift] = useState("all");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
@@ -48,10 +61,14 @@ export default function TraineesPage() {
   const [trainees, setTrainees] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [ranks, setRanks] = useState<any[]>([]);
+  const [specializations, setSpecializations] = useState<any[]>([]);
+  const [shifts, setShifts] = useState<any[]>([]);
 
   // Load trainees on component mount
   useEffect(() => {
     loadTrainees();
+    loadFilters();
   }, []);
 
   const loadTrainees = async () => {
@@ -67,6 +84,21 @@ export default function TraineesPage() {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadFilters = async () => {
+    try {
+      const [ranksData, specializationsData, shiftsData] = await Promise.all([
+        rankApi.getAllRanks(),
+        specializationApi.getAllSpecializations(),
+        shiftApi.getAllShifts(),
+      ]);
+      setRanks(ranksData);
+      setSpecializations(specializationsData);
+      setShifts(shiftsData);
+    } catch (error) {
+      console.error("Failed to load filters:", error);
     }
   };
 
@@ -101,11 +133,21 @@ export default function TraineesPage() {
     isPending: isSaving,
   };
 
-  const filtered = trainees.filter((t: any) =>
-    [t.full_name, t.civil_id, t.military_id].some((v) =>
+  const filtered = trainees.filter((t: any) => {
+    const matchesSearch = [t.full_name, t.civil_id, t.military_id].some((v) =>
       v?.toLowerCase().includes(search.toLowerCase()),
-    ),
-  );
+    );
+    const matchesRank =
+      !filterRank || filterRank === "all" || t.rank_id?._id === filterRank;
+    const matchesSpecialty =
+      !filterSpecialty ||
+      filterSpecialty === "all" ||
+      t.specialty_id?._id === filterSpecialty;
+    const matchesShift =
+      !filterShift || filterShift === "all" || t.shift_id?._id === filterShift;
+
+    return matchesSearch && matchesRank && matchesSpecialty && matchesShift;
+  });
 
   const openEdit = (t: any) => {
     setEditing(t._id);
@@ -189,15 +231,58 @@ export default function TraineesPage() {
       </div>
 
       <Card>
-        <CardHeader className="pb-3">
+        <CardHeader className="pb-3 space-y-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="ابحث بالاسم أو رقم الهوية..."
+              placeholder="ابحث حسب: الرقم العسكري أو السجل المدني أو الاسم"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"
             />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <Select value={filterRank} onValueChange={setFilterRank}>
+              <SelectTrigger dir="rtl">
+                <SelectValue placeholder="جميع الرتب" />
+              </SelectTrigger>
+              <SelectContent dir="rtl">
+                <SelectItem value="all">جميع الرتب</SelectItem>
+                {ranks?.map((rank) => (
+                  <SelectItem key={rank._id} value={rank._id}>
+                    {rank.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={filterSpecialty} onValueChange={setFilterSpecialty}>
+              <SelectTrigger dir="rtl">
+                <SelectValue placeholder="جميع التخصصات" />
+              </SelectTrigger>
+              <SelectContent dir="rtl">
+                <SelectItem value="all">جميع التخصصات</SelectItem>
+                {specializations?.map((spec) => (
+                  <SelectItem key={spec._id} value={spec._id}>
+                    {spec.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={filterShift} onValueChange={setFilterShift}>
+              <SelectTrigger dir="rtl">
+                <SelectValue placeholder="جميع الشفتات" />
+              </SelectTrigger>
+              <SelectContent dir="rtl">
+                <SelectItem value="all">جميع الشفتات</SelectItem>
+                {shifts?.map((shift) => (
+                  <SelectItem key={shift._id} value={shift._id}>
+                    {shift.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </CardHeader>
         <CardContent className="p-0">

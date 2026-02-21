@@ -209,17 +209,11 @@ export function TraineeFormModal({
                 />
               </SelectTrigger>
               <SelectContent dir="rtl">
-                {shifts
-                  ?.sort(
-                    (a, b) =>
-                      new Date(a.createdAt).getTime() -
-                      new Date(b.createdAt).getTime(),
-                  )
-                  .map((shift) => (
-                    <SelectItem key={shift._id} value={shift._id}>
-                      {shift.name}
-                    </SelectItem>
-                  ))}
+                {shifts?.map((shift) => (
+                  <SelectItem key={shift._id} value={shift._id}>
+                    {shift.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

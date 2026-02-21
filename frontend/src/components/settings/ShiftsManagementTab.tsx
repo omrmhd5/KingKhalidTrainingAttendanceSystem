@@ -254,56 +254,50 @@ export function ShiftsManagementTab() {
                 </TableCell>
               </TableRow>
             ) : (
-              [...shifts]
-                .sort(
-                  (a, b) =>
-                    new Date(a.createdAt).getTime() -
-                    new Date(b.createdAt).getTime(),
-                )
-                .map((s: any) => {
-                  const startTime12 = convertTo12HourArabic(s.start_time);
-                  const endTime12 = convertTo12HourArabic(s.end_time);
-                  const [startTimeNum, startPeriod] = startTime12.split(" ");
-                  const [endTimeNum, endPeriod] = endTime12.split(" ");
-                  return (
-                    <TableRow key={s._id}>
-                      <TableCell className="font-medium text-right">
-                        {s.name}
-                      </TableCell>
-                      <TableCell className="font-mono text-right">
-                        {startTimeNum}
-                        <span className="text-md font-semibold">
-                          {" "}
-                          {startPeriod}
-                        </span>
-                      </TableCell>
-                      <TableCell className="font-mono text-right">
-                        {endTimeNum}
-                        <span className="text-md font-semibold">
-                          {" "}
-                          {endPeriod}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {s.grace_minutes} دقائق
-                      </TableCell>
-                      <TableCell className="text-right flex gap-2 justify-start">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleEditShift(s)}>
-                          <Edit className="h-4 w-4 text-blue-500" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDeleteShift(s._id, s.name)}>
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
+              shifts.map((s: any) => {
+                const startTime12 = convertTo12HourArabic(s.start_time);
+                const endTime12 = convertTo12HourArabic(s.end_time);
+                const [startTimeNum, startPeriod] = startTime12.split(" ");
+                const [endTimeNum, endPeriod] = endTime12.split(" ");
+                return (
+                  <TableRow key={s._id}>
+                    <TableCell className="font-medium text-right">
+                      {s.name}
+                    </TableCell>
+                    <TableCell className="font-mono text-right">
+                      {startTimeNum}
+                      <span className="text-md font-semibold">
+                        {" "}
+                        {startPeriod}
+                      </span>
+                    </TableCell>
+                    <TableCell className="font-mono text-right">
+                      {endTimeNum}
+                      <span className="text-md font-semibold">
+                        {" "}
+                        {endPeriod}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {s.grace_minutes} دقائق
+                    </TableCell>
+                    <TableCell className="text-right flex gap-2 justify-start">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleEditShift(s)}>
+                        <Edit className="h-4 w-4 text-blue-500" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDeleteShift(s._id, s.name)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>

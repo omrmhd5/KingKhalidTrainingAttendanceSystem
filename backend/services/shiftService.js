@@ -3,7 +3,7 @@ const { calculateEffectiveStartTime } = require("../utils/timeUtils");
 
 class ShiftService {
   async getAllShifts() {
-    return await Shift.find().sort({ createdAt: -1 });
+    return await Shift.find().sort({ createdAt: 1 });
   }
 
   async getShiftById(id) {

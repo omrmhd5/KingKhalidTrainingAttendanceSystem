@@ -23,6 +23,12 @@ const shiftSchema = new mongoose.Schema(
     effective_start_time: {
       type: String,
     },
+    trainees: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Trainee",
+      },
+    ],
   },
   {
     timestamps: true,
