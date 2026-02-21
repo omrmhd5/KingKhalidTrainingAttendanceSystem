@@ -18,13 +18,15 @@ import {
 import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { shiftApi } from "@/lib/shiftApi";
+import { rankApi } from "@/lib/rankApi";
+import { specializationApi } from "@/lib/specializationApi";
 
 interface TraineeForm {
   civil_id: string;
   military_id: string;
   full_name: string;
-  rank: string;
-  specialty: string;
+  rank_id: string;
+  specialty_id: string;
   shift_id: string;
 }
 
@@ -49,9 +51,15 @@ export function TraineeFormModal({
 }: TraineeFormModalProps) {
   const [shifts, setShifts] = useState<any[]>([]);
   const [shiftsLoading, setShiftsLoading] = useState(false);
+  const [ranks, setRanks] = useState<any[]>([]);
+  const [ranksLoading, setRanksLoading] = useState(false);
+  const [specializations, setSpecializations] = useState<any[]>([]);
+  const [specializationsLoading, setSpecializationsLoading] = useState(false);
 
   useEffect(() => {
     loadShifts();
+    loadRanks();
+    loadSpecializations();
   }, []);
 
   const loadShifts = async () => {
@@ -63,6 +71,30 @@ export function TraineeFormModal({
       console.error("Failed to load shifts:", error);
     } finally {
       setShiftsLoading(false);
+    }
+  };
+
+  const loadRanks = async () => {
+    try {
+      setRanksLoading(true);
+      const data = await rankApi.getAllRanks();
+      setRanks(data);
+    } catch (error) {
+      console.error("Failed to load ranks:", error);
+    } finally {
+      setRanksLoading(false);
+    }
+  };
+
+  const loadSpecializations = async () => {
+    try {
+      setSpecializationsLoading(true);
+      const data = await specializationApi.getAllSpecializations();
+      setSpecializations(data);
+    } catch (error) {
+      console.error("Failed to load specializations:", error);
+    } finally {
+      setSpecializationsLoading(false);
     }
   };
 
@@ -80,6 +112,16 @@ export function TraineeFormModal({
             {editing ? "تعديل المتدرب" : "متدرب جديد"}
           </DialogTitle>
         </DialogHeader>
+        <style>{`
+          input[type="number"]::-webkit-outer-spin-button,
+          input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+          }
+          input[type="number"] {
+            -moz-appearance: textfield;
+          }
+        `}</style>
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -89,6 +131,7 @@ export function TraineeFormModal({
           <div className="space-y-1">
             <Label>الرقم العسكري</Label>
             <Input
+              type="number"
               value={form.military_id}
               onChange={(e) =>
                 setForm({ ...form, military_id: e.target.value })
@@ -99,6 +142,7 @@ export function TraineeFormModal({
           <div className="space-y-1">
             <Label>السجل المدني</Label>
             <Input
+              type="number"
               value={form.civil_id}
               onChange={(e) => setForm({ ...form, civil_id: e.target.value })}
               required
@@ -114,17 +158,45 @@ export function TraineeFormModal({
           </div>
           <div className="space-y-1">
             <Label>الرتبة</Label>
-            <Input
-              value={form.rank}
-              onChange={(e) => setForm({ ...form, rank: e.target.value })}
-            />
+            <Select
+              value={form.rank_id}
+              onValueChange={(v) => setForm({ ...form, rank_id: v })}>
+              <SelectTrigger disabled={ranksLoading} dir="rtl">
+                <SelectValue
+                  placeholder={ranksLoading ? "جاري التحميل..." : "اختر الرتبة"}
+                />
+              </SelectTrigger>
+              <SelectContent dir="rtl">
+                {ranks?.map((rank) => (
+                  <SelectItem key={rank._id} value={rank._id}>
+                    {rank.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-1">
             <Label>التخصص</Label>
-            <Input
-              value={form.specialty}
-              onChange={(e) => setForm({ ...form, specialty: e.target.value })}
-            />
+            <Select
+              value={form.specialty_id}
+              onValueChange={(v) => setForm({ ...form, specialty_id: v })}>
+              <SelectTrigger disabled={specializationsLoading} dir="rtl">
+                <SelectValue
+                  placeholder={
+                    specializationsLoading ? "جاري التحميل..." : "اختر التخصص"
+                  }
+                />
+              </SelectTrigger>
+              <SelectContent dir="rtl">
+                {specializations?.map((specialization) => (
+                  <SelectItem
+                    key={specialization._id}
+                    value={specialization._id}>
+                    {specialization.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-1 sm:col-span-2">
             <Label>الشفت</Label>
@@ -137,11 +209,17 @@ export function TraineeFormModal({
                 />
               </SelectTrigger>
               <SelectContent dir="rtl">
-                {shifts?.map((shift) => (
-                  <SelectItem key={shift._id} value={shift._id}>
-                    {shift.name}
-                  </SelectItem>
-                ))}
+                {shifts
+                  ?.sort(
+                    (a, b) =>
+                      new Date(a.createdAt).getTime() -
+                      new Date(b.createdAt).getTime(),
+                  )
+                  .map((shift) => (
+                    <SelectItem key={shift._id} value={shift._id}>
+                      {shift.name}
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
           </div>

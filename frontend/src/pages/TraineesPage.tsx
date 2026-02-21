@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,13 +15,14 @@ import { Search, Edit, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { TraineeFormModal } from "@/components/trainees/TraineeFormModal";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
+import { traineeApi } from "@/lib/traineeApi";
 
 interface TraineeForm {
   civil_id: string;
   military_id: string;
   full_name: string;
-  rank: string;
-  specialty: string;
+  rank_id: string;
+  specialty_id: string;
   shift_id: string;
 }
 
@@ -29,8 +30,8 @@ const emptyForm: TraineeForm = {
   civil_id: "",
   military_id: "",
   full_name: "",
-  rank: "",
-  specialty: "",
+  rank_id: "",
+  specialty_id: "",
   shift_id: "",
 };
 
@@ -44,30 +45,60 @@ export default function TraineesPage() {
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [deleteTargetName, setDeleteTargetName] = useState("");
   const [form, setForm] = useState<TraineeForm>(emptyForm);
+  const [trainees, setTrainees] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
-  // Mock data
-  const trainees = [
-    {
-      id: "1",
-      full_name: "أحمد محمد",
-      rank: "جندي",
-      civil_id: "123456789",
-      military_id: "M123456",
-      shift_id: "1",
-      specialty: "تقني",
-      shift: { name: "الصباحي" },
-    },
-  ];
-  const isLoading = false;
+  // Load trainees on component mount
+  useEffect(() => {
+    loadTrainees();
+  }, []);
+
+  const loadTrainees = async () => {
+    try {
+      setIsLoading(true);
+      const data = await traineeApi.getAllTrainees();
+      setTrainees(data);
+    } catch (error) {
+      toast({
+        title: "خطأ",
+        description: "فشل تحميل المتدربين",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const saveMutation = {
-    mutate: (form: TraineeForm) => {
-      toast({ title: editing ? "تم تحديث المتدرب" : "تم إنشاء المتدرب" });
-      setDialogOpen(false);
-      setEditing(null);
-      setForm(emptyForm);
+    mutate: async (formData: TraineeForm) => {
+      try {
+        setIsSaving(true);
+        if (editing) {
+          // Update existing trainee
+          const updated = await traineeApi.updateTrainee(editing, formData);
+          setTrainees(trainees.map((t) => (t._id === editing ? updated : t)));
+          toast({ title: "تم تحديث المتدرب" });
+        } else {
+          // Create new trainee
+          const newTrainee = await traineeApi.createTrainee(formData);
+          setTrainees([...trainees, newTrainee]);
+          toast({ title: "تم إنشاء المتدرب" });
+        }
+        setDialogOpen(false);
+        setEditing(null);
+        setForm(emptyForm);
+      } catch (error) {
+        toast({
+          title: "خطأ",
+          description: editing ? "فشل تحديث المتدرب" : "فشل إنشاء المتدرب",
+          variant: "destructive",
+        });
+      } finally {
+        setIsSaving(false);
+      }
     },
-    isPending: false,
+    isPending: isSaving,
   };
 
   const filtered = trainees.filter((t: any) =>
@@ -77,14 +108,14 @@ export default function TraineesPage() {
   );
 
   const openEdit = (t: any) => {
-    setEditing(t.id);
+    setEditing(t._id);
     setForm({
       civil_id: t.civil_id,
       military_id: t.military_id,
       full_name: t.full_name,
-      rank: t.rank ?? "",
-      specialty: t.specialty ?? "",
-      shift_id: t.shift_id ?? "",
+      rank_id: (t.rank_id?._id || t.rank_id) ?? "",
+      specialty_id: (t.specialty_id?._id || t.specialty_id) ?? "",
+      shift_id: (t.shift_id?._id || t.shift_id) ?? "",
     });
     setDialogOpen(true);
   };
@@ -99,11 +130,23 @@ export default function TraineesPage() {
     saveMutation.mutate(formData);
   };
 
-  const confirmDelete = () => {
-    toast({ title: "تم حذف المتدرب" });
-    setDeleteOpen(false);
-    setDeleteTargetId(null);
-    setDeleteTargetName("");
+  const confirmDelete = async () => {
+    if (deleteTargetId) {
+      try {
+        await traineeApi.deleteTrainee(deleteTargetId);
+        setTrainees(trainees.filter((t) => t._id !== deleteTargetId));
+        toast({ title: "تم حذف المتدرب" });
+        setDeleteOpen(false);
+        setDeleteTargetId(null);
+        setDeleteTargetName("");
+      } catch (error) {
+        toast({
+          title: "خطأ",
+          description: "فشل حذف المتدرب",
+          variant: "destructive",
+        });
+      }
+    }
   };
 
   const canWrite = role === "admin";
@@ -114,7 +157,7 @@ export default function TraineesPage() {
         <div>
           <h1 className="text-2xl font-bold">المتدربون</h1>
           <p className="text-sm text-muted-foreground">
-            {trainees?.length ?? 0} متدربون مسجلون
+            {trainees.length} متدربون مسجلون
           </p>
         </div>
         {canWrite && (
@@ -189,7 +232,7 @@ export default function TraineesPage() {
                 </TableRow>
               ) : (
                 filtered?.map((t: any) => (
-                  <TableRow key={t.id}>
+                  <TableRow key={t._id}>
                     <TableCell className="font-medium text-right">
                       {t.military_id}
                     </TableCell>
@@ -197,10 +240,14 @@ export default function TraineesPage() {
                     <TableCell className="font-medium text-right">
                       {t.full_name}
                     </TableCell>
-                    <TableCell className="text-right">{t.rank}</TableCell>
-                    <TableCell className="text-right">{t.specialty}</TableCell>
                     <TableCell className="text-right">
-                      {(t as any).shift?.name ?? "—"}
+                      {(t as any).rank_id?.name ?? "—"}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {(t as any).specialty_id?.name ?? "—"}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {(t as any).shift_id?.name ?? "—"}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center gap-2 justify-start">
@@ -213,7 +260,7 @@ export default function TraineesPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => openDelete(t.id, t.full_name)}>
+                          onClick={() => openDelete(t._id, t.full_name)}>
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </div>

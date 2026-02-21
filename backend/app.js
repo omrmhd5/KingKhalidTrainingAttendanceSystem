@@ -17,9 +17,11 @@ app.use(express.urlencoded({ extended: true }));
 const shiftRoutes = require("./routes/shifts");
 const rankRoutes = require("./routes/ranks");
 const specializationRoutes = require("./routes/specializations");
+const traineeRoutes = require("./routes/trainees");
 app.use("/api/shifts", shiftRoutes);
 app.use("/api/ranks", rankRoutes);
 app.use("/api/specializations", specializationRoutes);
+app.use("/api/trainees", traineeRoutes);
 
 // Health check
 app.get("/api/health", (req, res) => {
