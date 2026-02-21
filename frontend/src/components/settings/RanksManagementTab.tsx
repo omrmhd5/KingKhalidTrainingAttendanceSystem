@@ -21,13 +21,12 @@ import {
 import { Plus, Trash2, Edit } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
+import { rankApi } from "@/lib/rankApi";
 
 export function RanksManagementTab() {
   const { toast } = useToast();
-  const [ranks, setRanks] = useState<any[]>([
-    { id: "1", name: "جندي" },
-    { id: "2", name: "عريف" },
-  ]);
+  const [ranks, setRanks] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [rankName, setRankName] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingRankId, setEditingRankId] = useState<string | null>(null);
@@ -39,7 +38,28 @@ export function RanksManagementTab() {
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [deleteTargetName, setDeleteTargetName] = useState("");
 
-  const handleAddRank = () => {
+  // Load ranks on component mount
+  useEffect(() => {
+    loadRanks();
+  }, []);
+
+  const loadRanks = async () => {
+    try {
+      setLoading(true);
+      const data = await rankApi.getAllRanks();
+      setRanks(data);
+    } catch (error) {
+      toast({
+        title: "خطأ",
+        description: "فشل تحميل الرتب",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddRank = async () => {
     if (!rankName.trim()) {
       toast({
         title: "خطأ",
@@ -48,14 +68,19 @@ export function RanksManagementTab() {
       });
       return;
     }
-    const newRank = {
-      id: Math.random().toString(),
-      name: rankName,
-    };
-    setRanks([...ranks, newRank]);
-    setRankName("");
-    setDialogOpen(false);
-    toast({ title: "تم إضافة الرتبة" });
+    try {
+      const newRank = await rankApi.createRank({ name: rankName });
+      setRanks([...ranks, newRank]);
+      setRankName("");
+      setDialogOpen(false);
+      toast({ title: "تم إضافة الرتبة" });
+    } catch (error) {
+      toast({
+        title: "خطأ",
+        description: "فشل إضافة الرتبة",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleDeleteRank = (id: string, name: string) => {
@@ -64,22 +89,31 @@ export function RanksManagementTab() {
     setDeleteConfirmOpen(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (deleteTargetId) {
-      setRanks(ranks.filter((r) => r.id !== deleteTargetId));
-      toast({ title: "تم حذف الرتبة" });
-      setDeleteTargetId(null);
-      setDeleteTargetName("");
+      try {
+        await rankApi.deleteRank(deleteTargetId);
+        setRanks(ranks.filter((r) => r._id !== deleteTargetId));
+        toast({ title: "تم حذف الرتبة" });
+        setDeleteTargetId(null);
+        setDeleteTargetName("");
+      } catch (error) {
+        toast({
+          title: "خطأ",
+          description: "فشل حذف الرتبة",
+          variant: "destructive",
+        });
+      }
     }
   };
 
   const handleEditRank = (rank: any) => {
-    setEditingRankId(rank.id);
+    setEditingRankId(rank._id);
     setEditingRankName(rank.name);
     setEditDialogOpen(true);
   };
 
-  const handleUpdateRank = () => {
+  const handleUpdateRank = async () => {
     if (!editingRankName.trim() || !editingRankId) {
       toast({
         title: "خطأ",
@@ -88,15 +122,22 @@ export function RanksManagementTab() {
       });
       return;
     }
-    setRanks(
-      ranks.map((r) =>
-        r.id === editingRankId ? { ...r, name: editingRankName } : r,
-      ),
-    );
-    setEditDialogOpen(false);
-    setEditingRankId(null);
-    setEditingRankName("");
-    toast({ title: "تم تحديث الرتبة" });
+    try {
+      const updatedRank = await rankApi.updateRank(editingRankId, {
+        name: editingRankName,
+      });
+      setRanks(ranks.map((r) => (r._id === editingRankId ? updatedRank : r)));
+      setEditDialogOpen(false);
+      setEditingRankId(null);
+      setEditingRankName("");
+      toast({ title: "تم تحديث الرتبة" });
+    } catch (error) {
+      toast({
+        title: "خطأ",
+        description: "فشل تحديث الرتبة",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -170,7 +211,13 @@ export function RanksManagementTab() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {ranks.length === 0 ? (
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={2} className="text-center py-4">
+                  جاري التحميل...
+                </TableCell>
+              </TableRow>
+            ) : ranks.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={2} className="text-center py-4">
                   لا توجد رتب
@@ -178,7 +225,7 @@ export function RanksManagementTab() {
               </TableRow>
             ) : (
               ranks.map((r) => (
-                <TableRow key={r.id}>
+                <TableRow key={r._id}>
                   <TableCell className="font-medium text-right">
                     {r.name}
                   </TableCell>
@@ -192,7 +239,7 @@ export function RanksManagementTab() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => handleDeleteRank(r.id, r.name)}>
+                      onClick={() => handleDeleteRank(r._id, r.name)}>
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   </TableCell>
