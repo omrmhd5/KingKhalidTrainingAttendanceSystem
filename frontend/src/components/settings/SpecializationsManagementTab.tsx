@@ -157,7 +157,7 @@ export function SpecializationsManagementTab() {
       <CardHeader
         className="flex flex-row items-center justify-between"
         dir="rtl">
-        <CardTitle>إدارة التخصصات</CardTitle>
+        <CardTitle>إدارة التخصصات ({specializations.length})</CardTitle>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button size="sm">
@@ -241,7 +241,7 @@ export function SpecializationsManagementTab() {
                   <TableCell className="font-medium text-right">
                     {s.name}
                   </TableCell>
-                  <TableCell className="text-right flex gap-2 justify-end">
+                  <TableCell className="text-right flex gap-2 justify-start">
                     <Button
                       variant="ghost"
                       size="icon"

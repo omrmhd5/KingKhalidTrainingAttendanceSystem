@@ -145,7 +145,7 @@ export function RanksManagementTab() {
       <CardHeader
         className="flex flex-row items-center justify-between"
         dir="rtl">
-        <CardTitle>إدارة الرتب</CardTitle>
+        <CardTitle>إدارة الرتب ({ranks.length})</CardTitle>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button size="sm">

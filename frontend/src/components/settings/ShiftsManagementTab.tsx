@@ -181,7 +181,7 @@ export function ShiftsManagementTab() {
       <CardHeader
         className="flex flex-row items-center justify-between"
         dir="rtl">
-        <CardTitle>ادارة الشفتات</CardTitle>
+        <CardTitle>ادارة الشفتات ({shifts.length})</CardTitle>
         <Button
           size="sm"
           onClick={() => {
@@ -287,7 +287,7 @@ export function ShiftsManagementTab() {
                       <TableCell className="text-right">
                         {s.grace_minutes} دقائق
                       </TableCell>
-                      <TableCell className="text-right flex gap-2 justify-end">
+                      <TableCell className="text-right flex gap-2 justify-start">
                         <Button
                           variant="ghost"
                           size="icon"
