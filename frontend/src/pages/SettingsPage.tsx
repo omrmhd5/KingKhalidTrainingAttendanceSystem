@@ -1,6 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ShiftsManagementTab } from "@/components/settings/ShiftsManagementTab";
 import { RanksManagementTab } from "@/components/settings/RanksManagementTab";
+import { SpecializationsManagementTab } from "@/components/settings/SpecializationsManagementTab";
 
 export default function SettingsPage() {
   return (
@@ -11,6 +12,7 @@ export default function SettingsPage() {
         <TabsList>
           <TabsTrigger value="shifts">ادارة الشفتات</TabsTrigger>
           <TabsTrigger value="ranks">إدارة الرتب</TabsTrigger>
+          <TabsTrigger value="specializations">إدارة التخصصات</TabsTrigger>
         </TabsList>
 
         {/* Shifts */}
@@ -21,6 +23,11 @@ export default function SettingsPage() {
         {/* Ranks */}
         <TabsContent value="ranks">
           <RanksManagementTab />
+        </TabsContent>
+
+        {/* Specializations */}
+        <TabsContent value="specializations">
+          <SpecializationsManagementTab />
         </TabsContent>
       </Tabs>
     </div>
