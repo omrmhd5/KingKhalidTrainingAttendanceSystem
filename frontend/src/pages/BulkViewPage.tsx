@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { traineeApi } from "@/lib/traineeApi";
-import { Search } from "lucide-react";
+import { Search, FileDown } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { TraineeSearchFilters } from "@/components/trainees/TraineeSearchFilters";
@@ -20,6 +20,8 @@ import { rankApi } from "@/lib/rankApi";
 import { specializationApi } from "@/lib/specializationApi";
 import { shiftApi } from "@/lib/shiftApi";
 import Barcode from "react-barcode";
+import html2pdf from "html2pdf.js";
+import JsBarcode from "jsbarcode";
 
 export default function BulkViewPage() {
   const { toast } = useToast();
@@ -135,6 +137,86 @@ export default function BulkViewPage() {
     localStorage.removeItem("bulkViewResults");
   };
 
+  const generatePDF = () => {
+    // Create HTML table with barcodes
+    let html = `
+      <div style="direction: rtl; text-align: right; font-family: Arial, sans-serif;">
+        <h2>بيان المتدربين</h2>
+        <p>التاريخ: ${new Date().toLocaleDateString("ar-SA")}</p>
+        <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+          <thead>
+            <tr style="background-color: #4285F4; color: white;">
+              <th style="border: 1px solid #ddd; padding: 10px;">الرقم العسكري</th>
+              <th style="border: 1px solid #ddd; padding: 10px;">السجل المدني</th>
+              <th style="border: 1px solid #ddd; padding: 10px;">الاسم</th>
+              <th style="border: 1px solid #ddd; padding: 10px;">الرتبة</th>
+              <th style="border: 1px solid #ddd; padding: 10px;">التخصص</th>
+              <th style="border: 1px solid #ddd; padding: 10px;">الشفت</th>
+              <th style="border: 1px solid #ddd; padding: 10px;">الباركود</th>
+            </tr>
+          </thead>
+          <tbody>
+    `;
+
+    filtered.forEach((t: any) => {
+      // Create SVG barcode for this trainee
+      const canvas = document.createElement("canvas");
+      try {
+        JsBarcode(canvas, t.military_id, {
+          format: "CODE128",
+          width: 2,
+          height: 50,
+          displayValue: true,
+        });
+        const barcodeImage = canvas.toDataURL("image/png");
+
+        html += `
+          <tr>
+            <td style="border: 1px solid #ddd; padding: 10px;">${t.military_id}</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">${t.civil_id}</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">${t.full_name}</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">${t.rank_id?.name || "—"}</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">${t.specialty_id?.name || "—"}</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">${t.shift_id?.name || "—"}</td>
+            <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">
+              <img src="${barcodeImage}" style="height: 60px; width: auto;" />
+            </td>
+          </tr>
+        `;
+      } catch (err) {
+        console.error("Error generating barcode:", err);
+        html += `
+          <tr>
+            <td style="border: 1px solid #ddd; padding: 10px;">${t.military_id}</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">${t.civil_id}</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">${t.full_name}</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">${t.rank_id?.name || "—"}</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">${t.specialty_id?.name || "—"}</td>
+            <td style="border: 1px solid #ddd; padding: 10px;">${t.shift_id?.name || "—"}</td>
+            <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">—</td>
+          </tr>
+        `;
+      }
+    });
+
+    html += `
+          </tbody>
+        </table>
+        <p style="margin-top: 20px; color: #666;">إجمالي: ${filtered.length} متدرب</p>
+      </div>
+    `;
+
+    const options = {
+      margin: 10,
+      filename: `بيان_متدربين_${new Date().toISOString().split("T")[0]}.pdf`,
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { orientation: "landscape" },
+    };
+
+    html2pdf().set(options).from(html).save();
+  };
+
   // Apply local filters to results
   const filtered = results.filter((t: any) => {
     const matchesSearch = [t.full_name, t.civil_id, t.military_id].some((v) =>
@@ -221,38 +303,41 @@ export default function BulkViewPage() {
         </CardContent>
       </Card>
 
-      {results.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">تصفية النتائج</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <TraineeSearchFilters
-              search={search}
-              onSearchChange={setSearch}
-              filterRank={filterRank}
-              onRankChange={setFilterRank}
-              filterSpecialty={filterSpecialty}
-              onSpecialtyChange={setFilterSpecialty}
-              filterShift={filterShift}
-              onShiftChange={setFilterShift}
-              ranks={ranks}
-              specializations={specializations}
-              shifts={shifts}
-            />
-          </CardContent>
-        </Card>
-      )}
-
       {filtered.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">
-              النتائج ({filtered.length}
-              {filtered.length !== results.length && ` من ${results.length}`})
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg">
+                النتائج ({filtered.length}
+                {filtered.length !== results.length && ` من ${results.length}`})
+              </CardTitle>
+              <Button
+                onClick={generatePDF}
+                size="sm"
+                variant="default"
+                className="bg-green-600 hover:bg-green-700 text-white">
+                <FileDown className="ml-2 h-4 w-4" />
+                تحميل PDF
+              </Button>
+            </div>
           </CardHeader>
-          <CardContent className="p-0">
+          <CardContent>
+            <div className="mb-6 pb-6 border-b">
+              <h3 className="text-sm font-medium mb-4">تصفية النتائج</h3>
+              <TraineeSearchFilters
+                search={search}
+                onSearchChange={setSearch}
+                filterRank={filterRank}
+                onRankChange={setFilterRank}
+                filterSpecialty={filterSpecialty}
+                onSpecialtyChange={setFilterSpecialty}
+                filterShift={filterShift}
+                onShiftChange={setFilterShift}
+                ranks={ranks}
+                specializations={specializations}
+                shifts={shifts}
+              />
+            </div>
             <Table>
               <TableHeader>
                 <TableRow>
