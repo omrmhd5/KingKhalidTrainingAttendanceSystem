@@ -10,6 +10,14 @@ class ShiftService {
     return await Shift.findById(id);
   }
 
+  async updateTraineesCount(shiftId) {
+    const shift = await Shift.findById(shiftId);
+    if (shift) {
+      shift.trainees_count = shift.trainees.length;
+      await shift.save();
+    }
+  }
+
   async createShift(data) {
     const { name, start_time, end_time, grace_minutes } = data;
 
@@ -29,6 +37,7 @@ class ShiftService {
       end_time,
       grace_minutes: graceMin,
       effective_start_time: effectiveStartTime,
+      trainees_count: 0,
     });
 
     return await shift.save();

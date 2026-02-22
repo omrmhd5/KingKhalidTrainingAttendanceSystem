@@ -29,6 +29,10 @@ const shiftSchema = new mongoose.Schema(
         ref: "Trainee",
       },
     ],
+    trainees_count: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,

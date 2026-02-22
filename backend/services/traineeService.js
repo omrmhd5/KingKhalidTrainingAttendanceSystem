@@ -2,6 +2,7 @@ const Trainee = require("../models/Trainee");
 const Shift = require("../models/Shift");
 const Rank = require("../models/Rank");
 const Specialization = require("../models/Specialization");
+const shiftService = require("./shiftService");
 const mongoose = require("mongoose");
 
 class TraineeService {
@@ -81,6 +82,9 @@ class TraineeService {
       { new: true },
     );
 
+    // Update trainees count
+    await shiftService.updateTraineesCount(data.shift_id);
+
     // Fetch with populated references
     const populated = await Trainee.findById(trainee._id)
       .populate("shift_id", "name start_time end_time")
@@ -141,12 +145,15 @@ class TraineeService {
           { $pull: { trainees: id } },
           { new: true },
         );
+        await shiftService.updateTraineesCount(currentTrainee.shift_id);
+
         // Add trainee to new shift
         await Shift.findByIdAndUpdate(
           data.shift_id,
           { $push: { trainees: id } },
           { new: true },
         );
+        await shiftService.updateTraineesCount(data.shift_id);
       }
     }
 
@@ -169,6 +176,9 @@ class TraineeService {
       { $pull: { trainees: id } },
       { new: true },
     );
+
+    // Update trainees count
+    await shiftService.updateTraineesCount(trainee.shift_id);
 
     return trainee;
   }

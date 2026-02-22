@@ -237,19 +237,20 @@ export function ShiftsManagementTab() {
               <TableHead className="text-right">البداية</TableHead>
               <TableHead className="text-right">النهاية</TableHead>
               <TableHead className="text-right">السماح</TableHead>
+              <TableHead className="text-right">المتدربون</TableHead>
               <TableHead className="text-right">الإجراءات</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-4">
+                <TableCell colSpan={6} className="text-center py-4">
                   جاري التحميل...
                 </TableCell>
               </TableRow>
             ) : shifts.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-4">
+                <TableCell colSpan={6} className="text-center py-4">
                   لا توجد شفتات
                 </TableCell>
               </TableRow>
@@ -280,7 +281,10 @@ export function ShiftsManagementTab() {
                     </TableCell>
                     <TableCell className="text-right">
                       {s.grace_minutes} دقائق
-                    </TableCell>
+                    </TableCell>{" "}
+                    <TableCell className="text-right">
+                      {s.trainees_count || 0}
+                    </TableCell>{" "}
                     <TableCell className="text-right flex gap-2 justify-start">
                       <Button
                         variant="ghost"

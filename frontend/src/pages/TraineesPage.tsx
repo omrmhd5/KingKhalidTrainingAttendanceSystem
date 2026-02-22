@@ -199,7 +199,8 @@ export default function TraineesPage() {
         <div>
           <h1 className="text-2xl font-bold">المتدربون</h1>
           <p className="text-sm text-muted-foreground">
-            {trainees.length} متدربون مسجلون
+            {filtered.length} متدربون معروضون{" "}
+            {filtered.length !== trainees.length && `من ${trainees.length}`}
           </p>
         </div>
         {canWrite && (
