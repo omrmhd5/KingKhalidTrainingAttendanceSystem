@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -11,17 +10,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Search, Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { TraineeFormModal } from "@/components/trainees/TraineeFormModal";
+import { TraineeSearchFilters } from "@/components/trainees/TraineeSearchFilters";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
 import { traineeApi } from "@/lib/traineeApi";
 import { rankApi } from "@/lib/rankApi";
@@ -258,6 +251,21 @@ export default function TraineesPage() {
             {filtered.length} متدربون معروضون{" "}
             {filtered.length !== trainees.length && `من ${trainees.length}`}
           </p>
+          <div
+            className="mt-3 space-y-1 text-sm text-muted-foreground"
+            dir="rtl">
+            <p>إجمالي: {trainees.length} متدرب</p>
+            {shifts.map((shift: any) => {
+              const count = trainees.filter(
+                (t: any) => t.shift_id?._id === shift._id,
+              ).length;
+              return (
+                <p key={shift._id} dir="ltr">
+                  {count} :{shift.name}
+                </p>
+              );
+            })}
+          </div>
         </div>
         {canWrite && (
           <>
@@ -306,59 +314,20 @@ export default function TraineesPage() {
       </div>
 
       <Card>
-        <CardHeader className="pb-3 space-y-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="ابحث حسب: الرقم العسكري أو السجل المدني أو الاسم"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <Select value={filterRank} onValueChange={setFilterRank}>
-              <SelectTrigger dir="rtl">
-                <SelectValue placeholder="جميع الرتب" />
-              </SelectTrigger>
-              <SelectContent dir="rtl">
-                <SelectItem value="all">جميع الرتب</SelectItem>
-                {ranks?.map((rank) => (
-                  <SelectItem key={rank._id} value={rank._id}>
-                    {rank.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={filterSpecialty} onValueChange={setFilterSpecialty}>
-              <SelectTrigger dir="rtl">
-                <SelectValue placeholder="جميع التخصصات" />
-              </SelectTrigger>
-              <SelectContent dir="rtl">
-                <SelectItem value="all">جميع التخصصات</SelectItem>
-                {specializations?.map((spec) => (
-                  <SelectItem key={spec._id} value={spec._id}>
-                    {spec.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={filterShift} onValueChange={setFilterShift}>
-              <SelectTrigger dir="rtl">
-                <SelectValue placeholder="جميع الشفتات" />
-              </SelectTrigger>
-              <SelectContent dir="rtl">
-                <SelectItem value="all">جميع الشفتات</SelectItem>
-                {shifts?.map((shift) => (
-                  <SelectItem key={shift._id} value={shift._id}>
-                    {shift.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        <CardHeader className="pb-3">
+          <TraineeSearchFilters
+            search={search}
+            onSearchChange={setSearch}
+            filterRank={filterRank}
+            onRankChange={setFilterRank}
+            filterSpecialty={filterSpecialty}
+            onSpecialtyChange={setFilterSpecialty}
+            filterShift={filterShift}
+            onShiftChange={setFilterShift}
+            ranks={ranks}
+            specializations={specializations}
+            shifts={shifts}
+          />
         </CardHeader>
         <CardContent className="p-0">
           <Table>

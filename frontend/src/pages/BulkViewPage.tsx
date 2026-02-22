@@ -15,6 +15,10 @@ import { traineeApi } from "@/lib/traineeApi";
 import { Search } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { TraineeSearchFilters } from "@/components/trainees/TraineeSearchFilters";
+import { rankApi } from "@/lib/rankApi";
+import { specializationApi } from "@/lib/specializationApi";
+import { shiftApi } from "@/lib/shiftApi";
 
 export default function BulkViewPage() {
   const { toast } = useToast();
@@ -27,11 +31,38 @@ export default function BulkViewPage() {
   const [searchType, setSearchType] = useState<"military" | "civil">(
     "military",
   );
+  const [search, setSearch] = useState("");
+  const [filterRank, setFilterRank] = useState("all");
+  const [filterSpecialty, setFilterSpecialty] = useState("all");
+  const [filterShift, setFilterShift] = useState("all");
+  const [ranks, setRanks] = useState<any[]>([]);
+  const [specializations, setSpecializations] = useState<any[]>([]);
+  const [shifts, setShifts] = useState<any[]>([]);
 
   // Save results to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem("bulkViewResults", JSON.stringify(results));
   }, [results]);
+
+  // Load filter options
+  useEffect(() => {
+    loadFilters();
+  }, []);
+
+  const loadFilters = async () => {
+    try {
+      const [ranksData, specializationsData, shiftsData] = await Promise.all([
+        rankApi.getAllRanks(),
+        specializationApi.getAllSpecializations(),
+        shiftApi.getAllShifts(),
+      ]);
+      setRanks(ranksData);
+      setSpecializations(specializationsData);
+      setShifts(shiftsData);
+    } catch (error) {
+      console.error("Failed to load filters:", error);
+    }
+  };
 
   const handleSearch = async () => {
     if (!input.trim()) {
@@ -102,6 +133,23 @@ export default function BulkViewPage() {
     setResults([]);
     localStorage.removeItem("bulkViewResults");
   };
+
+  // Apply local filters to results
+  const filtered = results.filter((t: any) => {
+    const matchesSearch = [t.full_name, t.civil_id, t.military_id].some((v) =>
+      v?.toString().toLowerCase().includes(search.toLowerCase()),
+    );
+    const matchesRank =
+      !filterRank || filterRank === "all" || t.rank_id?._id === filterRank;
+    const matchesSpecialty =
+      !filterSpecialty ||
+      filterSpecialty === "all" ||
+      t.specialty_id?._id === filterSpecialty;
+    const matchesShift =
+      !filterShift || filterShift === "all" || t.shift_id?._id === filterShift;
+
+    return matchesSearch && matchesRank && matchesSpecialty && matchesShift;
+  });
 
   return (
     <div className="space-y-6 animate-slide-in">
@@ -175,8 +223,32 @@ export default function BulkViewPage() {
       {results.length > 0 && (
         <Card>
           <CardHeader>
+            <CardTitle className="text-lg">تصفية النتائج</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <TraineeSearchFilters
+              search={search}
+              onSearchChange={setSearch}
+              filterRank={filterRank}
+              onRankChange={setFilterRank}
+              filterSpecialty={filterSpecialty}
+              onSpecialtyChange={setFilterSpecialty}
+              filterShift={filterShift}
+              onShiftChange={setFilterShift}
+              ranks={ranks}
+              specializations={specializations}
+              shifts={shifts}
+            />
+          </CardContent>
+        </Card>
+      )}
+
+      {filtered.length > 0 && (
+        <Card>
+          <CardHeader>
             <CardTitle className="text-lg">
-              النتائج ({results.length})
+              النتائج ({filtered.length}
+              {filtered.length !== results.length && ` من ${results.length}`})
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
@@ -192,7 +264,7 @@ export default function BulkViewPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {results.map((t: any) => (
+                {filtered.map((t: any) => (
                   <TableRow key={t._id}>
                     <TableCell className="font-medium text-right">
                       {t.military_id}
