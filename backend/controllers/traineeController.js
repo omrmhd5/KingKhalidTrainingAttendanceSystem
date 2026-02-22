@@ -50,3 +50,19 @@ exports.deleteTrainee = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
+
+exports.searchByIds = async (req, res) => {
+  try {
+    const { ids, searchType } = req.body;
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ error: "IDs array is required" });
+    }
+    if (!searchType || !["military", "civil"].includes(searchType)) {
+      return res.status(400).json({ error: "Invalid search type" });
+    }
+    const trainees = await traineeService.searchByIds(ids, searchType);
+    res.json(trainees);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

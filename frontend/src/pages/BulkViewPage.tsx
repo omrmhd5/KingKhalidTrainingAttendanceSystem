@@ -24,7 +24,9 @@ export default function BulkViewPage() {
     return saved ? JSON.parse(saved) : [];
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [searchType, setSearchType] = useState("military");
+  const [searchType, setSearchType] = useState<"military" | "civil">(
+    "military",
+  );
 
   // Save results to localStorage whenever they change
   useEffect(() => {
@@ -60,15 +62,8 @@ export default function BulkViewPage() {
         return;
       }
 
-      // Fetch all trainees and filter by IDs
-      const allTrainees = await traineeApi.getAllTrainees();
-      const filtered = allTrainees.filter((t: any) => {
-        if (searchType === "military") {
-          return ids.includes(t.military_id.toString());
-        } else {
-          return ids.includes(t.civil_id.toString());
-        }
-      });
+      // Fetch trainees matching the IDs from backend
+      const filtered = await traineeApi.searchByIds(ids, searchType);
 
       if (filtered.length === 0) {
         toast({
@@ -89,8 +84,6 @@ export default function BulkViewPage() {
           duration: 1500,
         });
       }
-      // Clear input after search
-      setInput("");
     } catch (error) {
       const errorMessage =
         (error as Error)?.message || "فشل البحث عن المتدربين";
@@ -126,7 +119,11 @@ export default function BulkViewPage() {
         <CardContent className="space-y-4">
           <div className="space-y-3">
             <label className="text-sm font-medium block">نوع البحث</label>
-            <RadioGroup value={searchType} onValueChange={setSearchType}>
+            <RadioGroup
+              value={searchType}
+              onValueChange={(value) =>
+                setSearchType(value as "military" | "civil")
+              }>
               <div className="flex justify-end items-center space-x-2">
                 <Label
                   htmlFor="military"

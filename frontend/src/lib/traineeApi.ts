@@ -75,4 +75,17 @@ export const traineeApi = {
     }
     return response.json();
   },
+
+  async searchByIds(ids: string[], searchType: "military" | "civil") {
+    const response = await fetch(`${API_URL}/trainees/search`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids, searchType }),
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || "فشل البحث عن المتدربين");
+    }
+    return response.json();
+  },
 };

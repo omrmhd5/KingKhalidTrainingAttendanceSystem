@@ -203,6 +203,21 @@ class TraineeService {
 
     return trainee;
   }
+
+  async searchByIds(ids, searchType) {
+    if (!ids || ids.length === 0) {
+      return [];
+    }
+
+    const field = searchType === "military" ? "military_id" : "civil_id";
+    const query = { [field]: { $in: ids } };
+
+    return await Trainee.find(query)
+      .populate("shift_id", "name start_time end_time")
+      .populate("rank_id", "name")
+      .populate("specialty_id", "name")
+      .sort({ createdAt: 1 });
+  }
 }
 
 module.exports = new TraineeService();

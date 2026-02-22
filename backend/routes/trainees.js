@@ -3,6 +3,7 @@ const traineeController = require("../controllers/traineeController");
 
 const router = express.Router();
 
+router.post("/search", traineeController.searchByIds);
 router.get("/", traineeController.getAllTrainees);
 router.get("/:id", traineeController.getTrainee);
 router.post("/", traineeController.createTrainee);
