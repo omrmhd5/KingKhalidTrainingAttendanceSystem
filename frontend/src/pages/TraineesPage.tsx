@@ -13,6 +13,7 @@ import {
 import { Edit, Trash2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
+import Barcode from "react-barcode";
 import { TraineeFormModal } from "@/components/trainees/TraineeFormModal";
 import { TraineeSearchFilters } from "@/components/trainees/TraineeSearchFilters";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
@@ -348,6 +349,7 @@ export default function TraineesPage() {
                 <TableHead className="text-right">الرتبة</TableHead>
                 <TableHead className="text-right">التخصص</TableHead>
                 <TableHead className="text-right">الشفت</TableHead>
+                <TableHead className="text-center">الباركود</TableHead>
                 <TableHead className="text-right">الإجراءات</TableHead>
               </TableRow>
             </TableHeader>
@@ -355,7 +357,7 @@ export default function TraineesPage() {
               {isLoading ? (
                 <TableRow>
                   <TableCell
-                    colSpan={8}
+                    colSpan={9}
                     className="text-center py-8 text-muted-foreground">
                     جاري التحميل...
                   </TableCell>
@@ -363,7 +365,7 @@ export default function TraineesPage() {
               ) : filtered?.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={8}
+                    colSpan={9}
                     className="text-center py-8 text-muted-foreground">
                     لم يتم العثور على متدربين
                   </TableCell>
@@ -392,6 +394,16 @@ export default function TraineesPage() {
                     </TableCell>
                     <TableCell className="text-right">
                       {(t as any).shift_id?.name ?? "—"}
+                    </TableCell>
+                    <TableCell className="text-center py-2">
+                      <div className="flex justify-center scale-75 origin-center">
+                        <Barcode
+                          value={t.military_id.toString()}
+                          width={1.5}
+                          height={40}
+                          displayValue={true}
+                        />
+                      </div>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center gap-2 justify-start">
