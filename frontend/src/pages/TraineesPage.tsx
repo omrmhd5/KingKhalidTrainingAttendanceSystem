@@ -261,7 +261,7 @@ export default function TraineesPage() {
               ).length;
               return (
                 <p key={shift._id} dir="ltr">
-                  {count} :{shift.name}
+                  {count} :{shift.name} شفت
                 </p>
               );
             })}

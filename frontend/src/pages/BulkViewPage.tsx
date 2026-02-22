@@ -19,6 +19,7 @@ import { TraineeSearchFilters } from "@/components/trainees/TraineeSearchFilters
 import { rankApi } from "@/lib/rankApi";
 import { specializationApi } from "@/lib/specializationApi";
 import { shiftApi } from "@/lib/shiftApi";
+import Barcode from "react-barcode";
 
 export default function BulkViewPage() {
   const { toast } = useToast();
@@ -261,6 +262,7 @@ export default function BulkViewPage() {
                   <TableHead className="text-right">الرتبة</TableHead>
                   <TableHead className="text-right">التخصص</TableHead>
                   <TableHead className="text-right">الشفت</TableHead>
+                  <TableHead className="text-center">الباركود</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -281,6 +283,16 @@ export default function BulkViewPage() {
                     </TableCell>
                     <TableCell className="text-right">
                       {(t as any).shift_id?.name ?? "—"}
+                    </TableCell>
+                    <TableCell className="text-center py-2">
+                      <div className="flex justify-center scale-75 origin-center">
+                        <Barcode
+                          value={t.military_id.toString()}
+                          width={1.5}
+                          height={40}
+                          displayValue={true}
+                        />
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
