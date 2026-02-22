@@ -3,14 +3,20 @@ import { API_URL } from "./api";
 export const traineeApi = {
   async getAllTrainees() {
     const response = await fetch(`${API_URL}/trainees`);
-    if (!response.ok) throw new Error("Failed to fetch trainees");
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || "فشل تحميل المتدربين");
+    }
     const data = await response.json();
     return data;
   },
 
   async getTraineeById(id: string) {
     const response = await fetch(`${API_URL}/trainees/${id}`);
-    if (!response.ok) throw new Error("Failed to fetch trainee");
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || "فشل تحميل المتدرب");
+    }
     return response.json();
   },
 
@@ -27,7 +33,10 @@ export const traineeApi = {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
-    if (!response.ok) throw new Error("Failed to create trainee");
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || "فشل إنشاء المتدرب");
+    }
     const result = await response.json();
     return result;
   },
@@ -48,7 +57,10 @@ export const traineeApi = {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
-    if (!response.ok) throw new Error("Failed to update trainee");
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || "فشل تحديث المتدرب");
+    }
     const result = await response.json();
     return result;
   },
@@ -57,7 +69,10 @@ export const traineeApi = {
     const response = await fetch(`${API_URL}/trainees/${id}`, {
       method: "DELETE",
     });
-    if (!response.ok) throw new Error("Failed to delete trainee");
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || "فشل حذف المتدرب");
+    }
     return response.json();
   },
 };

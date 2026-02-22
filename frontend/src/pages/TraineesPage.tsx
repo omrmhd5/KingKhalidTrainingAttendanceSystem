@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Search, Edit, Trash2 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { TraineeFormModal } from "@/components/trainees/TraineeFormModal";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
@@ -64,6 +65,10 @@ export default function TraineesPage() {
   const [ranks, setRanks] = useState<any[]>([]);
   const [specializations, setSpecializations] = useState<any[]>([]);
   const [shifts, setShifts] = useState<any[]>([]);
+  const [selectedTrainees, setSelectedTrainees] = useState<Set<string>>(
+    new Set(),
+  );
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
 
   // Load trainees on component mount
   useEffect(() => {
@@ -121,9 +126,12 @@ export default function TraineesPage() {
         setEditing(null);
         setForm(emptyForm);
       } catch (error) {
+        const errorMessage =
+          (error as Error)?.message ||
+          (editing ? "فشل تحديث المتدرب" : "فشل إنشاء المتدرب");
         toast({
           title: "خطأ",
-          description: editing ? "فشل تحديث المتدرب" : "فشل إنشاء المتدرب",
+          description: errorMessage,
           variant: "destructive",
         });
       } finally {
@@ -182,9 +190,10 @@ export default function TraineesPage() {
         setDeleteTargetId(null);
         setDeleteTargetName("");
       } catch (error) {
+        const errorMessage = (error as Error)?.message || "فشل حذف المتدرب";
         toast({
           title: "خطأ",
-          description: "فشل حذف المتدرب",
+          description: errorMessage,
           variant: "destructive",
         });
       }
@@ -192,6 +201,53 @@ export default function TraineesPage() {
   };
 
   const canWrite = role === "admin";
+
+  const toggleSelectTrainee = (id: string) => {
+    const newSelected = new Set(selectedTrainees);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedTrainees(newSelected);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedTrainees.size === filtered.length && filtered.length > 0) {
+      setSelectedTrainees(new Set());
+    } else {
+      setSelectedTrainees(new Set(filtered.map((t) => t._id)));
+    }
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedTrainees.size === 0) return;
+    setBulkDeleteOpen(true);
+  };
+
+  const confirmBulkDelete = async () => {
+    try {
+      const selectedArray = Array.from(selectedTrainees);
+      await Promise.all(
+        selectedArray.map((id) => traineeApi.deleteTrainee(id)),
+      );
+      setTrainees(trainees.filter((t) => !selectedTrainees.has(t._id)));
+      setSelectedTrainees(new Set());
+      setBulkDeleteOpen(false);
+      toast({
+        title: "تم الحذف",
+        description: `تم حذف ${selectedArray.length} متدرب`,
+      });
+    } catch (error) {
+      const errorMessage =
+        (error as Error)?.message || "فشل حذف المتدربين المحددين";
+      toast({
+        title: "خطأ",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="space-y-6 animate-slide-in">
@@ -205,27 +261,45 @@ export default function TraineesPage() {
         </div>
         {canWrite && (
           <>
-            <TraineeFormModal
-              open={dialogOpen}
-              onOpenChange={(o) => {
-                setDialogOpen(o);
-                if (!o) {
-                  setEditing(null);
-                  setForm(emptyForm);
-                }
-              }}
-              onSubmit={handleSubmit}
-              form={form}
-              setForm={setForm}
-              editing={editing}
-              isLoading={saveMutation.isPending}
-            />
+            <div className="flex gap-2">
+              {selectedTrainees.size > 0 && (
+                <Button
+                  variant="destructive"
+                  onClick={handleBulkDelete}
+                  size="sm">
+                  <Trash2 className="ml-2 h-4 w-4" />
+                  حذف ({selectedTrainees.size})
+                </Button>
+              )}
+              <TraineeFormModal
+                open={dialogOpen}
+                onOpenChange={(o) => {
+                  setDialogOpen(o);
+                  if (!o) {
+                    setEditing(null);
+                    setForm(emptyForm);
+                  }
+                }}
+                onSubmit={handleSubmit}
+                form={form}
+                setForm={setForm}
+                editing={editing}
+                isLoading={saveMutation.isPending}
+              />
+            </div>
             <ConfirmDeleteModal
               open={deleteOpen}
               onOpenChange={setDeleteOpen}
               onConfirm={confirmDelete}
               itemName={deleteTargetName}
               itemType="المتدرب"
+            />
+            <ConfirmDeleteModal
+              open={bulkDeleteOpen}
+              onOpenChange={setBulkDeleteOpen}
+              onConfirm={confirmBulkDelete}
+              itemName={`${selectedTrainees.size} متدربي`}
+              itemType="المتدربين"
             />
           </>
         )}
@@ -290,6 +364,15 @@ export default function TraineesPage() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="text-center w-12">
+                  <Checkbox
+                    checked={
+                      selectedTrainees.size === filtered.length &&
+                      filtered.length > 0
+                    }
+                    onCheckedChange={toggleSelectAll}
+                  />
+                </TableHead>
                 <TableHead className="text-right">الرقم العسكري</TableHead>
                 <TableHead className="text-right">السجل المدني</TableHead>
                 <TableHead className="text-right">الاسم</TableHead>
@@ -303,7 +386,7 @@ export default function TraineesPage() {
               {isLoading ? (
                 <TableRow>
                   <TableCell
-                    colSpan={7}
+                    colSpan={8}
                     className="text-center py-8 text-muted-foreground">
                     جاري التحميل...
                   </TableCell>
@@ -311,7 +394,7 @@ export default function TraineesPage() {
               ) : filtered?.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={7}
+                    colSpan={8}
                     className="text-center py-8 text-muted-foreground">
                     لم يتم العثور على متدربين
                   </TableCell>
@@ -319,6 +402,12 @@ export default function TraineesPage() {
               ) : (
                 filtered?.map((t: any) => (
                   <TableRow key={t._id}>
+                    <TableCell className="text-center w-12">
+                      <Checkbox
+                        checked={selectedTrainees.has(t._id)}
+                        onCheckedChange={() => toggleSelectTrainee(t._id)}
+                      />
+                    </TableCell>
                     <TableCell className="font-medium text-right">
                       {t.military_id}
                     </TableCell>

@@ -73,7 +73,18 @@ class TraineeService {
       specialty_id: data.specialty_id,
       shift_id: data.shift_id,
     });
-    await trainee.save();
+
+    try {
+      await trainee.save();
+    } catch (error) {
+      if (error.code === 11000) {
+        const field = Object.keys(error.keyPattern)[0];
+        const fieldName =
+          field === "military_id" ? "الرقم العسكري" : "السجل المدني";
+        throw new Error(`${fieldName} مستخدم بالفعل`);
+      }
+      throw error;
+    }
 
     // Add trainee to shift's trainees array
     await Shift.findByIdAndUpdate(
@@ -157,11 +168,21 @@ class TraineeService {
       }
     }
 
-    return await Trainee.findByIdAndUpdate(id, data, { new: true })
-      .populate("shift_id", "name start_time end_time")
-      .populate("rank_id", "name")
-      .populate("specialty_id", "name")
-      .exec();
+    try {
+      return await Trainee.findByIdAndUpdate(id, data, { new: true })
+        .populate("shift_id", "name start_time end_time")
+        .populate("rank_id", "name")
+        .populate("specialty_id", "name")
+        .exec();
+    } catch (error) {
+      if (error.code === 11000) {
+        const field = Object.keys(error.keyPattern)[0];
+        const fieldName =
+          field === "military_id" ? "الرقم العسكري" : "السجل المدني";
+        throw new Error(`${fieldName} مستخدم بالفعل`);
+      }
+      throw error;
+    }
   }
 
   async deleteTrainee(id) {
