@@ -40,6 +40,12 @@ const navItems = [
     roles: ["admin", "operator", "viewer"],
   },
   {
+    title: "تحرير بيان",
+    url: "/bulk-view",
+    icon: FileText,
+    roles: ["admin", "operator", "viewer"],
+  },
+  {
     title: "التقارير",
     url: "/reports",
     icon: FileText,

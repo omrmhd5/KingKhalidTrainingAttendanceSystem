@@ -8,6 +8,7 @@ import AuthPage from "@/pages/AuthPage";
 import DashboardPage from "@/pages/DashboardPage";
 import KioskPage from "@/pages/KioskPage";
 import TraineesPage from "@/pages/TraineesPage";
+import BulkViewPage from "@/pages/BulkViewPage";
 import ReportsPage from "@/pages/ReportsPage";
 import SettingsPage from "@/pages/SettingsPage";
 import NotFound from "./pages/NotFound";
@@ -24,6 +25,7 @@ const App = () => (
             <Route path="/" element={<DashboardPage />} />
             <Route path="/kiosk" element={<KioskPage />} />
             <Route path="/trainees" element={<TraineesPage />} />
+            <Route path="/bulk-view" element={<BulkViewPage />} />
             <Route path="/reports" element={<ReportsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Route>
