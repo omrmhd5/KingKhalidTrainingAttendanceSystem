@@ -248,10 +248,6 @@ export default function TraineesPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">المتدربون</h1>
-          <p className="text-sm text-muted-foreground">
-            {filtered.length} متدربون معروضون{" "}
-            {filtered.length !== trainees.length && `من ${trainees.length}`}
-          </p>
           <div
             className="mt-3 space-y-1 text-sm text-muted-foreground"
             dir="rtl">

@@ -66,17 +66,14 @@ export function AppSidebar() {
       <SidebarHeader className="border-b border-sidebar-border p-4">
         <div className="flex items-center gap-2">
           <Shield className="h-6 w-6 text-sidebar-primary" />
-          <div>
-            <h2 className="text-sm font-bold text-sidebar-accent-foreground">
-              مركز التدريب
-            </h2>
-            <p className="text-xs text-sidebar-foreground/60">نظام الحضور</p>
-          </div>
+          <span className="text-sm font-bold text-sidebar-accent-foreground">
+            برنامج الحضور و الانصراف
+          </span>
         </div>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>التنقل</SidebarGroupLabel>
+          <SidebarGroupLabel>القائمة الرئيسية</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {visibleItems.map((item) => (

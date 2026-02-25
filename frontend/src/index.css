@@ -5,6 +5,10 @@
 @tailwind utilities;
 
 @layer base {
+  * {
+    font-family: Cambria, serif;
+  }
+
   :root {
     --background: 220 20% 97%;
     --foreground: 220 50% 10%;

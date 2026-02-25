@@ -23,7 +23,7 @@ export default function DashboardLayout() {
         <AppSidebar />
         <div className="flex flex-1 flex-col">
           <header className="flex h-14 items-center justify-between border-b bg-card px-4">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-4">
               <SidebarTrigger />
               <span className="text-sm font-medium text-muted-foreground capitalize">
                 {role ?? "بدون رتبة"}
