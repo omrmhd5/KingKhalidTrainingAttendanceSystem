@@ -5,6 +5,7 @@ import {
   FileText,
   Settings,
   Shield,
+  AlertCircle,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
@@ -44,6 +45,12 @@ const navItems = [
     url: "/bulk-view",
     icon: FileText,
     roles: ["admin", "operator", "viewer"],
+  },
+  {
+    title: "تسجيل المخالفين",
+    url: "/violations",
+    icon: AlertCircle,
+    roles: ["admin", "operator"],
   },
   {
     title: "التقارير",
