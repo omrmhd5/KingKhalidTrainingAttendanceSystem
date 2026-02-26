@@ -10,6 +10,7 @@ import KioskPage from "@/pages/KioskPage";
 import TraineesPage from "@/pages/TraineesPage";
 import BulkViewPage from "@/pages/BulkViewPage";
 import ViolationsPage from "@/pages/ViolationsPage";
+import DisciplinaryPage from "@/pages/DisciplinaryPage";
 import ReportsPage from "@/pages/ReportsPage";
 import SettingsPage from "@/pages/SettingsPage";
 import NotFound from "./pages/NotFound";
@@ -26,8 +27,9 @@ const App = () => (
             <Route path="/" element={<DashboardPage />} />
             <Route path="/kiosk" element={<KioskPage />} />
             <Route path="/trainees" element={<TraineesPage />} />
-            <Route path="/bulk-view" element={<BulkViewPage />} />{" "}
-            <Route path="/violations" element={<ViolationsPage />} />{" "}
+            <Route path="/bulk-view" element={<BulkViewPage />} />
+            <Route path="/violations" element={<ViolationsPage />} />
+            <Route path="/disciplinary" element={<DisciplinaryPage />} />
             <Route path="/reports" element={<ReportsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Route>

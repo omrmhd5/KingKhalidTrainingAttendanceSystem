@@ -1,0 +1,240 @@
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
+import { Trash2, AlertCircle } from "lucide-react";
+import {
+  DisciplinaryFormModal,
+  DisciplinaryFormData,
+} from "@/components/disciplinary";
+import { disciplinaryApi } from "@/lib/disciplinaryApi";
+
+interface Disciplinary {
+  _id: string;
+  trainee_id: {
+    _id: string;
+    military_id: string;
+    civil_id: string;
+    full_name: string;
+  };
+  createdAt: string;
+}
+
+export default function DisciplinaryPage() {
+  const { toast } = useToast();
+  const [disciplinary, setDisciplinary] = useState<Disciplinary[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingDisciplinary, setIsLoadingDisciplinary] = useState(true);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Fetch disciplinary requests on mount
+  useEffect(() => {
+    fetchDisciplinary();
+  }, []);
+
+  const fetchDisciplinary = async () => {
+    try {
+      setIsLoadingDisciplinary(true);
+      const data = await disciplinaryApi.getAllDisciplinary();
+      setDisciplinary(data || []);
+    } catch (error) {
+      toast({
+        title: "خطأ",
+        description: "فشل تحميل الطلبات",
+        variant: "destructive",
+        duration: 2000,
+      });
+    } finally {
+      setIsLoadingDisciplinary(false);
+    }
+  };
+
+  const handleAddDisciplinary = async (data: DisciplinaryFormData) => {
+    try {
+      setIsLoading(true);
+      // Create disciplinary request using the API
+      const newDisciplinary = await disciplinaryApi.createDisciplinary(
+        data.trainee_id,
+      );
+
+      // Add to local state
+      setDisciplinary([newDisciplinary, ...disciplinary]);
+
+      toast({
+        title: "تم إضافة الطلب",
+        description: `تم تسجيل طلب جديد لـ ${data.full_name}`,
+        duration: 1500,
+      });
+    } catch (error) {
+      toast({
+        title: "خطأ",
+        description: "فشل تسجيل الطلب",
+        variant: "destructive",
+        duration: 2000,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteDisciplinary = async () => {
+    if (!deleteConfirm) return;
+
+    try {
+      setIsDeleting(true);
+      await disciplinaryApi.deleteDisciplinary(deleteConfirm);
+      setDisciplinary(disciplinary.filter((d) => d._id !== deleteConfirm));
+      toast({
+        title: "تم الحذف",
+        description: "تم حذف الطلب بنجاح",
+        duration: 1500,
+      });
+    } catch (error) {
+      toast({
+        title: "خطأ",
+        description: "فشل حذف الطلب",
+        variant: "destructive",
+        duration: 2000,
+      });
+    } finally {
+      setIsDeleting(false);
+      setDeleteConfirm(null);
+    }
+  };
+
+  return (
+    <div className="space-y-6 animate-slide-in">
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <AlertCircle className="h-8 w-8 text-blue-600" />
+            <h1 className="text-2xl font-bold text-blue-600">طلبات الانضباط</h1>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            قم بتسجيل طلبات الانضباط ومتابعتها
+          </p>
+          {disciplinary.length > 0 && (
+            <p className="text-sm text-blue-600 font-medium mt-2">
+              إجمالي الطلبات: {disciplinary.length}
+            </p>
+          )}
+        </div>
+      </div>
+
+      <Card className="border-r-4 border-r-blue-600">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg">الطلبات المسجلة</CardTitle>
+            <DisciplinaryFormModal
+              onSubmit={handleAddDisciplinary}
+              isLoading={isLoading}
+            />
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
+          {isLoadingDisciplinary ? (
+            <div className="text-center py-8 text-muted-foreground p-4">
+              جاري تحميل الطلبات...
+            </div>
+          ) : disciplinary.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground p-4">
+              لا توجد طلبات مسجلة حتى الآن
+            </div>
+          ) : (
+            <Table>
+              <TableHeader className="bg-blue-50">
+                <TableRow>
+                  <TableHead className="text-right text-blue-700 font-bold">
+                    الرقم العسكري
+                  </TableHead>
+                  <TableHead className="text-right text-blue-700 font-bold">
+                    السجل المدني
+                  </TableHead>
+                  <TableHead className="text-right text-blue-700 font-bold">
+                    الاسم
+                  </TableHead>
+                  <TableHead className="text-right text-blue-700 font-bold">
+                    تاريخ التسجيل
+                  </TableHead>
+                  <TableHead className="text-center text-blue-700 font-bold">
+                    الإجراءات
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {disciplinary.map((request) => (
+                  <TableRow
+                    key={request._id}
+                    className="bg-blue-50 hover:bg-blue-100">
+                    <TableCell className="font-medium text-right">
+                      {request.trainee_id.military_id}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {request.trainee_id.civil_id}
+                    </TableCell>
+                    <TableCell className="font-medium text-right">
+                      {request.trainee_id.full_name}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {new Date(request.createdAt).toLocaleDateString("ar-SA")}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setDeleteConfirm(request._id)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
+      <AlertDialog
+        open={!!deleteConfirm}
+        onOpenChange={(open) => !open && setDeleteConfirm(null)}>
+        <AlertDialogContent dir="rtl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-right text-blue-600">
+              تأكيد الحذف
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-right">
+              هل أنت متأكد من حذف هذا الطلب؟ لا يمكن التراجع عن هذا الإجراء.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="flex gap-2 justify-end">
+            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteDisciplinary}
+              disabled={isDeleting}
+              className="bg-blue-600 hover:bg-blue-700">
+              {isDeleting ? "جاري الحذف..." : "حذف"}
+            </AlertDialogAction>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}

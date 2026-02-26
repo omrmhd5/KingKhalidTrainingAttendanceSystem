@@ -44,6 +44,16 @@ const traineeSchema = new mongoose.Schema(
         ref: "Violation",
       },
     ],
+    hasDisciplinary: {
+      type: Boolean,
+      default: false,
+    },
+    disciplinary: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Disciplinary",
+      },
+    ],
   },
   { timestamps: true },
 );

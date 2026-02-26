@@ -53,6 +53,12 @@ const navItems = [
     roles: ["admin", "operator"],
   },
   {
+    title: "طلبات الانضباط",
+    url: "/disciplinary",
+    icon: Shield,
+    roles: ["admin", "operator"],
+  },
+  {
     title: "التقارير",
     url: "/reports",
     icon: FileText,
