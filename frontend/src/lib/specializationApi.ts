@@ -1,37 +1,24 @@
+import axios from "axios";
 import { API_URL } from "./api";
 
 export const specializationApi = {
   async getAllSpecializations() {
-    const response = await fetch(`${API_URL}/specializations`);
-    if (!response.ok) throw new Error("Failed to fetch specializations");
-    return response.json();
+    const response = await axios.get(`${API_URL}/specializations`);
+    return response.data;
   },
 
   async createSpecialization(data: { name: string }) {
-    const response = await fetch(`${API_URL}/specializations`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    if (!response.ok) throw new Error("Failed to create specialization");
-    return response.json();
+    const response = await axios.post(`${API_URL}/specializations`, data);
+    return response.data;
   },
 
   async updateSpecialization(id: string, data: { name: string }) {
-    const response = await fetch(`${API_URL}/specializations/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    if (!response.ok) throw new Error("Failed to update specialization");
-    return response.json();
+    const response = await axios.put(`${API_URL}/specializations/${id}`, data);
+    return response.data;
   },
 
   async deleteSpecialization(id: string) {
-    const response = await fetch(`${API_URL}/specializations/${id}`, {
-      method: "DELETE",
-    });
-    if (!response.ok) throw new Error("Failed to delete specialization");
-    return response.json();
+    const response = await axios.delete(`${API_URL}/specializations/${id}`);
+    return response.data;
   },
 };

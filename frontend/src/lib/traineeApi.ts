@@ -1,23 +1,15 @@
+import axios from "axios";
 import { API_URL } from "./api";
 
 export const traineeApi = {
   async getAllTrainees() {
-    const response = await fetch(`${API_URL}/trainees`);
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || "فشل تحميل المتدربين");
-    }
-    const data = await response.json();
-    return data;
+    const response = await axios.get(`${API_URL}/trainees`);
+    return response.data;
   },
 
   async getTraineeById(id: string) {
-    const response = await fetch(`${API_URL}/trainees/${id}`);
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || "فشل تحميل المتدرب");
-    }
-    return response.json();
+    const response = await axios.get(`${API_URL}/trainees/${id}`);
+    return response.data;
   },
 
   async createTrainee(data: {
@@ -28,17 +20,8 @@ export const traineeApi = {
     specialty_id: string;
     shift_id: string;
   }) {
-    const response = await fetch(`${API_URL}/trainees`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || "فشل إنشاء المتدرب");
-    }
-    const result = await response.json();
-    return result;
+    const response = await axios.post(`${API_URL}/trainees`, data);
+    return response.data;
   },
 
   async updateTrainee(
@@ -52,40 +35,20 @@ export const traineeApi = {
       shift_id?: string;
     },
   ) {
-    const response = await fetch(`${API_URL}/trainees/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || "فشل تحديث المتدرب");
-    }
-    const result = await response.json();
-    return result;
+    const response = await axios.put(`${API_URL}/trainees/${id}`, data);
+    return response.data;
   },
 
   async deleteTrainee(id: string) {
-    const response = await fetch(`${API_URL}/trainees/${id}`, {
-      method: "DELETE",
-    });
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || "فشل حذف المتدرب");
-    }
-    return response.json();
+    const response = await axios.delete(`${API_URL}/trainees/${id}`);
+    return response.data;
   },
 
   async searchByIds(ids: string[], searchType: "military" | "civil") {
-    const response = await fetch(`${API_URL}/trainees/search`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ids, searchType }),
+    const response = await axios.post(`${API_URL}/trainees/search`, {
+      ids,
+      searchType,
     });
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || "فشل البحث عن المتدربين");
-    }
-    return response.json();
+    return response.data;
   },
 };

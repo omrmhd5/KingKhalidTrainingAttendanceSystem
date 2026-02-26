@@ -34,6 +34,16 @@ const traineeSchema = new mongoose.Schema(
       ref: "Shift",
       required: true,
     },
+    hasViolation: {
+      type: Boolean,
+      default: false,
+    },
+    violations: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Violation",
+      },
+    ],
   },
   { timestamps: true },
 );
