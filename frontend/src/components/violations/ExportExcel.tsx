@@ -1,13 +1,25 @@
 import { Button } from "@/components/ui/button";
 import { FileSpreadsheet } from "lucide-react";
 import ExcelJS from "exceljs";
-import JsBarcode from "jsbarcode";
 
-interface ExportExcelProps {
-  data: any[];
+interface Trainee {
+  full_name?: string;
+  civil_id?: string;
+  military_id?: string;
 }
 
-const COLS = 7;
+interface Violation {
+  _id: string;
+  description?: string;
+  createdAt: string;
+  trainee_id?: Trainee;
+}
+
+interface ExportExcelProps {
+  data: Violation[];
+}
+
+const COLS = 5;
 
 const solid = (argb: string) => ({
   type: "pattern" as const,
@@ -24,56 +36,42 @@ const thinBorder = (argb = "FFD0D0D0") => ({
 export function ExportExcel({ data }: ExportExcelProps) {
   const generateExcel = async () => {
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("المتدربين");
+    const worksheet = workbook.addWorksheet("المخالفات");
 
     // Column widths
     worksheet.columns = [
-      { width: 3 }, // Empty A
-      { width: 3 }, // Empty B
-      { width: 3 }, // Empty C
-      { width: 3 }, // Empty D
-      { width: 3 }, // Empty E
-      { width: 24 }, // F - Barcode
-      { width: 18 }, // G - Shift
-      { width: 18 }, // H - Specialty
-      { width: 18 }, // I - Rank
-      { width: 28 }, // J - Name
-      { width: 18 }, // K - Civil ID
-      { width: 18 }, // L - Military ID
+      { width: 3 },
+      { width: 18 },
+      { width: 28 },
+      { width: 18 },
+      { width: 18 },
+      { width: 30 },
     ];
 
     // ── Row 1: Title ──────────────────────────────────────────────────────
     const titleRow = worksheet.addRow([
       "",
-      "",
-      "",
-      "",
-      "",
-      "بيان المتدربين",
+      "بيان المخالفات",
       ...Array(COLS - 1).fill(""),
     ]);
     titleRow.height = 40;
-    worksheet.mergeCells(1, 6, 1, 6 + COLS - 1);
-    const titleCell = worksheet.getCell("F1");
+    worksheet.mergeCells(1, 2, 1, 2 + COLS - 1);
+    const titleCell = worksheet.getCell("B1");
     titleCell.font = { bold: true, size: 18, color: { argb: "FFFFFFFF" } };
-    titleCell.fill = solid("FF1E3A8A");
+    titleCell.fill = solid("FFDC2626");
     titleCell.alignment = { horizontal: "center", vertical: "middle" };
-    titleCell.border = thinBorder("FF1E3A8A");
+    titleCell.border = thinBorder("FFDC2626");
 
     // ── Row 2: Date subtitle ──────────────────────────────────────────────
     const date = new Date().toLocaleDateString("ar-SA");
     const subRow = worksheet.addRow([
       "",
-      "",
-      "",
-      "",
-      "",
       `التاريخ: ${date}`,
       ...Array(COLS - 1).fill(""),
     ]);
     subRow.height = 24;
-    worksheet.mergeCells(2, 6, 2, 6 + COLS - 1);
-    const subCell = worksheet.getCell("F2");
+    worksheet.mergeCells(2, 2, 2, 2 + COLS - 1);
+    const subCell = worksheet.getCell("B2");
     subCell.font = { size: 12, italic: true, color: { argb: "FF6B7280" } };
     subCell.fill = solid("FFF9FAFB");
     subCell.alignment = { horizontal: "center", vertical: "middle" };
@@ -85,14 +83,8 @@ export function ExportExcel({ data }: ExportExcelProps) {
     // ── Row 4: Column headers ─────────────────────────────────────────────
     const headers = [
       "",
-      "",
-      "",
-      "",
-      "",
-      "الباركود",
-      "الشفت",
-      "التخصص",
-      "الرتبة",
+      "تاريخ التسجيل",
+      "وصف المخالفة",
       "الاسم",
       "السجل المدني",
       "الرقم العسكري",
@@ -100,88 +92,58 @@ export function ExportExcel({ data }: ExportExcelProps) {
     const headerRow = worksheet.addRow(headers);
     headerRow.height = 30;
     headerRow.eachCell((cell, colNumber) => {
-      // Only style columns F-L (colNumber 6-12)
-      if (colNumber >= 6) {
+      if (colNumber >= 2) {
         cell.font = { bold: true, size: 13, color: { argb: "FFFFFFFF" } };
-        cell.fill = solid("FF1E3A8A");
+        cell.fill = solid("FFDC2626");
         cell.alignment = { horizontal: "center", vertical: "middle" };
-        cell.border = thinBorder("FF0F172A");
+        cell.border = thinBorder("FFB91C1C");
       }
     });
 
     // ── Data rows ─────────────────────────────────────────────────────────
-    data.forEach((t: any, i: number) => {
+    data.forEach((v: Violation, i: number) => {
       const isEven = i % 2 === 0;
+      const createdDate = new Date(v.createdAt).toLocaleDateString("ar-SA");
       const rowValues = [
-        "", // Empty A
-        "", // Empty B
-        "", // Empty C
-        "", // Empty D
-        "", // Empty E
-        "", // barcode cell (image floats here)
-        t.shift_id?.name || "—",
-        t.specialty_id?.name || "—",
-        t.rank_id?.name || "—",
-        t.full_name || "—",
-        t.civil_id || "—",
-        t.military_id || "—",
+        "",
+        createdDate,
+        v.description || "—",
+        v.trainee_id?.full_name || "—",
+        v.trainee_id?.civil_id || "—",
+        v.trainee_id?.military_id || "—",
       ];
       const dataRow = worksheet.addRow(rowValues);
-      dataRow.height = 60;
+      dataRow.height = 40;
 
-      const fgArgb = isEven ? "FFE0E7FF" : "FFFFFFFF";
+      const fgArgb = isEven ? "FFFFE5E5" : "FFFFFFFF";
       dataRow.eachCell({ includeEmpty: true }, (cell, colNumber) => {
-        // Only style columns F-L (colNumber 6-12)
-        if (colNumber >= 6) {
+        if (colNumber >= 2) {
           cell.font = { size: 13 };
           cell.fill = solid(fgArgb);
-          cell.alignment = { horizontal: "center", vertical: "middle" };
+          cell.alignment = {
+            horizontal: "center",
+            vertical: "middle",
+            wrapText: true,
+          };
           cell.border = thinBorder();
         }
       });
-
-      // Generate barcode image and embed in the barcode column
-      const canvas = document.createElement("canvas");
-      try {
-        JsBarcode(canvas, String(t.military_id), {
-          format: "CODE128",
-          width: 2,
-          height: 45,
-          displayValue: true,
-          fontSize: 12,
-          margin: 4,
-        });
-        const base64 = canvas.toDataURL("image/png").split(",")[1];
-        const imageId = workbook.addImage({ base64, extension: "png" });
-
-        // 0-based row index: 3 header rows (title/subtitle/spacer) + 1 header row = 4, then +i
-        worksheet.addImage(imageId, {
-          tl: { col: 5, row: 4 + i } as any,
-          ext: { width: 170, height: 52 },
-        });
-      } catch (err) {
-        console.error("Barcode generation failed:", err);
-      }
     });
 
     // ── Total row ─────────────────────────────────────────────────────────
     const totalRow = worksheet.addRow([
       "",
-      "",
-      "",
-      "",
-      "",
-      `الإجمالي: ${data.length} متدرب`,
+      `الإجمالي: ${data.length} مخالفة`,
       ...Array(COLS - 1).fill(""),
     ]);
     totalRow.height = 26;
     const totalRowIdx = worksheet.rowCount;
-    worksheet.mergeCells(totalRowIdx, 6, totalRowIdx, 6 + COLS - 1);
-    const totalCell = totalRow.getCell(6);
-    totalCell.font = { bold: true, size: 13, color: { argb: "FFFFFFFF" } };
-    totalCell.fill = solid("FF1E3A8A");
+    worksheet.mergeCells(totalRowIdx, 2, totalRowIdx, 2 + COLS - 1);
+    const totalCell = totalRow.getCell(2);
+    totalCell.font = { bold: true, size: 13, color: { argb: "FFF5F5F5" } };
+    totalCell.fill = solid("FFDC2626");
     totalCell.alignment = { horizontal: "center", vertical: "middle" };
-    totalCell.border = thinBorder("FF0F172A");
+    totalCell.border = thinBorder("FFB91C1C");
 
     // ── Save ──────────────────────────────────────────────────────────────
     const buffer = await workbook.xlsx.writeBuffer();
@@ -191,7 +153,7 @@ export function ExportExcel({ data }: ExportExcelProps) {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `بيان_متدربين_${new Date().toISOString().split("T")[0]}.xlsx`;
+    a.download = `بيان_مخالفات_${new Date().toISOString().split("T")[0]}.xlsx`;
     a.click();
     window.URL.revokeObjectURL(url);
   };

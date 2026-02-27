@@ -20,7 +20,12 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Trash2, AlertTriangle, Edit2 } from "lucide-react";
-import { ViolationFormModal, ViolationFormData } from "@/components/violations";
+import {
+  ViolationFormModal,
+  ViolationFormData,
+  ExportExcel,
+  ExportPDF,
+} from "@/components/violations";
 import { violationApi } from "@/lib/violationApi";
 
 interface Violation {
@@ -172,16 +177,20 @@ export default function ViolationsPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg">المخالفات المسجلة</CardTitle>
-            <ViolationFormModal
-              onSubmit={handleAddViolation}
-              isLoading={isLoading}
-              editingViolation={editingViolation}
-              onEditModeChange={(editing) => {
-                if (!editing) {
-                  setEditingViolation(null);
-                }
-              }}
-            />
+            <div className="flex gap-2">
+              <ExportExcel data={violations} />
+              <ExportPDF data={violations} />
+              <ViolationFormModal
+                onSubmit={handleAddViolation}
+                isLoading={isLoading}
+                editingViolation={editingViolation}
+                onEditModeChange={(editing) => {
+                  if (!editing) {
+                    setEditingViolation(null);
+                  }
+                }}
+              />
+            </div>
           </div>
         </CardHeader>
         <CardContent className="p-0">

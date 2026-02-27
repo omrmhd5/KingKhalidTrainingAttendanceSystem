@@ -23,6 +23,8 @@ import { Trash2, AlertCircle } from "lucide-react";
 import {
   DisciplinaryFormModal,
   DisciplinaryFormData,
+  ExportExcel,
+  ExportPDF,
 } from "@/components/disciplinary";
 import { disciplinaryApi } from "@/lib/disciplinaryApi";
 
@@ -143,10 +145,14 @@ export default function DisciplinaryPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg">الطلبات المسجلة</CardTitle>
-            <DisciplinaryFormModal
-              onSubmit={handleAddDisciplinary}
-              isLoading={isLoading}
-            />
+            <div className="flex gap-2">
+              <ExportExcel data={disciplinary} />
+              <ExportPDF data={disciplinary} />
+              <DisciplinaryFormModal
+                onSubmit={handleAddDisciplinary}
+                isLoading={isLoading}
+              />
+            </div>
           </div>
         </CardHeader>
         <CardContent className="p-0">

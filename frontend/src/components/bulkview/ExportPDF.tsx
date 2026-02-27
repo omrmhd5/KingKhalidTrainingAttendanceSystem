@@ -16,7 +16,7 @@ export function ExportPDF({ data }: ExportPDFProps) {
         <p>التاريخ: ${new Date().toLocaleDateString("ar-SA")}</p>
         <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
           <thead>
-            <tr style="background-color: #4285F4; color: white;">
+            <tr style="background-color: #1E3A8A; color: white;">
               <th style="border: 1px solid #ddd; padding: 10px;">الرقم العسكري</th>
               <th style="border: 1px solid #ddd; padding: 10px;">السجل المدني</th>
               <th style="border: 1px solid #ddd; padding: 10px;">الاسم</th>
