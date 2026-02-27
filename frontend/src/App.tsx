@@ -6,7 +6,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import AuthPage from "@/pages/AuthPage";
 import DashboardPage from "@/pages/DashboardPage";
-import KioskPage from "@/pages/KioskPage";
+import MainPage from "@/pages/MainPage";
 import TraineesPage from "@/pages/TraineesPage";
 import BulkViewPage from "@/pages/BulkViewPage";
 import ViolationsPage from "@/pages/ViolationsPage";
@@ -25,7 +25,7 @@ const App = () => (
           <Route path="/auth" element={<AuthPage />} />
           <Route element={<DashboardLayout />}>
             <Route path="/" element={<DashboardPage />} />
-            <Route path="/kiosk" element={<KioskPage />} />
+            <Route path="/main" element={<MainPage />} />
             <Route path="/trainees" element={<TraineesPage />} />
             <Route path="/bulk-view" element={<BulkViewPage />} />
             <Route path="/violations" element={<ViolationsPage />} />

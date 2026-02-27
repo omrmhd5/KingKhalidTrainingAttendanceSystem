@@ -2,6 +2,7 @@ import { Outlet, Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { AppSidebar } from "@/components/AppSidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import KSADateTime from "@/components/KSADateTime";
 import { LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -29,6 +30,7 @@ export default function DashboardLayout() {
                 {role ?? "بدون رتبة"}
               </span>
             </div>
+            <KSADateTime />
             <div className="flex items-center gap-3">
               <span className="text-sm text-muted-foreground flex items-center gap-1">
                 <User className="h-3.5 w-3.5" />

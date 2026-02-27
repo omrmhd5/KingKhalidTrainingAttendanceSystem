@@ -29,8 +29,8 @@ const navItems = [
     roles: ["admin", "operator", "viewer"],
   },
   {
-    title: "الكشك",
-    url: "/kiosk",
+    title: "الصفحة الرئيسية",
+    url: "/main",
     icon: ScanBarcode,
     roles: ["admin", "operator"],
   },
