@@ -23,7 +23,7 @@ export default function DashboardLayout() {
       <div className="flex min-h-screen w-full">
         <AppSidebar />
         <div className="flex flex-1 flex-col">
-          <header className="flex h-14 items-center justify-between border-b bg-card px-4">
+          <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b bg-card px-4">
             <div className="flex items-center gap-4">
               <SidebarTrigger />
               <span className="text-sm font-medium text-muted-foreground capitalize">

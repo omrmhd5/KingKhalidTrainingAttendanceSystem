@@ -67,88 +67,81 @@ export default function BarcodeScanner({
   };
 
   return (
-    <div className="mb-8 w-full">
-      {/* Mode Toggle Buttons */}
-      <div className="mb-6 flex justify-center gap-4">
+    <div className="mb-4 w-full">
+      <div className="mb-3 flex justify-center gap-2">
         <Button
-          size="lg"
+          size="sm"
           variant={mode === "IN" ? "default" : "outline"}
           onClick={() => setMode("IN")}
-          className={`h-14 w-36 text-base font-bold ${
+          className={
             mode === "IN"
-              ? "bg-success hover:bg-success/90 text-success-foreground"
-              : "border-success/40 text-success"
-          }`}>
-          <ArrowDownToLine className="ml-2 h-5 w-5" />
-          الدخول
+              ? "bg-success hover:bg-success/90 text-xs h-9"
+              : "text-xs h-9"
+          }>
+          <ArrowDownToLine className="ml-2 h-3 w-3" />
+          دخول
         </Button>
         <Button
-          size="lg"
+          size="sm"
           variant={mode === "OUT" ? "default" : "outline"}
           onClick={() => setMode("OUT")}
-          className={`h-14 w-36 text-base font-bold ${
+          className={
             mode === "OUT"
-              ? "bg-warning hover:bg-warning/90 text-warning-foreground"
-              : "border-warning/40 text-warning"
-          }`}>
-          <ArrowUpFromLine className="ml-2 h-5 w-5" />
-          الخروج
+              ? "bg-warning hover:bg-warning/90 text-xs h-9"
+              : "text-xs h-9"
+          }>
+          <ArrowUpFromLine className="ml-2 h-3 w-3" />
+          خروج
         </Button>
       </div>
-
-      {/* Scanner Card */}
-      <Card className="border border-border bg-card shadow-lg">
-        <CardContent className="p-8">
-          <div className="mb-6 flex items-center justify-center gap-3">
-            <ScanBarcode className="h-8 w-8 text-primary animate-scan-pulse" />
-            <h2 className="text-2xl font-bold text-foreground">
-              مسح الرمز الشريطي
-            </h2>
+      <Card className="border border-border bg-card">
+        <CardContent className="p-3">
+          <div className="mb-3 flex items-center justify-center gap-2">
+            <ScanBarcode className="h-5 w-5 text-primary" />
+            <h2 className="text-base font-bold text-foreground">مسح الرمز</h2>
           </div>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-2">
             <Input
               ref={inputRef}
               value={barcode}
               onChange={(e) => setBarcode(e.target.value)}
-              placeholder="امسح أو أدخل الرمز الشريطي..."
-              className="h-16 text-center text-2xl font-mono bg-background border-border text-foreground placeholder:text-muted-foreground/40"
+              placeholder="امسح الرمز..."
+              className="h-11 text-center text-lg font-mono bg-background border-border text-foreground"
               autoFocus
               autoComplete="off"
               disabled={isScanning}
             />
             <Button
               type="submit"
-              size="lg"
               disabled={isScanning || !barcode.trim()}
-              className="w-full h-12 text-lg font-bold bg-primary hover:bg-primary/90">
+              className="w-full h-9 text-xs font-bold bg-primary hover:bg-primary/90">
               تأكيد
             </Button>
           </form>
         </CardContent>
       </Card>
-
-      {/* Result */}
       {result && (
         <div
-          className={`mt-4 animate-slide-in rounded-lg border-2 p-6 text-center ${
+          className={`mt-2 rounded-lg border p-2 text-center text-xs ${
             result.status === "success"
               ? "border-success bg-success/10"
               : "border-destructive bg-destructive/10"
           }`}>
-          <div className="flex items-center justify-center gap-2 mb-2">
+          <div className="flex items-center justify-center gap-1">
             {result.status === "success" ? (
-              <CheckCircle2 className="h-8 w-8 text-success" />
+              <CheckCircle2 className="h-4 w-4 text-success" />
             ) : (
-              <XCircle className="h-8 w-8 text-destructive" />
+              <XCircle className="h-4 w-4 text-destructive" />
             )}
+            <span
+              className={
+                result.status === "success"
+                  ? "text-success font-medium"
+                  : "text-destructive font-medium"
+              }>
+              {result.message}
+            </span>
           </div>
-          {result.name && (
-            <p className="text-xl font-bold text-foreground">{result.name}</p>
-          )}
-          <p
-            className={`mt-1 text-lg font-medium ${result.status === "success" ? "text-success" : "text-destructive"}`}>
-            {result.message}
-          </p>
         </div>
       )}
     </div>

@@ -9,6 +9,16 @@ import {
 import { Card } from "@/components/ui/card";
 import { ArrowUpFromLine } from "lucide-react";
 
+const formatTime12Hour = (dateTimeString: string): string => {
+  const timePart = dateTimeString.split(" ")[1]; // Extract "HH:mm:ss"
+  if (!timePart) return dateTimeString;
+  const [hours, minutes, seconds] = timePart.split(":");
+  let h = parseInt(hours);
+  const ampm = h >= 12 ? "PM" : "AM";
+  h = h % 12 || 12;
+  return `${h}:${minutes}:${seconds} ${ampm}`;
+};
+
 export interface ExitRecord {
   id: string;
   militaryId: string;
@@ -37,13 +47,14 @@ export default function ExitsTable({ exits }: ExitsTableProps) {
                 تسجيل الخروج
               </TableHead>
               <TableHead className="text-right text-foreground font-semibold">
+
                 الاسم
               </TableHead>
               <TableHead className="text-right text-foreground font-semibold">
                 وقت الخروج
               </TableHead>
               <TableHead className="text-right text-foreground font-semibold">
-                الفرق الزمني
+                الفارق الزمني
               </TableHead>
             </TableRow>
           </TableHeader>
@@ -70,15 +81,15 @@ export default function ExitsTable({ exits }: ExitsTableProps) {
                 return (
                   <TableRow
                     key={exit.id}
-                    className="border-b border-border hover:bg-muted/50">
-                    <TableCell className="text-foreground text-center text-orange-600 font-bold">
-                      ✓
+                    className="border-b border-border bg-red-200 hover:bg-red-300">
+                    <TableCell className="text-foreground font-medium text-sm">
+                      {exit.militaryId}
                     </TableCell>
                     <TableCell className="text-foreground font-medium">
                       {exit.name}
                     </TableCell>
                     <TableCell className="text-foreground">
-                      {exit.exitTime}
+                      {formatTime12Hour(exit.exitTime)}
                     </TableCell>
                     <TableCell className="text-foreground font-medium">
                       {timeDiff}

@@ -9,6 +9,16 @@ import {
 import { Card } from "@/components/ui/card";
 import { ArrowDownToLine } from "lucide-react";
 
+const formatTime12Hour = (dateTimeString: string): string => {
+  const timePart = dateTimeString.split(" ")[1]; // Extract "HH:mm:ss"
+  if (!timePart) return dateTimeString;
+  const [hours, minutes, seconds] = timePart.split(":");
+  let h = parseInt(hours);
+  const ampm = h >= 12 ? "PM" : "AM";
+  h = h % 12 || 12;
+  return `${h}:${minutes}:${seconds} ${ampm}`;
+};
+
 export interface EntryRecord {
   id: string;
   militaryId: string;
@@ -60,15 +70,15 @@ export default function EntriesTable({ entries }: EntriesTableProps) {
               entries.map((entry) => (
                 <TableRow
                   key={entry.id}
-                  className="border-b border-border hover:bg-muted/50">
-                  <TableCell className="text-foreground text-center text-green-600 font-bold">
-                    ✓
+                  className="border-b border-border bg-blue-200 hover:bg-blue-300">
+                  <TableCell className="text-foreground font-medium text-sm">
+                    {entry.militaryId}
                   </TableCell>
                   <TableCell className="text-foreground font-medium">
                     {entry.name}
                   </TableCell>
                   <TableCell className="text-foreground">
-                    {entry.arrivalTime}
+                    {formatTime12Hour(entry.arrivalTime)}
                   </TableCell>
                   <TableCell className="text-foreground">
                     {entry.shift}
