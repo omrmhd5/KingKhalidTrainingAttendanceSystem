@@ -34,9 +34,9 @@ interface ShiftSelectorProps {
 const formatTime12Hour = (time: string): string => {
   const [hours, minutes] = time.split(":");
   let h = parseInt(hours);
-  const ampm = h >= 12 ? "PM" : "AM";
+  const period = h >= 12 ? "م" : "ص";
   h = h % 12 || 12;
-  return `${h}:${minutes} ${ampm}`;
+  return `${h}:${minutes} ${period}`;
 };
 
 export default function ShiftSelector({ onShiftSelect }: ShiftSelectorProps) {

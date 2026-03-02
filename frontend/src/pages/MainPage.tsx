@@ -156,12 +156,15 @@ export default function MainPage() {
       <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-2">
         {/* Entries Table */}
         <div>
-          <EntriesTable entries={filteredEntries} />
+          <EntriesTable
+            entries={filteredEntries}
+            selectedShift={selectedShift}
+          />
         </div>
 
         {/* Exits Table */}
         <div>
-          <ExitsTable exits={filteredExits} />
+          <ExitsTable exits={filteredExits} selectedShift={selectedShift} />
         </div>
       </div>
     </div>
