@@ -1,6 +1,5 @@
 import { useState, useCallback } from "react";
 import { format } from "date-fns";
-import { Input } from "@/components/ui/input";
 import ShiftSelector from "@/components/main/ShiftSelector";
 import BarcodeScanner from "@/components/main/BarcodeScanner";
 import EntriesTable, { type EntryRecord } from "@/components/main/EntriesTable";
@@ -23,7 +22,11 @@ interface Shift {
 const mockTrainees: Record<string, Trainee> = {
   BAR001: { id: "1", full_name: "أحمد محمد", rank: "جندي", group_id: "1" },
   BAR002: { id: "2", full_name: "فاطمة علي", rank: "عريف", group_id: "1" },
+  "11111": { id: "11111", full_name: "mohammed ali", rank: "جندي", group_id: "1" },
+  "22222": { id: "22222", full_name: "AHMED ALI", rank: "عريف", group_id: "1" },
+  "123": { id: "123", full_name: "Test Trainee", rank: "جندي", group_id: "1" },
 };
+
 
 const mockEntries: EntryRecord[] = [
   {
@@ -57,10 +60,92 @@ export default function MainPage() {
 
   // Filter entries and exits by selected date
   const filteredEntries = entries.filter((e) =>
-    e.arrivalTime.startsWith(selectedDate),
+    e.arrivalTime === "" || e.arrivalTime.startsWith(selectedDate),
   );
   const filteredExits = exits.filter((e) =>
-    e.exitTime.startsWith(selectedDate),
+    e.exitTime === "" || e.exitTime.startsWith(selectedDate),
+  );
+
+  const handleEntryMilitaryIdChange = useCallback(
+    (entryId: string, militaryId: string, shiftName: string) => {
+      const trainee = mockTrainees[militaryId.trim()];
+
+      setEntries((prev) =>
+        prev.map((entry) => {
+          if (entry.id !== entryId) return entry;
+
+          if (!trainee) {
+            // Clear the record if trainee not found
+            return {
+              ...entry,
+              militaryId: "",
+              civilId: "",
+              name: "",
+              arrivalTime: "",
+              shift: "",
+            };
+          }
+
+          // Populate with trainee data and current time
+          const now = new Date();
+          const timeString = format(now, "HH:mm:ss");
+
+          return {
+            ...entry,
+            militaryId: trainee.id,
+            civilId: "1234567890",
+            name: trainee.full_name,
+            arrivalTime: `${selectedDate} ${timeString}`,
+            shift: shiftName,
+          };
+        }),
+      );
+    },
+    [selectedDate],
+  );
+
+  const handleExitMilitaryIdChange = useCallback(
+    (exitId: string, militaryId: string) => {
+      const trainee = mockTrainees[militaryId.trim()];
+
+      setExits((prev) =>
+        prev.map((exit) => {
+          if (exit.id !== exitId) return exit;
+
+          if (!trainee) {
+            // Clear the record if trainee not found
+            return {
+              ...exit,
+              militaryId: "",
+              civilId: "",
+              name: "",
+              exitTime: "",
+              entryTime: "",
+            };
+          }
+
+          // Populate with trainee data and current time
+          const now = new Date();
+          const timeString = format(now, "HH:mm:ss");
+          // Find the last entry for this trainee
+          const lastEntry = entries.find(
+            (e) =>
+              e.militaryId === trainee.id &&
+              e.arrivalTime.startsWith(selectedDate),
+          );
+
+          return {
+            ...exit,
+            militaryId: trainee.id,
+            civilId: "1234567890",
+            name: trainee.full_name,
+            exitTime: `${selectedDate} ${timeString}`,
+            entryTime: lastEntry?.arrivalTime || `${selectedDate} 00:00:00`,
+          };
+        }),
+      );
+    },
+    [selectedDate, entries],
   );
 
   const handleScan = useCallback(
@@ -107,7 +192,7 @@ export default function MainPage() {
             exitTime: `${dateToUse} ${timeString}`,
             entryTime: lastEntry.arrivalTime,
           };
-          setExits((prev) => [exitRecord, ...prev]);
+          setExits((prev) => [...prev, exitRecord]);
         } else {
           // Add entry record
           const entryRecord: EntryRecord = {
@@ -118,7 +203,7 @@ export default function MainPage() {
             arrivalTime: `${dateToUse} ${timeString}`,
             shift: shiftLabel,
           };
-          setEntries((prev) => [entryRecord, ...prev]);
+          setEntries((prev) => [...prev, entryRecord]);
         }
       } finally {
         setScanning(false);
@@ -128,43 +213,37 @@ export default function MainPage() {
   );
 
   return (
-    <div className="flex min-h-[calc(100vh-3.5rem)] flex-col gap-6 bg-background p-8">
-      {/* Date and Shift Selector - Top Section */}
-      <div className="mx-auto w-full max-w-2xl grid grid-cols-2 gap-4">
-        {/* Shift Selector */}
+    <div className="flex min-h-[calc(100vh-3.5rem)] flex-col gap-3 bg-background p-4">
+      {/* Shift Selector - Top Section */}
+      <div className="mx-auto w-full max-w-2xl">
         <ShiftSelector onShiftSelect={setSelectedShift} />
-        {/* Date Selector */}
-        <div>
-          <label className="block text-sm font-semibold text-foreground mb-2">
-            التاريخ
-          </label>
-          <Input
-            type="date"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            className="w-full h-10 bg-background border-border text-foreground flex-row-reverse"
-          />
-        </div>
       </div>
 
-      {/* Scanner - Middle Section */}
+      {/* Barcode Scanner */}
       <div className="mx-auto w-full max-w-2xl">
         <BarcodeScanner onScan={handleScan} isScanning={scanning} />
       </div>
 
       {/* Tables container */}
-      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-2">
+      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-2 w-full">
         {/* Entries Table */}
         <div>
           <EntriesTable
             entries={filteredEntries}
             selectedShift={selectedShift}
+            selectedDate={selectedDate}
+            onDateChange={setSelectedDate}
+            onMilitaryIdChange={handleEntryMilitaryIdChange}
           />
         </div>
 
         {/* Exits Table */}
         <div>
-          <ExitsTable exits={filteredExits} selectedShift={selectedShift} />
+          <ExitsTable
+            exits={filteredExits}
+            selectedShift={selectedShift}
+            onMilitaryIdChange={handleExitMilitaryIdChange}
+          />
         </div>
       </div>
     </div>

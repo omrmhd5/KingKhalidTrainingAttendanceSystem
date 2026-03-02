@@ -21,7 +21,7 @@ export default function ReportsPage() {
     {
       id: "1",
       trainees: { full_name: "أحمد محمد", rank: "جندي", civil_id: "123456789" },
-      shifts: { name: "النوبة الأولى" },
+      shifts: { name: "الشفت الأولى" },
       check_in_at: new Date().toISOString(),
       check_out_at: new Date().toISOString(),
       late_minutes: 5,
@@ -75,7 +75,7 @@ export default function ReportsPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>المتدرب</TableHead>
-                    <TableHead>النوبة</TableHead>
+                    <TableHead>الشفت</TableHead>
                     <TableHead>الدخول</TableHead>
                     <TableHead>الخروج</TableHead>
                     <TableHead>متأخر (دقيقة)</TableHead>
@@ -151,7 +151,7 @@ export default function ReportsPage() {
                     <TableHead>المتدرب</TableHead>
                     <TableHead>رقم الهوية المدنية</TableHead>
                     <TableHead>الرتبة</TableHead>
-                    <TableHead>النوبة</TableHead>
+                    <TableHead>الشفت</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

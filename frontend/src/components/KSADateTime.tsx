@@ -27,7 +27,7 @@ export default function KSADateTime() {
       let hours = ksaTime.getHours();
       const minutes = String(ksaTime.getMinutes()).padStart(2, "0");
       const seconds = String(ksaTime.getSeconds()).padStart(2, "0");
-      const ampm = hours >= 12 ? "PM" : "AM";
+      const ampm = hours >= 12 ? "م" : "ص";
       hours = hours % 12;
       hours = hours ? hours : 12; // 0 hours should be 12
 

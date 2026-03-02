@@ -41,7 +41,7 @@ export default function DashboardLayout() {
               </Button>
             </div>
           </header>
-          <main className="flex-1 overflow-auto p-6">
+          <main className="flex-1 overflow-auto p-2">
             <Outlet />
           </main>
         </div>

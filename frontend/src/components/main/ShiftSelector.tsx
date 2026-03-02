@@ -119,7 +119,7 @@ export default function ShiftSelector({ onShiftSelect }: ShiftSelectorProps) {
   return (
     <div>
       <label className="block text-sm font-semibold text-foreground mb-2">
-        اختر النوبة
+        اختر الشفت
       </label>
       <Card
         className={`border p-3 transition-colors ${
@@ -143,7 +143,7 @@ export default function ShiftSelector({ onShiftSelect }: ShiftSelectorProps) {
                     ? "border-destructive focus:ring-destructive"
                     : "border-border"
               }`}>
-              <SelectValue placeholder={loading ? "جاري..." : "اختر النوبة"} />
+              <SelectValue placeholder={loading ? "جاري..." : "اختر الشفت"} />
             </SelectTrigger>
             <SelectContent dir="rtl">
               {shifts.map((shift) => (
@@ -164,7 +164,7 @@ export default function ShiftSelector({ onShiftSelect }: ShiftSelectorProps) {
               <span className="text-success font-medium text-xs">✓ نشطة</span>
             ) : (
               <span className="text-destructive font-medium text-xs">
-                ✗ خارج وقت النوبة
+                ✗ خارج وقت الشفت
               </span>
             )}
           </div>
