@@ -17,6 +17,37 @@ interface AttendanceStatsDisplayProps {
 
 const TOTAL_TRAINEES = 100;
 
+const getShiftColor = (
+  shift: string,
+): { bg: string; border: string; text: string } => {
+  switch (shift) {
+    case "A":
+      return {
+        bg: "bg-green-50",
+        border: "border-green-200",
+        text: "text-green-700",
+      };
+    case "B":
+      return {
+        bg: "bg-blue-50",
+        border: "border-blue-200",
+        text: "text-blue-700",
+      };
+    case "C":
+      return {
+        bg: "bg-yellow-50",
+        border: "border-yellow-200",
+        text: "text-yellow-700",
+      };
+    default:
+      return {
+        bg: "bg-gray-50",
+        border: "border-gray-200",
+        text: "text-gray-700",
+      };
+  }
+};
+
 export default function AttendanceStatsDisplay({
   entries,
 }: AttendanceStatsDisplayProps) {
@@ -64,16 +95,22 @@ export default function AttendanceStatsDisplay({
             <p className="text-xs font-medium text-muted-foreground">
               توزيع حسب النوبة
             </p>
-            {sortedShifts.map(([shift, count]) => (
-              <div
-                key={shift}
-                className="flex items-center justify-between p-2 bg-gray-50 rounded border border-gray-200">
-                <span className="text-sm text-foreground">{shift}</span>
-                <Badge className="bg-gray-400/20 text-gray-700">
-                  {count} / {TOTAL_TRAINEES}
-                </Badge>
-              </div>
-            ))}
+            {sortedShifts.map(([shift, count]) => {
+              const colors = getShiftColor(shift);
+              return (
+                <div
+                  key={shift}
+                  className={`flex items-center justify-between p-2 ${colors.bg} rounded border ${colors.border}`}>
+                  <span className={`text-sm font-medium ${colors.text}`}>
+                    {shift}
+                  </span>
+                  <Badge
+                    className={`${colors.bg} ${colors.text} border ${colors.border}`}>
+                    {count} / {TOTAL_TRAINEES}
+                  </Badge>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

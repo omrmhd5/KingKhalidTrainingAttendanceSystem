@@ -42,6 +42,19 @@ const formatShiftTime = (startTime: string, endTime: string): string => {
   return `${formatTime(startTime)} - ${formatTime(endTime)}`;
 };
 
+const getShiftCellColor = (shift: string): string => {
+  switch (shift) {
+    case "A":
+      return "bg-green-100 border-green-400";
+    case "B":
+      return "bg-blue-100 border-blue-400";
+    case "C":
+      return "bg-yellow-100 border-yellow-400";
+    default:
+      return "bg-gray-100 border-gray-400";
+  }
+};
+
 export interface ExitRecord {
   id: string;
   militaryId: string;
@@ -111,7 +124,7 @@ export default function ExitsTable({
                 الفارق الزمني
               </TableHead>
               <TableHead className="text-right text-white font-bold py-2 px-2 border-r-2 border-green-700 whitespace-nowrap">
-                ساعات الشفت
+                الشفت
               </TableHead>
             </TableRow>
           </TableHeader>
@@ -135,29 +148,31 @@ export default function ExitsTable({
                 );
                 const timeDiff = `${hours}h ${minutes}m`;
 
+                // Find corresponding entry to get shift info
+                const correspondingEntry = entries.find(
+                  (e) => e.militaryId === exit.militaryId,
+                );
+                const shiftForColor = correspondingEntry?.shift || "";
+
                 return (
                   <TableRow
                     key={exit.id}
-                    className="border-b-2 border-green-400 bg-green-100 hover:bg-green-150">
-                    <TableCell className="text-foreground font-medium text-sm py-2 px-2 border-r-2 border-green-400 bg-white whitespace-nowrap">
+                    className="border-b-2 border-gray-300 bg-white hover:bg-gray-50">
+                    <TableCell className="text-foreground font-medium text-sm py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">
                       {exit.militaryId}
                     </TableCell>
-                    <TableCell className="text-foreground font-medium py-2 px-2 border-r-2 border-green-400 whitespace-nowrap">
+                    <TableCell className="text-foreground font-medium py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">
                       {exit.name}
                     </TableCell>
-                    <TableCell className="text-foreground py-2 px-2 border-r-2 border-green-400 whitespace-nowrap">
+                    <TableCell className="text-foreground py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">
                       {exit.exitTime ? formatTime12Hour(exit.exitTime) : ""}
                     </TableCell>
-                    <TableCell className="text-foreground font-medium py-2 px-2 border-r-2 border-green-400 whitespace-nowrap">
+                    <TableCell className="text-foreground font-medium py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">
                       {exit.exitTime && exit.entryTime ? timeDiff : ""}
                     </TableCell>
-                    <TableCell className="text-foreground font-medium py-2 px-2 border-r-2 border-green-400 whitespace-nowrap">
-                      {selectedShift
-                        ? formatShiftTime(
-                            selectedShift.start_time,
-                            selectedShift.end_time,
-                          )
-                        : ""}
+                    <TableCell
+                      className={`text-foreground font-medium py-2 px-2 border-2 whitespace-nowrap ${getShiftCellColor(shiftForColor)}`}>
+                      {shiftForColor || "N/A"}
                     </TableCell>
                   </TableRow>
                 );

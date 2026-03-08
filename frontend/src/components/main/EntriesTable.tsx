@@ -66,6 +66,19 @@ const formatTime12HourShort = (time: string): string => {
   return `${h}:${minutes} ${period}`;
 };
 
+const getShiftCellColor = (shift: string): string => {
+  switch (shift) {
+    case "A":
+      return "bg-green-100 border-green-400";
+    case "B":
+      return "bg-blue-100 border-blue-400";
+    case "C":
+      return "bg-yellow-100 border-yellow-400";
+    default:
+      return "bg-gray-100 border-gray-400";
+  }
+};
+
 export interface EntryRecord {
   id: string;
   militaryId: string;
@@ -216,19 +229,19 @@ export default function EntriesTable({
               entries.map((entry) => (
                 <TableRow
                   key={entry.id}
-                  className="border-b-2 border-blue-400 bg-blue-100 hover:bg-blue-150">
-                  <TableCell className="text-foreground font-medium text-sm py-2 px-2 border-r-2 border-blue-400 bg-white whitespace-nowrap">
+                  className="border-b-2 border-gray-300 bg-white hover:bg-gray-50">
+                  <TableCell className="text-foreground font-medium text-sm py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">
                     {entry.militaryId}
                   </TableCell>
-                  <TableCell className="text-foreground font-medium py-2 px-2 border-r-2 border-blue-400 whitespace-nowrap">
+                  <TableCell className="text-foreground font-medium py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">
                     {entry.name}
                   </TableCell>
-                  <TableCell className="text-foreground py-2 px-2 border-r-2 border-blue-400 whitespace-nowrap">
+                  <TableCell className="text-foreground py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">
                     {entry.arrivalTime
                       ? formatTime12Hour(entry.arrivalTime)
                       : ""}
                   </TableCell>
-                  <TableCell className="text-foreground py-2 px-2 border-r-2 border-blue-400 whitespace-nowrap">
+                  <TableCell className="text-foreground py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">
                     {entry.arrivalTime && selectedShift ? (
                       isOnTime(entry.arrivalTime, selectedShift.start_time) ? (
                         <Badge className="bg-green-100 text-green-700 border-green-300">
@@ -243,10 +256,11 @@ export default function EntriesTable({
                       ""
                     )}
                   </TableCell>
-                  <TableCell className="text-foreground py-2 px-2 border-r-2 border-blue-400 whitespace-nowrap">
+                  <TableCell
+                    className={`text-foreground font-medium py-2 px-2 border-2 whitespace-nowrap ${getShiftCellColor(entry.shift)}`}>
                     {entry.shift ? entry.shift : ""}
                   </TableCell>
-                  <TableCell className="text-foreground font-medium py-2 px-2 border-r-2 border-blue-400 whitespace-nowrap">
+                  <TableCell className="text-foreground font-medium py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">
                     {selectedShift && entry.shift === selectedShift.name
                       ? formatShiftTime(
                           selectedShift.start_time,

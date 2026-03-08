@@ -41,16 +41,48 @@ const mockEntries: EntryRecord[] = [
     arrivalTime: `${format(new Date(), "yyyy-MM-dd")} 08:15:30`,
     shift: "A",
   },
+  {
+    id: "entry_2",
+    militaryId: "11111",
+    civilId: "1111111111",
+    name: "mohammed ali",
+    arrivalTime: `${format(new Date(), "yyyy-MM-dd")} 09:30:15`,
+    shift: "B",
+  },
+  {
+    id: "entry_3",
+    militaryId: "22222",
+    civilId: "2222222222",
+    name: "AHMED ALI",
+    arrivalTime: `${format(new Date(), "yyyy-MM-dd")} 10:45:00`,
+    shift: "C",
+  },
 ];
 
 const mockExits: ExitRecord[] = [
   {
     id: "exit_1",
-    militaryId: "2",
-    civilId: "9876543210",
-    name: "فاطمة علي",
-    exitTime: `${format(new Date(), "yyyy-MM-dd")} 14:30:45`,
-    entryTime: `${format(new Date(), "yyyy-MM-dd")} 06:05:15`,
+    militaryId: "1",
+    civilId: "1234567890",
+    name: "أحمد محمد",
+    exitTime: `${format(new Date(), "yyyy-MM-dd")} 17:30:45`,
+    entryTime: `${format(new Date(), "yyyy-MM-dd")} 08:15:30`,
+  },
+  {
+    id: "exit_2",
+    militaryId: "11111",
+    civilId: "1111111111",
+    name: "mohammed ali",
+    exitTime: `${format(new Date(), "yyyy-MM-dd")} 18:45:00`,
+    entryTime: `${format(new Date(), "yyyy-MM-dd")} 09:30:15`,
+  },
+  {
+    id: "exit_3",
+    militaryId: "22222",
+    civilId: "2222222222",
+    name: "AHMED ALI",
+    exitTime: `${format(new Date(), "yyyy-MM-dd")} 19:15:20`,
+    entryTime: `${format(new Date(), "yyyy-MM-dd")} 10:45:00`,
   },
 ];
 
