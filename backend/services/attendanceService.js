@@ -7,7 +7,7 @@ class AttendanceService {
     if (!militaryId || !shiftId || !date) {
       throw {
         code: "MISSING_FIELDS",
-        message: "militaryId, shiftId, and date are required",
+        message: "الرقم العسكري والشفت والتاريخ مطلوبة",
       };
     }
 
@@ -18,7 +18,7 @@ class AttendanceService {
     if (!trainee) {
       throw {
         code: "TRAINEE_NOT_FOUND",
-        message: `Trainee with military ID ${militaryId} not found`,
+        message: `لم يتم العثور على متدرب برقم عسكري ${militaryId}`,
       };
     }
 
@@ -27,7 +27,7 @@ class AttendanceService {
     if (!shift) {
       throw {
         code: "SHIFT_NOT_FOUND",
-        message: "Shift not found",
+        message: "لم يتم العثور على الشفت",
       };
     }
 
@@ -50,7 +50,7 @@ class AttendanceService {
     if (existingEntry) {
       throw {
         code: "DUPLICATE_ENTRY",
-        message: "Attendance already marked for this trainee today",
+        message: "تم تسجيل الدخول لهذا المتدرب اليوم",
       };
     }
 
@@ -90,7 +90,7 @@ class AttendanceService {
     if (!militaryId || !date) {
       throw {
         code: "MISSING_FIELDS",
-        message: "militaryId and date are required",
+        message: "الرقم العسكري والتاريخ مطلوبة",
       };
     }
 
@@ -101,7 +101,7 @@ class AttendanceService {
     if (!trainee) {
       throw {
         code: "TRAINEE_NOT_FOUND",
-        message: `Trainee with military ID ${militaryId} not found`,
+        message: `لم يتم العثور على متدرب برقم عسكري ${militaryId}`,
       };
     }
 
@@ -125,7 +125,7 @@ class AttendanceService {
       throw {
         code: "NO_ENTRY",
         message:
-          "No entry record found for this trainee today. Cannot mark exit without entry.",
+          "لم يتم العثور على سجل دخول لهذا المتدرب اليوم. لا يمكن تسجيل الخروج بدون دخول",
       };
     }
 
@@ -133,7 +133,7 @@ class AttendanceService {
     if (attendance.exit_time) {
       throw {
         code: "DUPLICATE_EXIT",
-        message: "Exit already recorded for this trainee today",
+        message: "تم تسجيل الخروج لهذا المتدرب اليوم",
       };
     }
 
@@ -161,7 +161,7 @@ class AttendanceService {
     if (!date) {
       throw {
         code: "MISSING_FIELDS",
-        message: "date is required",
+        message: "التاريخ مطلوب",
       };
     }
 
@@ -198,7 +198,7 @@ class AttendanceService {
     if (!date) {
       throw {
         code: "MISSING_FIELDS",
-        message: "date is required",
+        message: "التاريخ مطلوب",
       };
     }
 

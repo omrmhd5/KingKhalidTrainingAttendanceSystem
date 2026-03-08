@@ -102,11 +102,6 @@ interface EntriesTableProps {
   selectedDate: string;
   onDateChange: (date: string) => void;
   onShiftChange: (shift: Shift | null) => void;
-  onMilitaryIdChange?: (
-    entryId: string,
-    militaryId: string,
-    shiftName: string,
-  ) => void;
 }
 
 export default function EntriesTable({
@@ -115,7 +110,6 @@ export default function EntriesTable({
   selectedDate,
   onDateChange,
   onShiftChange,
-  onMilitaryIdChange,
 }: EntriesTableProps) {
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [loadingShifts, setLoadingShifts] = useState(true);
@@ -150,8 +144,6 @@ export default function EntriesTable({
   const shiftEntries = selectedShift
     ? entriesWithData.filter((e) => e.shift === selectedShift.name)
     : entriesWithData;
-
-  const totalTrainees = 100; // Total enrolled trainees
 
   return (
     <Card className="border border-border shadow-md">
@@ -189,7 +181,7 @@ export default function EntriesTable({
           </Select>
         </div>
         <Badge className="bg-success/20 text-success border-success text-sm font-semibold px-4 py-2 text-base">
-          {shiftEntries.length} من {totalTrainees}
+          {shiftEntries.length} دخول
         </Badge>
       </div>
       <div className="w-full">

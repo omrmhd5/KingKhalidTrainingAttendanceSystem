@@ -68,7 +68,6 @@ interface ExitsTableProps {
   exits: ExitRecord[];
   entries: EntryRecord[];
   selectedShift: Shift | null;
-  onMilitaryIdChange?: (exitId: string, militaryId: string) => void;
 }
 
 export interface EntryRecord {
@@ -84,7 +83,6 @@ export default function ExitsTable({
   exits,
   entries,
   selectedShift,
-  onMilitaryIdChange,
 }: ExitsTableProps) {
   // Count exits with actual data (non-empty militaryId)
   const exitsWithData = exits.filter((e) => e.militaryId.trim() !== "");
@@ -94,7 +92,6 @@ export default function ExitsTable({
   const attendedCount = new Set(
     entries.filter((e) => e.militaryId.trim() !== "").map((e) => e.militaryId),
   ).size;
-  const totalTrainees = attendedCount || 1; // Use attended count or 1 to avoid division issues
 
   return (
     <Card className="border border-border shadow-md">
@@ -104,7 +101,7 @@ export default function ExitsTable({
           <h3 className="text-lg font-semibold text-foreground">سجل الخروج</h3>
         </div>
         <Badge className="bg-warning/20 text-warning border-warning text-sm font-semibold px-4 py-2 text-base">
-          {filteredExits.length} غادر من {totalTrainees}
+          {filteredExits.length} خروج
         </Badge>
       </div>
       <div className="w-full">

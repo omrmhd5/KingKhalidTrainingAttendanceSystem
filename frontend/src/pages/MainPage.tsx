@@ -1,16 +1,12 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { format } from "date-fns";
 import BarcodeScanner from "@/components/main/BarcodeScanner";
 import EntriesTable, { type EntryRecord } from "@/components/main/EntriesTable";
 import ExitsTable, { type ExitRecord } from "@/components/main/ExitsTable";
 import AttendanceStatsDisplay from "@/components/main/AttendanceStatsDisplay";
+import { attendanceApi, type AttendanceRecord } from "@/lib/attendanceApi";
+import { shiftApi } from "@/lib/shiftApi";
 
-interface Trainee {
-  id: string;
-  full_name: string;
-  rank: string;
-  group_id: string;
-}
 interface Shift {
   id: string;
   name: string;
@@ -19,240 +15,178 @@ interface Shift {
   grace_minutes: number;
 }
 
-const mockTrainees: Record<string, Trainee> = {
-  BAR001: { id: "1", full_name: "أحمد محمد", rank: "جندي", group_id: "1" },
-  BAR002: { id: "2", full_name: "فاطمة علي", rank: "عريف", group_id: "1" },
-  "11111": {
-    id: "11111",
-    full_name: "mohammed ali",
-    rank: "جندي",
-    group_id: "1",
-  },
-  "22222": { id: "22222", full_name: "AHMED ALI", rank: "عريف", group_id: "1" },
-  "123": { id: "123", full_name: "Test Trainee", rank: "جندي", group_id: "1" },
-};
-
-const mockEntries: EntryRecord[] = [
-  {
-    id: "entry_1",
-    militaryId: "1",
-    civilId: "1234567890",
-    name: "أحمد محمد",
-    arrivalTime: `${format(new Date(), "yyyy-MM-dd")} 08:15:30`,
-    shift: "A",
-  },
-  {
-    id: "entry_2",
-    militaryId: "11111",
-    civilId: "1111111111",
-    name: "mohammed ali",
-    arrivalTime: `${format(new Date(), "yyyy-MM-dd")} 09:30:15`,
-    shift: "B",
-  },
-  {
-    id: "entry_3",
-    militaryId: "22222",
-    civilId: "2222222222",
-    name: "AHMED ALI",
-    arrivalTime: `${format(new Date(), "yyyy-MM-dd")} 10:45:00`,
-    shift: "C",
-  },
-];
-
-const mockExits: ExitRecord[] = [
-  {
-    id: "exit_1",
-    militaryId: "1",
-    civilId: "1234567890",
-    name: "أحمد محمد",
-    exitTime: `${format(new Date(), "yyyy-MM-dd")} 17:30:45`,
-    entryTime: `${format(new Date(), "yyyy-MM-dd")} 08:15:30`,
-  },
-  {
-    id: "exit_2",
-    militaryId: "11111",
-    civilId: "1111111111",
-    name: "mohammed ali",
-    exitTime: `${format(new Date(), "yyyy-MM-dd")} 18:45:00`,
-    entryTime: `${format(new Date(), "yyyy-MM-dd")} 09:30:15`,
-  },
-  {
-    id: "exit_3",
-    militaryId: "22222",
-    civilId: "2222222222",
-    name: "AHMED ALI",
-    exitTime: `${format(new Date(), "yyyy-MM-dd")} 19:15:20`,
-    entryTime: `${format(new Date(), "yyyy-MM-dd")} 10:45:00`,
-  },
-];
+interface ShiftAPIResponse {
+  _id: string;
+  name: string;
+  start_time: string;
+  end_time: string;
+  grace_minutes: number;
+}
 
 export default function MainPage() {
   const today = format(new Date(), "yyyy-MM-dd");
   const [selectedDate, setSelectedDate] = useState<string>(today);
-  const [entries, setEntries] = useState<EntryRecord[]>(mockEntries);
-  const [exits, setExits] = useState<ExitRecord[]>(mockExits);
+  const [entries, setEntries] = useState<EntryRecord[]>([]);
+  const [exits, setExits] = useState<ExitRecord[]>([]);
   const [scanning, setScanning] = useState(false);
   const [selectedShift, setSelectedShift] = useState<Shift | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  // Filter entries and exits by selected date
-  const filteredEntries = entries.filter(
-    (e) => e.arrivalTime === "" || e.arrivalTime.startsWith(selectedDate),
-  );
-  const filteredExits = exits.filter(
-    (e) => e.exitTime === "" || e.exitTime.startsWith(selectedDate),
-  );
+  // Load shifts on mount and auto-select first one
+  useEffect(() => {
+    const loadShifts = async () => {
+      try {
+        const data = await shiftApi.getAllShifts();
+        if (data && data.length > 0) {
+          const firstShift = data[0] as ShiftAPIResponse;
+          setSelectedShift({
+            id: firstShift._id,
+            name: firstShift.name,
+            start_time: firstShift.start_time,
+            end_time: firstShift.end_time,
+            grace_minutes: firstShift.grace_minutes,
+          });
+        }
+      } catch (error) {
+        console.error("Failed to load shifts:", error);
+      }
+    };
+    loadShifts();
+  }, []);
 
-  const handleEntryMilitaryIdChange = useCallback(
-    (entryId: string, militaryId: string, shiftName: string) => {
-      const trainee = mockTrainees[militaryId.trim()];
+  // Fetch attendance records when date or shift changes
+  useEffect(() => {
+    const fetchAttendance = async () => {
+      try {
+        setLoading(true);
+        const response = await attendanceApi.getAttendanceByDate(
+          selectedDate,
+          selectedShift?.id,
+        );
 
-      setEntries((prev) =>
-        prev.map((entry) => {
-          if (entry.id !== entryId) return entry;
+        // Transform API data to component format
+        const transformedEntries: EntryRecord[] = response.records
+          .filter((r: AttendanceRecord) => r.entry_time)
+          .map((r: AttendanceRecord) => ({
+            id: r._id,
+            militaryId: r.military_id,
+            civilId: "",
+            name:
+              typeof r.trainee_id === "object"
+                ? r.trainee_id?.full_name || ""
+                : "",
+            arrivalTime: r.entry_time || "",
+            shift: typeof r.shift_id === "object" ? r.shift_id?.name || "" : "",
+          }));
 
-          if (!trainee) {
-            // Clear the record if trainee not found
-            return {
-              ...entry,
-              militaryId: "",
-              civilId: "",
-              name: "",
-              arrivalTime: "",
-              shift: "",
-            };
-          }
+        const transformedExits: ExitRecord[] = response.records
+          .filter((r: AttendanceRecord) => r.exit_time)
+          .map((r: AttendanceRecord) => ({
+            id: r._id,
+            militaryId: r.military_id,
+            civilId: "",
+            name:
+              typeof r.trainee_id === "object"
+                ? r.trainee_id?.full_name || ""
+                : "",
+            exitTime: r.exit_time || "",
+            entryTime: r.entry_time || "",
+          }));
 
-          // Populate with trainee data and current time
-          const now = new Date();
-          const timeString = format(now, "HH:mm:ss");
+        setEntries(transformedEntries);
+        setExits(transformedExits);
+      } catch (error) {
+        console.error("Failed to fetch attendance:", error);
+        setEntries([]);
+        setExits([]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-          return {
-            ...entry,
-            militaryId: trainee.id,
-            civilId: "1234567890",
-            name: trainee.full_name,
-            arrivalTime: `${selectedDate} ${timeString}`,
-            shift: shiftName,
-          };
-        }),
-      );
-    },
-    [selectedDate],
-  );
-
-  const handleExitMilitaryIdChange = useCallback(
-    (exitId: string, militaryId: string) => {
-      const trainee = mockTrainees[militaryId.trim()];
-
-      setExits((prev) =>
-        prev.map((exit) => {
-          if (exit.id !== exitId) return exit;
-
-          if (!trainee) {
-            // Clear the record if trainee not found
-            return {
-              ...exit,
-              militaryId: "",
-              civilId: "",
-              name: "",
-              exitTime: "",
-              entryTime: "",
-            };
-          }
-
-          // Populate with trainee data and current time
-          const now = new Date();
-          const timeString = format(now, "HH:mm:ss");
-          // Find the last entry for this trainee
-          const lastEntry = entries.find(
-            (e) =>
-              e.militaryId === trainee.id &&
-              e.arrivalTime.startsWith(selectedDate),
-          );
-
-          return {
-            ...exit,
-            militaryId: trainee.id,
-            civilId: "1234567890",
-            name: trainee.full_name,
-            exitTime: `${selectedDate} ${timeString}`,
-            entryTime: lastEntry?.arrivalTime || `${selectedDate} 00:00:00`,
-          };
-        }),
-      );
-    },
-    [selectedDate, entries],
-  );
+    if (selectedShift) {
+      fetchAttendance();
+    }
+  }, [selectedDate, selectedShift]);
 
   const handleScan = useCallback(
     async (barcode: string) => {
-      if (scanning) return;
+      if (scanning || !selectedShift) return;
       setScanning(true);
 
       try {
-        // Mock: Find trainee by barcode
-        const trainee = mockTrainees[barcode.trim()];
-
-        if (!trainee) {
-          throw new Error("لم يتم العثور على المتدرب");
+        // Try to record entry
+        try {
+          await attendanceApi.recordEntry(
+            barcode.trim(),
+            selectedShift.id,
+            selectedDate,
+          );
+          // Refresh the attendance data
+          const response = await attendanceApi.getAttendanceByDate(
+            selectedDate,
+            selectedShift.id,
+          );
+          const transformedEntries: EntryRecord[] = response.records
+            .filter((r: AttendanceRecord) => r.entry_time)
+            .map((r: AttendanceRecord) => ({
+              id: r._id,
+              militaryId: r.military_id,
+              civilId: "",
+              name:
+                typeof r.trainee_id === "object"
+                  ? r.trainee_id?.full_name || ""
+                  : "",
+              arrivalTime: r.entry_time || "",
+              shift:
+                typeof r.shift_id === "object" ? r.shift_id?.name || "" : "",
+            }));
+          setEntries(transformedEntries);
+        } catch (entryError: any) {
+          // If entry already exists, try exit
+          if (entryError.response?.data?.error === "DUPLICATE_ENTRY") {
+            try {
+              await attendanceApi.recordExit(barcode.trim(), selectedDate);
+              // Refresh the attendance data
+              const response = await attendanceApi.getAttendanceByDate(
+                selectedDate,
+                selectedShift.id,
+              );
+              const transformedExits: ExitRecord[] = response.records
+                .filter((r: AttendanceRecord) => r.exit_time)
+                .map((r: AttendanceRecord) => ({
+                  id: r._id,
+                  militaryId: r.military_id,
+                  civilId: "",
+                  name:
+                    typeof r.trainee_id === "object"
+                      ? r.trainee_id?.full_name || ""
+                      : "",
+                  exitTime: r.exit_time || "",
+                  entryTime: r.entry_time || "",
+                }));
+              setExits(transformedExits);
+            } catch (exitError: any) {
+              throw exitError; // Re-throw exit errors
+            }
+          } else {
+            throw entryError;
+          }
         }
-
-        if (!selectedShift) {
-          throw new Error("لا توجد نوبة محددة");
-        }
-
-        const dateToUse = selectedDate;
-        const now = new Date();
-        const timeString = format(now, "HH:mm:ss");
-        const shiftLabel = selectedShift.name;
-
-        // Determine if this is an entry or exit based on existing records
-        const todayEntries = entries.filter(
-          (e) =>
-            e.militaryId === trainee.id && e.arrivalTime.startsWith(dateToUse),
-        );
-        const todayExits = exits.filter(
-          (e) =>
-            e.militaryId === trainee.id && e.exitTime.startsWith(dateToUse),
-        );
-
-        // Simple logic: if entries > exits, scan as exit, otherwise as entry
-        if (todayEntries.length > todayExits.length) {
-          // Add exit record - find the last entry for this trainee to get entry time
-          const lastEntry = todayEntries[todayEntries.length - 1];
-          const exitRecord: ExitRecord = {
-            id: `exit_${Date.now()}`,
-            militaryId: trainee.id,
-            civilId: "1234567890",
-            name: trainee.full_name,
-            exitTime: `${dateToUse} ${timeString}`,
-            entryTime: lastEntry.arrivalTime,
-          };
-          setExits((prev) => [...prev, exitRecord]);
-        } else {
-          // Add entry record
-          const entryRecord: EntryRecord = {
-            id: `entry_${Date.now()}`,
-            militaryId: trainee.id,
-            civilId: "1234567890",
-            name: trainee.full_name,
-            arrivalTime: `${dateToUse} ${timeString}`,
-            shift: shiftLabel,
-          };
-          setEntries((prev) => [...prev, entryRecord]);
-        }
+      } catch (err: any) {
+        throw err; // Re-throw so BarcodeScanner catches it
       } finally {
         setScanning(false);
       }
     },
-    [entries, exits, scanning, selectedShift, selectedDate],
+    [selectedShift, selectedDate, scanning],
   );
 
   return (
     <div className="flex min-h-[calc(100vh-3.5rem)] flex-col gap-3 bg-background p-4">
       {/* Attendance Stats - Full Width */}
       <div className="mx-auto w-full max-w-4xl">
-        <AttendanceStatsDisplay entries={filteredEntries} />
+        <AttendanceStatsDisplay entries={entries} />
       </div>
 
       {/* Barcode Scanner */}
@@ -265,22 +199,20 @@ export default function MainPage() {
         {/* Entries Table */}
         <div>
           <EntriesTable
-            entries={filteredEntries}
+            entries={entries}
             selectedShift={selectedShift}
             selectedDate={selectedDate}
             onDateChange={setSelectedDate}
             onShiftChange={setSelectedShift}
-            onMilitaryIdChange={handleEntryMilitaryIdChange}
           />
         </div>
 
         {/* Exits Table */}
         <div>
           <ExitsTable
-            exits={filteredExits}
-            entries={filteredEntries}
+            exits={exits}
+            entries={entries}
             selectedShift={selectedShift}
-            onMilitaryIdChange={handleExitMilitaryIdChange}
           />
         </div>
       </div>

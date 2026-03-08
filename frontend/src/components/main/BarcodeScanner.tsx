@@ -1,14 +1,9 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  ScanBarcode,
-  CheckCircle2,
-  XCircle,
-  ArrowDownToLine,
-  ArrowUpFromLine,
-} from "lucide-react";
+import { ScanBarcode, ArrowDownToLine, ArrowUpFromLine } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 type ScanMode = "IN" | "OUT";
 
@@ -17,53 +12,57 @@ interface BarcodeScannerProps {
   isScanning: boolean;
 }
 
-interface ScanResult {
-  name: string;
-  rank?: string;
-  status: "success" | "error";
-  message: string;
-}
-
 export default function BarcodeScanner({
   onScan,
   isScanning,
 }: BarcodeScannerProps) {
   const [mode, setMode] = useState<ScanMode>("IN");
   const [barcode, setBarcode] = useState("");
-  const [result, setResult] = useState<ScanResult | null>(null);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     inputRef.current?.focus();
-  }, [result]);
-
-  const clearResult = useCallback(() => {
-    setTimeout(() => setResult(null), 4000);
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!barcode.trim() || isScanning) return;
 
+    // Clear previous messages
+    setError("");
+    setSuccess("");
+
     try {
-      // Call parent's scan handler
       await onScan(barcode.trim());
-      setResult({
-        name: "تم المعالجة",
-        status: "success",
-        message: "تم تسجيل المسح بنجاح",
+
+      // Show success message
+      const successMsg =
+        mode === "IN" ? "تم تسجيل الدخول بنجاح" : "تم تسجيل الخروج بنجاح";
+      setSuccess(successMsg);
+      toast({
+        title: "نجح",
+        description: successMsg,
+        variant: "default",
       });
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "فشل المسح";
-      setResult({
-        name: "",
-        status: "error",
-        message: errorMessage,
+    } catch (err: any) {
+      // Extract error message
+      const errorMessage =
+        err.response?.data?.message || err.message || "حدث خطأ ما";
+
+      setError(errorMessage);
+      toast({
+        title: "خطأ",
+        description: errorMessage,
+        variant: "destructive",
       });
+      console.error("Scan error:", err);
     }
 
-    clearResult();
     setBarcode("");
+    inputRef.current?.focus();
   };
 
   return (
@@ -111,6 +110,21 @@ export default function BarcodeScanner({
               autoComplete="off"
               disabled={isScanning}
             />
+
+            {/* Error Message */}
+            {error && (
+              <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded p-2 text-center">
+                {error}
+              </div>
+            )}
+
+            {/* Success Message */}
+            {success && (
+              <div className="text-sm text-green-600 bg-green-50 border border-green-200 rounded p-2 text-center">
+                {success}
+              </div>
+            )}
+
             <Button
               type="submit"
               disabled={isScanning || !barcode.trim()}
@@ -120,30 +134,6 @@ export default function BarcodeScanner({
           </form>
         </CardContent>
       </Card>
-      {result && (
-        <div
-          className={`mt-2 rounded-lg border p-2 text-center text-xs ${
-            result.status === "success"
-              ? "border-success bg-success/10"
-              : "border-destructive bg-destructive/10"
-          }`}>
-          <div className="flex items-center justify-center gap-1">
-            {result.status === "success" ? (
-              <CheckCircle2 className="h-4 w-4 text-success" />
-            ) : (
-              <XCircle className="h-4 w-4 text-destructive" />
-            )}
-            <span
-              className={
-                result.status === "success"
-                  ? "text-success font-medium"
-                  : "text-destructive font-medium"
-              }>
-              {result.message}
-            </span>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
