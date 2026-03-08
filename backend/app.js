@@ -20,12 +20,15 @@ const specializationRoutes = require("./routes/specializations");
 const traineeRoutes = require("./routes/trainees");
 const violationRoutes = require("./routes/violations");
 const disciplinaryRoutes = require("./routes/disciplinary");
+const attendanceRoutes = require("./routes/attendance");
+
 app.use("/api/shifts", shiftRoutes);
 app.use("/api/ranks", rankRoutes);
 app.use("/api/specializations", specializationRoutes);
 app.use("/api/trainees", traineeRoutes);
 app.use("/api/violations", violationRoutes);
 app.use("/api/disciplinary", disciplinaryRoutes);
+app.use("/api/attendance", attendanceRoutes);
 
 // Health check
 app.get("/api/health", (req, res) => {
