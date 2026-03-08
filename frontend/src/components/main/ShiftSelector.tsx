@@ -42,9 +42,7 @@ const formatTime12Hour = (time: string): string => {
 export default function ShiftSelector({ onShiftSelect }: ShiftSelectorProps) {
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [selectedShift, setSelectedShift] = useState<Shift | null>(null);
-  const [isInShiftTime, setIsInShiftTime] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [currentTime, setCurrentTime] = useState("");
 
   // Fetch shifts on mount
   useEffect(() => {
@@ -68,50 +66,9 @@ export default function ShiftSelector({ onShiftSelect }: ShiftSelectorProps) {
     fetchShifts();
   }, []);
 
-  // Update current KSA time every second
-  useEffect(() => {
-    const updateTime = () => {
-      const now = new Date();
-      const timeStr = now.toLocaleTimeString("en-US", {
-        timeZone: "Asia/Riyadh",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      });
-      setCurrentTime(timeStr);
-    };
-
-    updateTime();
-    const interval = setInterval(updateTime, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Check if current KSA time is within shift
-  useEffect(() => {
-    if (!selectedShift || !currentTime) {
-      setIsInShiftTime(false);
-      return;
-    }
-
-    // Handle shifts that cross midnight (e.g., 21:00 to 03:00)
-    let isInTime = false;
-    if (selectedShift.start_time <= selectedShift.end_time) {
-      // Normal shift (doesn't cross midnight)
-      isInTime =
-        currentTime >= selectedShift.start_time &&
-        currentTime <= selectedShift.end_time;
-    } else {
-      // Overnight shift (crosses midnight)
-      isInTime =
-        currentTime >= selectedShift.start_time ||
-        currentTime <= selectedShift.end_time;
-    }
-
-    setIsInShiftTime(isInTime);
-  }, [selectedShift, currentTime]);
-
   const handleShiftChange = (shiftId: string) => {
-    const shift = shifts.find((s) => s.id === shiftId) || null;
+    const shift =
+      shiftId === "all" ? null : shifts.find((s) => s.id === shiftId) || null;
     setSelectedShift(shift);
     onShiftSelect(shift);
   };
@@ -119,33 +76,21 @@ export default function ShiftSelector({ onShiftSelect }: ShiftSelectorProps) {
   return (
     <div>
       <label className="block text-sm font-semibold text-foreground mb-2">
-        اختر الشفت
+        فلتر النوبة
       </label>
-      <Card
-        className={`border p-3 transition-colors ${
-          isInShiftTime
-            ? "border-success bg-success/5"
-            : selectedShift
-              ? "border-destructive bg-destructive/5"
-              : "border-border bg-card"
-        }`}>
+      <Card className="border border-border bg-card p-3 transition-colors">
         <div className="flex items-center gap-3">
           <Clock className="h-4 w-4 text-primary flex-shrink-0" />
           <Select
-            value={selectedShift?.id || ""}
+            value={selectedShift?.id || "all"}
             onValueChange={handleShiftChange}>
-            <SelectTrigger
-              dir="rtl"
-              className={`flex-1 text-sm ${
-                isInShiftTime
-                  ? "border-success focus:ring-success"
-                  : selectedShift
-                    ? "border-destructive focus:ring-destructive"
-                    : "border-border"
-              }`}>
+            <SelectTrigger dir="rtl" className="flex-1 text-sm border-border">
               <SelectValue placeholder={loading ? "جاري..." : "اختر الشفت"} />
             </SelectTrigger>
             <SelectContent dir="rtl">
+              <SelectItem value="all" className="text-sm">
+                الكل
+              </SelectItem>
               {shifts.map((shift) => (
                 <SelectItem key={shift.id} value={shift.id} className="text-sm">
                   {shift.name} ({formatTime12Hour(shift.start_time)} -{" "}
@@ -155,20 +100,6 @@ export default function ShiftSelector({ onShiftSelect }: ShiftSelectorProps) {
             </SelectContent>
           </Select>
         </div>
-        {selectedShift && (
-          <div className="mt-2 text-xs flex items-center gap-2 px-1">
-            <span className="text-foreground font-medium">
-              الوقت: {formatTime12Hour(currentTime)}
-            </span>
-            {isInShiftTime ? (
-              <span className="text-success font-medium text-xs">✓ نشطة</span>
-            ) : (
-              <span className="text-destructive font-medium text-xs">
-                ✗ خارج وقت الشفت
-              </span>
-            )}
-          </div>
-        )}
       </Card>
     </div>
   );

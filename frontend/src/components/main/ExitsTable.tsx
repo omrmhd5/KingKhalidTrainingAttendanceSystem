@@ -53,22 +53,35 @@ export interface ExitRecord {
 
 interface ExitsTableProps {
   exits: ExitRecord[];
+  entries: EntryRecord[];
   selectedShift: Shift | null;
   onMilitaryIdChange?: (exitId: string, militaryId: string) => void;
 }
 
+export interface EntryRecord {
+  id: string;
+  militaryId: string;
+  civilId: string;
+  name: string;
+  arrivalTime: string;
+  shift: string;
+}
+
 export default function ExitsTable({
   exits,
+  entries,
   selectedShift,
   onMilitaryIdChange,
 }: ExitsTableProps) {
   // Count exits with actual data (non-empty militaryId)
   const exitsWithData = exits.filter((e) => e.militaryId.trim() !== "");
-  const filteredExits = selectedShift
-    ? exitsWithData.filter((e) => {
-        return true;
-      })
-    : exitsWithData;
+  const filteredExits = exitsWithData;
+
+  // Count attended trainees (unique entries with militaryId)
+  const attendedCount = new Set(
+    entries.filter((e) => e.militaryId.trim() !== "").map((e) => e.militaryId),
+  ).size;
+  const totalTrainees = attendedCount || 1; // Use attended count or 1 to avoid division issues
 
   return (
     <Card className="border border-border shadow-md">
@@ -77,11 +90,9 @@ export default function ExitsTable({
           <ArrowUpFromLine className="h-5 w-5 text-warning" />
           <h3 className="text-lg font-semibold text-foreground">سجل الخروج</h3>
         </div>
-        {selectedShift && (
-          <Badge className="bg-warning/20 text-warning border-warning text-sm font-semibold px-4 py-2 text-base">
-            {filteredExits.length} غادر من {exitsWithData.length}
-          </Badge>
-        )}
+        <Badge className="bg-warning/20 text-warning border-warning text-sm font-semibold px-4 py-2 text-base">
+          {filteredExits.length} غادر من {totalTrainees}
+        </Badge>
       </div>
       <div className="w-full">
         <Table className="w-full">

@@ -1,9 +1,9 @@
 import { useState, useCallback } from "react";
 import { format } from "date-fns";
-import ShiftSelector from "@/components/main/ShiftSelector";
 import BarcodeScanner from "@/components/main/BarcodeScanner";
 import EntriesTable, { type EntryRecord } from "@/components/main/EntriesTable";
 import ExitsTable, { type ExitRecord } from "@/components/main/ExitsTable";
+import AttendanceStatsDisplay from "@/components/main/AttendanceStatsDisplay";
 
 interface Trainee {
   id: string;
@@ -22,11 +22,15 @@ interface Shift {
 const mockTrainees: Record<string, Trainee> = {
   BAR001: { id: "1", full_name: "أحمد محمد", rank: "جندي", group_id: "1" },
   BAR002: { id: "2", full_name: "فاطمة علي", rank: "عريف", group_id: "1" },
-  "11111": { id: "11111", full_name: "mohammed ali", rank: "جندي", group_id: "1" },
+  "11111": {
+    id: "11111",
+    full_name: "mohammed ali",
+    rank: "جندي",
+    group_id: "1",
+  },
   "22222": { id: "22222", full_name: "AHMED ALI", rank: "عريف", group_id: "1" },
   "123": { id: "123", full_name: "Test Trainee", rank: "جندي", group_id: "1" },
 };
-
 
 const mockEntries: EntryRecord[] = [
   {
@@ -59,11 +63,11 @@ export default function MainPage() {
   const [selectedShift, setSelectedShift] = useState<Shift | null>(null);
 
   // Filter entries and exits by selected date
-  const filteredEntries = entries.filter((e) =>
-    e.arrivalTime === "" || e.arrivalTime.startsWith(selectedDate),
+  const filteredEntries = entries.filter(
+    (e) => e.arrivalTime === "" || e.arrivalTime.startsWith(selectedDate),
   );
-  const filteredExits = exits.filter((e) =>
-    e.exitTime === "" || e.exitTime.startsWith(selectedDate),
+  const filteredExits = exits.filter(
+    (e) => e.exitTime === "" || e.exitTime.startsWith(selectedDate),
   );
 
   const handleEntryMilitaryIdChange = useCallback(
@@ -214,13 +218,13 @@ export default function MainPage() {
 
   return (
     <div className="flex min-h-[calc(100vh-3.5rem)] flex-col gap-3 bg-background p-4">
-      {/* Shift Selector - Top Section */}
-      <div className="mx-auto w-full max-w-2xl">
-        <ShiftSelector onShiftSelect={setSelectedShift} />
+      {/* Attendance Stats - Full Width */}
+      <div className="mx-auto w-full max-w-4xl">
+        <AttendanceStatsDisplay entries={filteredEntries} />
       </div>
 
       {/* Barcode Scanner */}
-      <div className="mx-auto w-full max-w-2xl">
+      <div className="mx-auto w-full max-w-4xl">
         <BarcodeScanner onScan={handleScan} isScanning={scanning} />
       </div>
 
@@ -233,6 +237,7 @@ export default function MainPage() {
             selectedShift={selectedShift}
             selectedDate={selectedDate}
             onDateChange={setSelectedDate}
+            onShiftChange={setSelectedShift}
             onMilitaryIdChange={handleEntryMilitaryIdChange}
           />
         </div>
@@ -241,6 +246,7 @@ export default function MainPage() {
         <div>
           <ExitsTable
             exits={filteredExits}
+            entries={filteredEntries}
             selectedShift={selectedShift}
             onMilitaryIdChange={handleExitMilitaryIdChange}
           />

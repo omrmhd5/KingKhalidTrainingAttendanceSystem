@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -9,7 +10,15 @@ import {
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ArrowDownToLine } from "lucide-react";
+import { shiftApi } from "@/lib/shiftApi";
 
 interface Shift {
   id: string;
@@ -49,6 +58,14 @@ const isOnTime = (arrivalTime: string, shiftStartTime: string): boolean => {
   return arrivalTimePart <= shiftStartTime;
 };
 
+const formatTime12HourShort = (time: string): string => {
+  const [hours, minutes] = time.split(":");
+  let h = parseInt(hours);
+  const period = h >= 12 ? "م" : "ص";
+  h = h % 12 || 12;
+  return `${h}:${minutes} ${period}`;
+};
+
 export interface EntryRecord {
   id: string;
   militaryId: string;
@@ -58,11 +75,20 @@ export interface EntryRecord {
   shift: string;
 }
 
+interface ShiftAPIResponse {
+  _id: string;
+  name: string;
+  start_time: string;
+  end_time: string;
+  grace_minutes: number;
+}
+
 interface EntriesTableProps {
   entries: EntryRecord[];
   selectedShift: Shift | null;
   selectedDate: string;
   onDateChange: (date: string) => void;
+  onShiftChange: (shift: Shift | null) => void;
   onMilitaryIdChange?: (
     entryId: string,
     militaryId: string,
@@ -75,13 +101,44 @@ export default function EntriesTable({
   selectedShift,
   selectedDate,
   onDateChange,
+  onShiftChange,
   onMilitaryIdChange,
 }: EntriesTableProps) {
+  const [shifts, setShifts] = useState<Shift[]>([]);
+  const [loadingShifts, setLoadingShifts] = useState(true);
+
+  useEffect(() => {
+    const fetchShifts = async () => {
+      try {
+        const data = await shiftApi.getAllShifts();
+        const mappedShifts = (data as ShiftAPIResponse[]).map((shift) => ({
+          ...shift,
+          id: shift._id,
+        }));
+        setShifts(mappedShifts || []);
+      } catch (error) {
+        console.error("Failed to fetch shifts:", error);
+        setShifts([]);
+      } finally {
+        setLoadingShifts(false);
+      }
+    };
+
+    fetchShifts();
+  }, []);
+
+  const handleShiftChange = (shiftId: string) => {
+    const shift =
+      shiftId === "all" ? null : shifts.find((s) => s.id === shiftId) || null;
+    onShiftChange(shift);
+  };
   // Count entries with actual data (non-empty militaryId)
   const entriesWithData = entries.filter((e) => e.militaryId.trim() !== "");
   const shiftEntries = selectedShift
     ? entriesWithData.filter((e) => e.shift === selectedShift.name)
     : entriesWithData;
+
+  const totalTrainees = 100; // Total enrolled trainees
 
   return (
     <Card className="border border-border shadow-md">
@@ -97,14 +154,30 @@ export default function EntriesTable({
             type="date"
             value={selectedDate}
             onChange={(e) => onDateChange(e.target.value)}
-            className="w-40 h-10 bg-background border-border text-foreground"
+            className="w-36 h-9 text-sm bg-background border-border text-foreground"
           />
+          <Select
+            value={selectedShift?.id || "all"}
+            onValueChange={handleShiftChange}>
+            <SelectTrigger dir="rtl" className="w-40 h-9 text-sm border-border">
+              <SelectValue placeholder={loadingShifts ? "جاري..." : "الكل"} />
+            </SelectTrigger>
+            <SelectContent dir="rtl">
+              <SelectItem value="all" className="text-sm">
+                الكل
+              </SelectItem>
+              {shifts.map((shift) => (
+                <SelectItem key={shift.id} value={shift.id} className="text-sm">
+                  {shift.name} ({formatTime12HourShort(shift.start_time)} -{" "}
+                  {formatTime12HourShort(shift.end_time)})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
-        {selectedShift && (
-          <Badge className="bg-success/20 text-success border-success text-sm font-semibold px-4 py-2 text-base">
-            {shiftEntries.length} حاضر من {entriesWithData.length}
-          </Badge>
-        )}
+        <Badge className="bg-success/20 text-success border-success text-sm font-semibold px-4 py-2 text-base">
+          {shiftEntries.length} من {totalTrainees}
+        </Badge>
       </div>
       <div className="w-full">
         <Table className="w-full">
