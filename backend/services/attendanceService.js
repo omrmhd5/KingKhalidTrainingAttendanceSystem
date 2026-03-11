@@ -50,7 +50,7 @@ class AttendanceService {
     if (existingEntry) {
       throw {
         code: "DUPLICATE_ENTRY",
-        message: "تم تسجيل الدخول لهذا المتدرب اليوم",
+        message: "تم تسجيل الدخول مسبقاً",
       };
     }
 
@@ -133,7 +133,7 @@ class AttendanceService {
     if (attendance.exit_time) {
       throw {
         code: "DUPLICATE_EXIT",
-        message: "تم تسجيل الخروج لهذا المتدرب اليوم",
+        message: "تم تسجيل الخروج مسبقاً",
       };
     }
 
@@ -185,7 +185,7 @@ class AttendanceService {
     const records = await Attendance.find(query)
       .populate("trainee_id", "full_name military_id rank_id")
       .populate("shift_id", "name start_time end_time")
-      .sort({ entry_time: 1 });
+      .sort({ entry_time: 1, exit_time: 1 });
 
     return {
       date,

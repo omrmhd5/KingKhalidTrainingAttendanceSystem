@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 type ScanMode = "IN" | "OUT";
 
 interface BarcodeScannerProps {
-  onScan: (barcode: string) => Promise<void>;
+  onScan: (barcode: string, mode: ScanMode) => Promise<void>;
   isScanning: boolean;
 }
 
@@ -36,7 +36,7 @@ export default function BarcodeScanner({
     setSuccess("");
 
     try {
-      await onScan(barcode.trim());
+      await onScan(barcode.trim(), mode);
 
       // Show success message
       const successMsg =

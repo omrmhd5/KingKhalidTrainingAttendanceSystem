@@ -29,13 +29,24 @@ interface Shift {
 }
 
 const formatTime12Hour = (dateTimeString: string): string => {
-  const timePart = dateTimeString.split(" ")[1]; // Extract "HH:mm:ss"
-  if (!timePart) return dateTimeString;
-  const [hours, minutes, seconds] = timePart.split(":");
-  let h = parseInt(hours);
-  const period = h >= 12 ? "م" : "ص";
-  h = h % 12 || 12;
-  return `${h}:${minutes}:${seconds} ${period}`;
+  try {
+    const date = new Date(dateTimeString);
+    // Convert to KSA timezone
+    const ksaTime = new Date(
+      date.toLocaleString("en-US", { timeZone: "Asia/Riyadh" }),
+    );
+    const hours = ksaTime.getHours();
+    const minutes = ksaTime.getMinutes();
+    const seconds = ksaTime.getSeconds();
+
+    const period = hours >= 12 ? "م" : "ص";
+    const h = hours % 12 || 12;
+
+    const pad = (num: number) => String(num).padStart(2, "0");
+    return `${h}:${pad(minutes)}:${pad(seconds)} ${period}`;
+  } catch {
+    return dateTimeString;
+  }
 };
 
 const formatShiftTime = (startTime: string, endTime: string): string => {

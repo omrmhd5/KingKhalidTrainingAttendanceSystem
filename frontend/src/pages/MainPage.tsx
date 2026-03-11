@@ -91,6 +91,7 @@ export default function MainPage() {
                 : "",
             exitTime: r.exit_time || "",
             entryTime: r.entry_time || "",
+            durationMinutes: r.duration_minutes,
           }));
 
         setEntries(transformedEntries);
@@ -110,13 +111,35 @@ export default function MainPage() {
   }, [selectedDate, selectedShift]);
 
   const handleScan = useCallback(
-    async (barcode: string) => {
+    async (barcode: string, mode: "IN" | "OUT") => {
       if (scanning || !selectedShift) return;
       setScanning(true);
 
       try {
-        // Try to record entry
-        try {
+        if (mode === "OUT") {
+          // User selected exit mode - record exit
+          await attendanceApi.recordExit(barcode.trim(), selectedDate);
+          // Refresh the attendance data
+          const response = await attendanceApi.getAttendanceByDate(
+            selectedDate,
+            selectedShift.id,
+          );
+          const transformedExits: ExitRecord[] = response.records
+            .filter((r: AttendanceRecord) => r.exit_time)
+            .map((r: AttendanceRecord) => ({
+              id: r._id,
+              militaryId: r.military_id,
+              civilId: "",
+              name:
+                typeof r.trainee_id === "object"
+                  ? r.trainee_id?.full_name || ""
+                  : "",
+              exitTime: r.exit_time || "",
+              entryTime: r.entry_time || "",
+            }));
+          setExits(transformedExits);
+        } else {
+          // User selected entry mode - record entry
           await attendanceApi.recordEntry(
             barcode.trim(),
             selectedShift.id,
@@ -142,36 +165,6 @@ export default function MainPage() {
                 typeof r.shift_id === "object" ? r.shift_id?.name || "" : "",
             }));
           setEntries(transformedEntries);
-        } catch (entryError: any) {
-          // If entry already exists, try exit
-          if (entryError.response?.data?.error === "DUPLICATE_ENTRY") {
-            try {
-              await attendanceApi.recordExit(barcode.trim(), selectedDate);
-              // Refresh the attendance data
-              const response = await attendanceApi.getAttendanceByDate(
-                selectedDate,
-                selectedShift.id,
-              );
-              const transformedExits: ExitRecord[] = response.records
-                .filter((r: AttendanceRecord) => r.exit_time)
-                .map((r: AttendanceRecord) => ({
-                  id: r._id,
-                  militaryId: r.military_id,
-                  civilId: "",
-                  name:
-                    typeof r.trainee_id === "object"
-                      ? r.trainee_id?.full_name || ""
-                      : "",
-                  exitTime: r.exit_time || "",
-                  entryTime: r.entry_time || "",
-                }));
-              setExits(transformedExits);
-            } catch (exitError: any) {
-              throw exitError; // Re-throw exit errors
-            }
-          } else {
-            throw entryError;
-          }
         }
       } catch (err: any) {
         throw err; // Re-throw so BarcodeScanner catches it
