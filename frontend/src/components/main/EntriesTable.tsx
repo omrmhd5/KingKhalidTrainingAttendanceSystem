@@ -53,6 +53,23 @@ const formatShiftTime = (startTime: string, endTime: string): string => {
   return `${formatTime(startTime)} - ${formatTime(endTime)}`;
 };
 
+const getIdCellStyle = (
+  hasViolation?: boolean,
+  hasDisciplinary?: boolean,
+  isFirst: boolean = false,
+): string => {
+  if (hasViolation) {
+    return "bg-red-200 border-red-500";
+  }
+  if (hasDisciplinary) {
+    return "bg-blue-200 border-blue-500";
+  }
+  if (isFirst) {
+    return "bg-yellow-200 border-yellow-500";
+  }
+  return "";
+};
+
 const getShiftCellColor = (shift: string): string => {
   switch (shift) {
     case "A":
@@ -79,6 +96,8 @@ export interface EntryRecord {
   actualShiftStartTime?: string;
   actualShiftEndTime?: string;
   status: "on-time" | "late" | "absent" | "pending";
+  hasViolation?: boolean;
+  hasDisciplinary?: boolean;
 }
 
 interface EntriesTableProps {
@@ -120,22 +139,22 @@ export default function EntriesTable({
         <Table className="w-full">
           <TableHeader>
             <TableRow className="bg-blue-500 hover:bg-blue-500 border-b-2 border-blue-700">
-              <TableHead className="text-right text-white font-bold py-2 px-2 border-r-2 border-blue-700 whitespace-nowrap">
+              <TableHead className="text-center text-white font-bold py-2 px-2 border-r-2 border-blue-700 whitespace-nowrap">
                 تسجيل الدخول
               </TableHead>
-              <TableHead className="text-right text-white font-bold py-2 px-2 border-r-2 border-blue-700 whitespace-nowrap">
+              <TableHead className="text-center text-white font-bold py-2 px-2 border-r-2 border-blue-700 whitespace-nowrap">
                 الاسم
               </TableHead>
-              <TableHead className="text-right text-white font-bold py-2 px-2 border-r-2 border-blue-700 whitespace-nowrap">
+              <TableHead className="text-center text-white font-bold py-2 px-2 border-r-2 border-blue-700 whitespace-nowrap">
                 وقت الوصول
               </TableHead>
-              <TableHead className="text-right text-white font-bold py-2 px-2 border-r-2 border-blue-700 whitespace-nowrap">
+              <TableHead className="text-center text-white font-bold py-2 px-2 border-r-2 border-blue-700 whitespace-nowrap">
                 الحالة
               </TableHead>
-              <TableHead className="text-right text-white font-bold py-2 px-2 border-r-2 border-blue-700 whitespace-nowrap">
+              <TableHead className="text-center text-white font-bold py-2 px-2 border-r-2 border-blue-700 whitespace-nowrap">
                 الشفت
               </TableHead>
-              <TableHead className="text-right text-white font-bold py-2 px-2 border-r-2 border-blue-700 whitespace-nowrap">
+              <TableHead className="text-center text-white font-bold py-2 px-2 border-r-2 border-blue-700 whitespace-nowrap">
                 ساعات الشفت
               </TableHead>
             </TableRow>
@@ -150,22 +169,23 @@ export default function EntriesTable({
                 </TableCell>
               </TableRow>
             ) : (
-              entries.map((entry) => (
+              entries.map((entry, index) => (
                 <TableRow
                   key={entry.id}
                   className="border-b-2 border-gray-300 bg-white hover:bg-gray-50">
-                  <TableCell className="text-foreground font-medium text-sm py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">
+                  <TableCell
+                    className={`text-center font-medium text-sm py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap ${getIdCellStyle(entry.hasViolation, entry.hasDisciplinary, index === 0)}`}>
                     {entry.militaryId}
                   </TableCell>
-                  <TableCell className="text-foreground font-medium py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">
+                  <TableCell className="text-center font-medium py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">
                     {entry.name}
                   </TableCell>
-                  <TableCell className="text-foreground py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">
+                  <TableCell className="text-center py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">
                     {entry.arrivalTime
                       ? formatTime12Hour(entry.arrivalTime)
                       : ""}
                   </TableCell>
-                  <TableCell className="text-foreground py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">
+                  <TableCell className="text-center py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">
                     {entry.status === "on-time" ? (
                       <Badge className="bg-green-100 text-green-700 border-green-300">
                         في الموعد
@@ -181,10 +201,10 @@ export default function EntriesTable({
                     )}
                   </TableCell>
                   <TableCell
-                    className={`text-foreground font-medium py-2 px-2 border-2 whitespace-nowrap ${getShiftCellColor(entry.shift)}`}>
+                    className={`text-center font-medium py-2 px-2 border-2 whitespace-nowrap ${getShiftCellColor(entry.shift)}`}>
                     {entry.shift ? entry.shift : ""}
                   </TableCell>
-                  <TableCell className="text-foreground font-medium py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">
+                  <TableCell className="text-center font-medium py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">
                     {entry.shiftStartTime && entry.shiftEndTime
                       ? formatShiftTime(
                           entry.shiftStartTime,

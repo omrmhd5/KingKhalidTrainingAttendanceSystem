@@ -138,6 +138,14 @@ export default function MainPage() {
             actualShiftEndTime:
               typeof r.shift_id === "object" ? r.shift_id?.end_time : undefined,
             status: r.status,
+            hasViolation:
+              typeof r.trainee_id === "object"
+                ? r.trainee_id?.hasViolation
+                : false,
+            hasDisciplinary:
+              typeof r.trainee_id === "object"
+                ? r.trainee_id?.hasDisciplinary
+                : false,
           }));
 
         const transformedExits: ExitRecord[] = response.records
@@ -246,6 +254,14 @@ export default function MainPage() {
                   ? r.shift_id?.end_time
                   : undefined,
               status: r.status,
+              hasViolation:
+                typeof r.trainee_id === "object"
+                  ? r.trainee_id?.hasViolation
+                  : false,
+              hasDisciplinary:
+                typeof r.trainee_id === "object"
+                  ? r.trainee_id?.hasDisciplinary
+                  : false,
             }));
           setEntries(transformedEntries);
         }

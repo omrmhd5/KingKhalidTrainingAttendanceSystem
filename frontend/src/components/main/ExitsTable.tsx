@@ -120,19 +120,19 @@ export default function ExitsTable({
         <Table className="w-full">
           <TableHeader>
             <TableRow className="bg-green-500 hover:bg-green-500 border-b-2 border-green-700">
-              <TableHead className="text-right text-white font-bold py-2 px-2 border-r-2 border-green-700 whitespace-nowrap">
+              <TableHead className="text-center text-white font-bold py-2 px-2 border-r-2 border-green-700 whitespace-nowrap">
                 تسجيل الخروج
               </TableHead>
-              <TableHead className="text-right text-white font-bold py-2 px-2 border-r-2 border-green-700 whitespace-nowrap">
+              <TableHead className="text-center text-white font-bold py-2 px-2 border-r-2 border-green-700 whitespace-nowrap">
                 الاسم
               </TableHead>
-              <TableHead className="text-right text-white font-bold py-2 px-2 border-r-2 border-green-700 whitespace-nowrap">
+              <TableHead className="text-center text-white font-bold py-2 px-2 border-r-2 border-green-700 whitespace-nowrap">
                 وقت الخروج
               </TableHead>
-              <TableHead className="text-right text-white font-bold py-2 px-2 border-r-2 border-green-700 whitespace-nowrap">
+              <TableHead className="text-center text-white font-bold py-2 px-2 border-r-2 border-green-700 whitespace-nowrap">
                 الفارق الزمني
               </TableHead>
-              <TableHead className="text-right text-white font-bold py-2 px-2 border-r-2 border-green-700 whitespace-nowrap">
+              <TableHead className="text-center text-white font-bold py-2 px-2 border-r-2 border-green-700 whitespace-nowrap">
                 الشفت
               </TableHead>
             </TableRow>
@@ -163,20 +163,20 @@ export default function ExitsTable({
                   <TableRow
                     key={exit.id}
                     className="border-b-2 border-gray-300 bg-white hover:bg-gray-50">
-                    <TableCell className="text-foreground font-medium text-sm py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">
+                    <TableCell className="text-center font-medium text-sm py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">
                       {exit.militaryId}
                     </TableCell>
-                    <TableCell className="text-foreground font-medium py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">
+                    <TableCell className="text-center font-medium py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">
                       {exit.name}
                     </TableCell>
-                    <TableCell className="text-foreground py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">
+                    <TableCell className="text-center py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">
                       {exit.exitTime ? formatTime12Hour(exit.exitTime) : ""}
                     </TableCell>
-                    <TableCell className="text-foreground font-medium py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">
+                    <TableCell className="text-center font-medium py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">
                       {exit.exitTime && exit.entryTime ? timeDiff : ""}
                     </TableCell>
                     <TableCell
-                      className={`text-foreground font-medium py-2 px-2 border-2 whitespace-nowrap ${getShiftCellColor(shiftForColor)}`}>
+                      className={`text-center font-medium py-2 px-2 border-2 whitespace-nowrap ${getShiftCellColor(shiftForColor)}`}>
                       {shiftForColor || "N/A"}
                     </TableCell>
                   </TableRow>

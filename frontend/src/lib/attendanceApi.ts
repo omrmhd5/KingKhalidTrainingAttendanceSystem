@@ -6,6 +6,8 @@ export interface Trainee {
   full_name: string;
   military_id: string;
   rank_id: string;
+  hasViolation?: boolean;
+  hasDisciplinary?: boolean;
 }
 
 export interface Shift {
