@@ -21,6 +21,7 @@ interface ShiftAPIResponse {
   start_time: string;
   end_time: string;
   grace_minutes: number;
+  trainees_count?: number;
 }
 
 export default function MainPage() {
@@ -31,6 +32,7 @@ export default function MainPage() {
   const [scanning, setScanning] = useState(false);
   const [selectedShift, setSelectedShift] = useState<Shift | null>(null);
   const [loading, setLoading] = useState(false);
+  const [shifts, setShifts] = useState<ShiftAPIResponse[]>([]);
 
   // Helper function to get active shift based on current KSA time
   const getActiveShift =
@@ -73,6 +75,10 @@ export default function MainPage() {
   useEffect(() => {
     const loadAndSelectCurrentShift = async () => {
       try {
+        // Fetch all shifts
+        const allShifts = await shiftApi.getAllShifts();
+        setShifts(allShifts as ShiftAPIResponse[]);
+
         const activeShift = await getActiveShift();
         if (activeShift) {
           setSelectedShift({
@@ -256,6 +262,7 @@ export default function MainPage() {
       <div className="mx-auto w-full max-w-4xl">
         <AttendanceStatsDisplay
           entries={entries}
+          shifts={shifts}
           currentShift={selectedShift}
         />
       </div>

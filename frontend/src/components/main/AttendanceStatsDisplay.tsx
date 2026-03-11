@@ -17,15 +17,18 @@ interface EntryRecord {
 }
 
 interface Shift {
-  id: string;
+  _id?: string;
+  id?: string;
   name: string;
   start_time: string;
   end_time: string;
-  grace_minutes: number;
+  grace_minutes?: number;
+  trainees_count?: number;
 }
 
 interface AttendanceStatsDisplayProps {
   entries: EntryRecord[];
+  shifts: Shift[];
   currentShift?: Shift | null;
 }
 
@@ -78,6 +81,7 @@ const getShiftColor = (
 
 export default function AttendanceStatsDisplay({
   entries,
+  shifts,
   currentShift,
 }: AttendanceStatsDisplayProps) {
   // Get entries with data
@@ -157,6 +161,16 @@ export default function AttendanceStatsDisplay({
                       shiftEntry.actualShiftEndTime,
                     )
                   : "";
+              // Get assigned count from shift data
+              const shiftData = shifts.find((s) => s.name === shift);
+              const assignedCount = shiftData?.trainees_count || 0;
+
+              // Count people who attended this shift from a different assigned shift
+              const fromDifferentShifts = entriesWithData.filter(
+                (e) => e.actualShift === shift && e.shift !== shift,
+              ).length;
+
+              const totalCount = assignedCount + fromDifferentShifts;
               return (
                 <div
                   key={shift}
@@ -173,7 +187,7 @@ export default function AttendanceStatsDisplay({
                   </div>
                   <Badge
                     className={`${colors.bg} ${colors.text} border ${colors.border}`}>
-                    {count} / {TOTAL_TRAINEES}
+                    {count} / {totalCount}
                   </Badge>
                 </div>
               );
