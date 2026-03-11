@@ -19,6 +19,7 @@ export interface AttendanceRecord {
   _id: string;
   trainee_id: Trainee;
   military_id: string;
+  trainee_assigned_shift_id: Shift;
   shift_id: Shift;
   date: string;
   entry_time: string | null;

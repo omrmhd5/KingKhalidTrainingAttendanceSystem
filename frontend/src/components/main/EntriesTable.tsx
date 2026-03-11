@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -10,15 +9,7 @@ import {
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { ArrowDownToLine } from "lucide-react";
-import { shiftApi } from "@/lib/shiftApi";
 
 interface Shift {
   id: string;
@@ -62,21 +53,6 @@ const formatShiftTime = (startTime: string, endTime: string): string => {
   return `${formatTime(startTime)} - ${formatTime(endTime)}`;
 };
 
-const isOnTime = (arrivalTime: string, shiftStartTime: string): boolean => {
-  const arrivalTimePart = arrivalTime.split(" ")[1]; // Extract "HH:mm:ss"
-  if (!arrivalTimePart) return false;
-
-  return arrivalTimePart <= shiftStartTime;
-};
-
-const formatTime12HourShort = (time: string): string => {
-  const [hours, minutes] = time.split(":");
-  let h = parseInt(hours);
-  const period = h >= 12 ? "م" : "ص";
-  h = h % 12 || 12;
-  return `${h}:${minutes} ${period}`;
-};
-
 const getShiftCellColor = (shift: string): string => {
   switch (shift) {
     case "A":
@@ -97,64 +73,24 @@ export interface EntryRecord {
   name: string;
   arrivalTime: string;
   shift: string;
-}
-
-interface ShiftAPIResponse {
-  _id: string;
-  name: string;
-  start_time: string;
-  end_time: string;
-  grace_minutes: number;
+  shiftStartTime: string;
+  shiftEndTime: string;
+  status: "on-time" | "late" | "absent" | "pending";
 }
 
 interface EntriesTableProps {
   entries: EntryRecord[];
-  selectedShift: Shift | null;
   selectedDate: string;
   onDateChange: (date: string) => void;
-  onShiftChange: (shift: Shift | null) => void;
 }
 
 export default function EntriesTable({
   entries,
-  selectedShift,
   selectedDate,
   onDateChange,
-  onShiftChange,
 }: EntriesTableProps) {
-  const [shifts, setShifts] = useState<Shift[]>([]);
-  const [loadingShifts, setLoadingShifts] = useState(true);
-
-  useEffect(() => {
-    const fetchShifts = async () => {
-      try {
-        const data = await shiftApi.getAllShifts();
-        const mappedShifts = (data as ShiftAPIResponse[]).map((shift) => ({
-          ...shift,
-          id: shift._id,
-        }));
-        setShifts(mappedShifts || []);
-      } catch (error) {
-        console.error("Failed to fetch shifts:", error);
-        setShifts([]);
-      } finally {
-        setLoadingShifts(false);
-      }
-    };
-
-    fetchShifts();
-  }, []);
-
-  const handleShiftChange = (shiftId: string) => {
-    const shift =
-      shiftId === "all" ? null : shifts.find((s) => s.id === shiftId) || null;
-    onShiftChange(shift);
-  };
   // Count entries with actual data (non-empty militaryId)
   const entriesWithData = entries.filter((e) => e.militaryId.trim() !== "");
-  const shiftEntries = selectedShift
-    ? entriesWithData.filter((e) => e.shift === selectedShift.name)
-    : entriesWithData;
 
   return (
     <Card className="border border-border shadow-md">
@@ -172,27 +108,9 @@ export default function EntriesTable({
             onChange={(e) => onDateChange(e.target.value)}
             className="w-36 h-9 text-sm bg-background border-border text-foreground"
           />
-          <Select
-            value={selectedShift?.id || "all"}
-            onValueChange={handleShiftChange}>
-            <SelectTrigger dir="rtl" className="w-40 h-9 text-sm border-border">
-              <SelectValue placeholder={loadingShifts ? "جاري..." : "الكل"} />
-            </SelectTrigger>
-            <SelectContent dir="rtl">
-              <SelectItem value="all" className="text-sm">
-                الكل
-              </SelectItem>
-              {shifts.map((shift) => (
-                <SelectItem key={shift.id} value={shift.id} className="text-sm">
-                  {shift.name} ({formatTime12HourShort(shift.start_time)} -{" "}
-                  {formatTime12HourShort(shift.end_time)})
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
         </div>
         <Badge className="bg-success/20 text-success border-success text-sm font-semibold px-4 py-2 text-base">
-          {shiftEntries.length} دخول
+          {entriesWithData.length} دخول
         </Badge>
       </div>
       <div className="w-full">
@@ -245,18 +163,18 @@ export default function EntriesTable({
                       : ""}
                   </TableCell>
                   <TableCell className="text-foreground py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">
-                    {entry.arrivalTime && selectedShift ? (
-                      isOnTime(entry.arrivalTime, selectedShift.start_time) ? (
-                        <Badge className="bg-green-100 text-green-700 border-green-300">
-                          في الموعد
-                        </Badge>
-                      ) : (
-                        <Badge className="bg-red-100 text-red-700 border-red-300">
-                          متأخر
-                        </Badge>
-                      )
+                    {entry.status === "on-time" ? (
+                      <Badge className="bg-green-100 text-green-700 border-green-300">
+                        في الموعد
+                      </Badge>
+                    ) : entry.status === "late" ? (
+                      <Badge className="bg-red-100 text-red-700 border-red-300">
+                        متأخر
+                      </Badge>
                     ) : (
-                      ""
+                      <Badge className="bg-gray-100 text-gray-700 border-gray-300">
+                        {entry.status}
+                      </Badge>
                     )}
                   </TableCell>
                   <TableCell
@@ -264,10 +182,10 @@ export default function EntriesTable({
                     {entry.shift ? entry.shift : ""}
                   </TableCell>
                   <TableCell className="text-foreground font-medium py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">
-                    {selectedShift && entry.shift === selectedShift.name
+                    {entry.shiftStartTime && entry.shiftEndTime
                       ? formatShiftTime(
-                          selectedShift.start_time,
-                          selectedShift.end_time,
+                          entry.shiftStartTime,
+                          entry.shiftEndTime,
                         )
                       : ""}
                   </TableCell>

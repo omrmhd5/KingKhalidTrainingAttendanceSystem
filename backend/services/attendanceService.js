@@ -70,6 +70,7 @@ class AttendanceService {
     const attendance = await Attendance.create({
       trainee_id: trainee._id,
       military_id: trainee.military_id,
+      trainee_assigned_shift_id: trainee.shift_id,
       shift_id: shiftId,
       date: startOfDay,
       entry_time: now,
@@ -184,6 +185,7 @@ class AttendanceService {
 
     const records = await Attendance.find(query)
       .populate("trainee_id", "full_name military_id rank_id")
+      .populate("trainee_assigned_shift_id", "name start_time end_time")
       .populate("shift_id", "name start_time end_time")
       .sort({ entry_time: 1, exit_time: 1 });
 

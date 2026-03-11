@@ -12,10 +12,17 @@ const attendanceSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    trainee_assigned_shift_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Shift",
+      required: true,
+      description: "الشفت المخصص للمتدرب (الشفت الأصلي)",
+    },
     shift_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Shift",
       required: true,
+      description: "الشفت الذي حضر به المتدرب فعلياً",
     },
     date: {
       type: Date,
@@ -50,5 +57,6 @@ const attendanceSchema = new mongoose.Schema(
 attendanceSchema.index({ military_id: 1, date: 1 }, { unique: false });
 attendanceSchema.index({ date: 1 });
 attendanceSchema.index({ shift_id: 1 });
+attendanceSchema.index({ trainee_assigned_shift_id: 1 });
 
 module.exports = mongoose.model("Attendance", attendanceSchema);

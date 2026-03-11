@@ -32,37 +32,72 @@ export default function MainPage() {
   const [selectedShift, setSelectedShift] = useState<Shift | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Load shifts on mount and auto-select first one
-  useEffect(() => {
-    const loadShifts = async () => {
+  // Helper function to get active shift based on current KSA time
+  const getActiveShift =
+    useCallback(async (): Promise<ShiftAPIResponse | null> => {
       try {
-        const data = await shiftApi.getAllShifts();
-        if (data && data.length > 0) {
-          const firstShift = data[0] as ShiftAPIResponse;
+        const shiftsData = await shiftApi.getAllShifts();
+        if (!shiftsData || shiftsData.length === 0) return null;
+
+        const now = new Date();
+        const ksaTime = new Date(
+          now.toLocaleString("en-US", { timeZone: "Asia/Riyadh" }),
+        );
+
+        const currentHours = ksaTime.getHours();
+        const currentMinutes = ksaTime.getMinutes();
+        const currentTimeIn24 = currentHours * 100 + currentMinutes;
+
+        for (const shift of shiftsData as ShiftAPIResponse[]) {
+          const [startH, startM] = shift.start_time.split(":");
+          const [endH, endM] = shift.end_time.split(":");
+
+          const shiftStartTime = parseInt(startH) * 100 + parseInt(startM);
+          const shiftEndTime = parseInt(endH) * 100 + parseInt(endM);
+
+          if (
+            currentTimeIn24 >= shiftStartTime &&
+            currentTimeIn24 < shiftEndTime
+          ) {
+            return shift;
+          }
+        }
+        return null;
+      } catch (error) {
+        console.error("Failed to get active shift:", error);
+        return null;
+      }
+    }, []);
+
+  // Load shifts on mount and auto-detect current shift
+  useEffect(() => {
+    const loadAndSelectCurrentShift = async () => {
+      try {
+        const activeShift = await getActiveShift();
+        if (activeShift) {
           setSelectedShift({
-            id: firstShift._id,
-            name: firstShift.name,
-            start_time: firstShift.start_time,
-            end_time: firstShift.end_time,
-            grace_minutes: firstShift.grace_minutes,
+            id: activeShift._id,
+            name: activeShift.name,
+            start_time: activeShift.start_time,
+            end_time: activeShift.end_time,
+            grace_minutes: activeShift.grace_minutes,
           });
+        } else {
+          setSelectedShift(null);
         }
       } catch (error) {
         console.error("Failed to load shifts:", error);
       }
     };
-    loadShifts();
-  }, []);
+    loadAndSelectCurrentShift();
+  }, [getActiveShift]);
 
   // Fetch attendance records when date or shift changes
   useEffect(() => {
     const fetchAttendance = async () => {
       try {
         setLoading(true);
-        const response = await attendanceApi.getAttendanceByDate(
-          selectedDate,
-          selectedShift?.id,
-        );
+        const response = await attendanceApi.getAttendanceByDate(selectedDate);
 
         // Transform API data to component format
         const transformedEntries: EntryRecord[] = response.records
@@ -76,7 +111,19 @@ export default function MainPage() {
                 ? r.trainee_id?.full_name || ""
                 : "",
             arrivalTime: r.entry_time || "",
-            shift: typeof r.shift_id === "object" ? r.shift_id?.name || "" : "",
+            shift:
+              typeof r.trainee_assigned_shift_id === "object"
+                ? r.trainee_assigned_shift_id?.name || ""
+                : "",
+            shiftStartTime:
+              typeof r.trainee_assigned_shift_id === "object"
+                ? r.trainee_assigned_shift_id?.start_time || ""
+                : "",
+            shiftEndTime:
+              typeof r.trainee_assigned_shift_id === "object"
+                ? r.trainee_assigned_shift_id?.end_time || ""
+                : "",
+            status: r.status,
           }));
 
         const transformedExits: ExitRecord[] = response.records
@@ -105,25 +152,24 @@ export default function MainPage() {
       }
     };
 
-    if (selectedShift) {
-      fetchAttendance();
-    }
-  }, [selectedDate, selectedShift]);
+    fetchAttendance();
+  }, [selectedDate]);
 
   const handleScan = useCallback(
     async (barcode: string, mode: "IN" | "OUT") => {
-      if (scanning || !selectedShift) return;
+      if (scanning) return;
       setScanning(true);
 
       try {
+        const activeShift = await getActiveShift();
+        const activeShiftId = activeShift?._id;
+
         if (mode === "OUT") {
           // User selected exit mode - record exit
           await attendanceApi.recordExit(barcode.trim(), selectedDate);
           // Refresh the attendance data
-          const response = await attendanceApi.getAttendanceByDate(
-            selectedDate,
-            selectedShift.id,
-          );
+          const response =
+            await attendanceApi.getAttendanceByDate(selectedDate);
           const transformedExits: ExitRecord[] = response.records
             .filter((r: AttendanceRecord) => r.exit_time)
             .map((r: AttendanceRecord) => ({
@@ -136,20 +182,22 @@ export default function MainPage() {
                   : "",
               exitTime: r.exit_time || "",
               entryTime: r.entry_time || "",
+              durationMinutes: r.duration_minutes,
             }));
           setExits(transformedExits);
         } else {
           // User selected entry mode - record entry
+          if (!activeShiftId) {
+            throw new Error("لا يوجد شفت نشط حالياً");
+          }
           await attendanceApi.recordEntry(
             barcode.trim(),
-            selectedShift.id,
+            activeShiftId,
             selectedDate,
           );
           // Refresh the attendance data
-          const response = await attendanceApi.getAttendanceByDate(
-            selectedDate,
-            selectedShift.id,
-          );
+          const response =
+            await attendanceApi.getAttendanceByDate(selectedDate);
           const transformedEntries: EntryRecord[] = response.records
             .filter((r: AttendanceRecord) => r.entry_time)
             .map((r: AttendanceRecord) => ({
@@ -162,24 +210,36 @@ export default function MainPage() {
                   : "",
               arrivalTime: r.entry_time || "",
               shift:
-                typeof r.shift_id === "object" ? r.shift_id?.name || "" : "",
+                typeof r.trainee_assigned_shift_id === "object"
+                  ? r.trainee_assigned_shift_id?.name || ""
+                  : "",
+              shiftStartTime:
+                typeof r.trainee_assigned_shift_id === "object"
+                  ? r.trainee_assigned_shift_id?.start_time || ""
+                  : "",
+              shiftEndTime:
+                typeof r.trainee_assigned_shift_id === "object"
+                  ? r.trainee_assigned_shift_id?.end_time || ""
+                  : "",
+              status: r.status,
             }));
           setEntries(transformedEntries);
         }
-      } catch (err: any) {
-        throw err; // Re-throw so BarcodeScanner catches it
       } finally {
         setScanning(false);
       }
     },
-    [selectedShift, selectedDate, scanning],
+    [selectedDate, scanning, getActiveShift],
   );
 
   return (
     <div className="flex min-h-[calc(100vh-3.5rem)] flex-col gap-3 bg-background p-4">
       {/* Attendance Stats - Full Width */}
       <div className="mx-auto w-full max-w-4xl">
-        <AttendanceStatsDisplay entries={entries} />
+        <AttendanceStatsDisplay
+          entries={entries}
+          currentShift={selectedShift}
+        />
       </div>
 
       {/* Barcode Scanner */}
@@ -193,10 +253,8 @@ export default function MainPage() {
         <div>
           <EntriesTable
             entries={entries}
-            selectedShift={selectedShift}
             selectedDate={selectedDate}
             onDateChange={setSelectedDate}
-            onShiftChange={setSelectedShift}
           />
         </div>
 

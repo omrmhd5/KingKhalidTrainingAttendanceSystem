@@ -11,8 +11,17 @@ interface EntryRecord {
   shift: string;
 }
 
+interface Shift {
+  id: string;
+  name: string;
+  start_time: string;
+  end_time: string;
+  grace_minutes: number;
+}
+
 interface AttendanceStatsDisplayProps {
   entries: EntryRecord[];
+  currentShift?: Shift | null;
 }
 
 const TOTAL_TRAINEES = 100;
@@ -50,6 +59,7 @@ const getShiftColor = (
 
 export default function AttendanceStatsDisplay({
   entries,
+  currentShift,
 }: AttendanceStatsDisplayProps) {
   // Get entries with data
   const entriesWithData = entries.filter((e) => e.militaryId);
@@ -70,9 +80,27 @@ export default function AttendanceStatsDisplay({
     <Card className="border border-border bg-card p-4">
       <div className="flex items-center gap-2 mb-3">
         <TrendingUp className="h-5 w-5 text-primary" />
-        <h3 className="text-sm font-semibold text-foreground">
+        <h3 className="text-sm font-semibold text-foreground flex-1">
           إحصائيات الحضور
         </h3>
+        {currentShift ? (
+          (() => {
+            const colors = getShiftColor(currentShift.name);
+            return (
+              <Badge
+                variant="outline"
+                className={`ml-auto ${colors.bg} ${colors.text} border ${colors.border}`}>
+                الشفت الحالي: {currentShift.name}
+              </Badge>
+            );
+          })()
+        ) : (
+          <Badge
+            variant="outline"
+            className="ml-auto bg-gray-50 text-gray-700 border-gray-200">
+            لا يوجد شفت نشط
+          </Badge>
+        )}
       </div>
 
       <div className="grid gap-3">
