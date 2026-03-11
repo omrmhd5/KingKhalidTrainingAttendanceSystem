@@ -11,6 +11,9 @@ interface EntryRecord {
   shift: string;
   shiftStartTime?: string;
   shiftEndTime?: string;
+  actualShift: string;
+  actualShiftStartTime?: string;
+  actualShiftEndTime?: string;
 }
 
 interface Shift {
@@ -80,10 +83,10 @@ export default function AttendanceStatsDisplay({
   // Get entries with data
   const entriesWithData = entries.filter((e) => e.militaryId);
 
-  // Get shift breakdown
+  // Get shift breakdown by actual shift attended (shift_id)
   const shiftBreakdown: Record<string, number> = {};
   entriesWithData.forEach((entry) => {
-    const shiftName = entry.shift || "غير محدد";
+    const shiftName = entry.actualShift || "غير محدد";
     shiftBreakdown[shiftName] = (shiftBreakdown[shiftName] || 0) + 1;
   });
 
@@ -141,15 +144,17 @@ export default function AttendanceStatsDisplay({
             </p>
             {sortedShifts.map(([shift, count]) => {
               const colors = getShiftColor(shift);
-              // Get shift times from first entry with this shift
-              const shiftEntry = entriesWithData.find((e) => e.shift === shift);
+              // Get actual shift times from first entry with this actual shift
+              const shiftEntry = entriesWithData.find(
+                (e) => e.actualShift === shift,
+              );
               const shiftTimes =
                 shiftEntry &&
-                shiftEntry.shiftStartTime &&
-                shiftEntry.shiftEndTime
+                shiftEntry.actualShiftStartTime &&
+                shiftEntry.actualShiftEndTime
                   ? formatShiftTime(
-                      shiftEntry.shiftStartTime,
-                      shiftEntry.shiftEndTime,
+                      shiftEntry.actualShiftStartTime,
+                      shiftEntry.actualShiftEndTime,
                     )
                   : "";
               return (

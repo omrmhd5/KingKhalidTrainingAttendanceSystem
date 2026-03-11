@@ -75,6 +75,9 @@ export interface EntryRecord {
   shift: string;
   shiftStartTime: string;
   shiftEndTime: string;
+  actualShift: string;
+  actualShiftStartTime?: string;
+  actualShiftEndTime?: string;
   status: "on-time" | "late" | "absent" | "pending";
 }
 
