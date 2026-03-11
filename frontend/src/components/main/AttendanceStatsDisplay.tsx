@@ -9,6 +9,8 @@ interface EntryRecord {
   name: string;
   arrivalTime: string;
   shift: string;
+  shiftStartTime?: string;
+  shiftEndTime?: string;
 }
 
 interface Shift {
@@ -25,6 +27,20 @@ interface AttendanceStatsDisplayProps {
 }
 
 const TOTAL_TRAINEES = 100;
+
+const formatShiftTime = (startTime: string, endTime: string): string => {
+  const formatTime = (timeStr: string): string => {
+    if (!timeStr) return "";
+    const [hours, minutes] = timeStr.split(":");
+    let h = parseInt(hours);
+    const isAM = h < 12;
+    h = h % 12 || 12;
+    const period = isAM ? "ص" : "م";
+    return `${h}:${minutes} ${period}`;
+  };
+
+  return `${formatTime(startTime)} - ${formatTime(endTime)}`;
+};
 
 const getShiftColor = (
   shift: string,
@@ -121,17 +137,35 @@ export default function AttendanceStatsDisplay({
         {sortedShifts.length > 0 && (
           <div className="space-y-2 pt-2 border-t border-border">
             <p className="text-xs font-medium text-muted-foreground">
-              توزيع حسب النوبة
+              توزيع حسب الشفت
             </p>
             {sortedShifts.map(([shift, count]) => {
               const colors = getShiftColor(shift);
+              // Get shift times from first entry with this shift
+              const shiftEntry = entriesWithData.find((e) => e.shift === shift);
+              const shiftTimes =
+                shiftEntry &&
+                shiftEntry.shiftStartTime &&
+                shiftEntry.shiftEndTime
+                  ? formatShiftTime(
+                      shiftEntry.shiftStartTime,
+                      shiftEntry.shiftEndTime,
+                    )
+                  : "";
               return (
                 <div
                   key={shift}
                   className={`flex items-center justify-between p-2 ${colors.bg} rounded border ${colors.border}`}>
-                  <span className={`text-sm font-medium ${colors.text}`}>
-                    {shift}
-                  </span>
+                  <div className="flex flex-col">
+                    <span className={`text-sm font-medium ${colors.text}`}>
+                      {shift}
+                    </span>
+                    {shiftTimes && (
+                      <span className={`text-xs ${colors.text} opacity-75`}>
+                        {shiftTimes}
+                      </span>
+                    )}
+                  </div>
                   <Badge
                     className={`${colors.bg} ${colors.text} border ${colors.border}`}>
                     {count} / {TOTAL_TRAINEES}

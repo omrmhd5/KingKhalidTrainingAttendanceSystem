@@ -76,7 +76,7 @@ export default function ShiftSelector({ onShiftSelect }: ShiftSelectorProps) {
   return (
     <div>
       <label className="block text-sm font-semibold text-foreground mb-2">
-        فلتر النوبة
+        فلتر الشفت
       </label>
       <Card className="border border-border bg-card p-3 transition-colors">
         <div className="flex items-center gap-3">

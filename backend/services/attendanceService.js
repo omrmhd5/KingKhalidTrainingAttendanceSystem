@@ -54,18 +54,22 @@ class AttendanceService {
       };
     }
 
-    // Parse shift start time (format: "HH:mm")
-    const [shiftHours, shiftMinutes] = shift.start_time.split(":");
-    const shiftStartTime = new Date(dateObj);
-    shiftStartTime.setHours(parseInt(shiftHours), parseInt(shiftMinutes), 0);
+    // Parse shift effective start time (format: "HH:mm")
+    // effective_start_time already includes grace period calculation
+    const [shiftHours, shiftMinutes] = shift.effective_start_time.split(":");
+    const effectiveStartTime = new Date(dateObj);
+    effectiveStartTime.setHours(
+      parseInt(shiftHours),
+      parseInt(shiftMinutes),
+      0,
+    );
 
-    // Calculate grace period
-    const graceTime = new Date(shiftStartTime);
-    graceTime.setMinutes(graceTime.getMinutes() + shift.grace_minutes);
-
-    // Create new attendance record
+    // Create new attendance record using KSA time
     const now = new Date();
-    const status = now <= graceTime ? "on-time" : "late";
+    const ksaNow = new Date(
+      now.toLocaleString("en-US", { timeZone: "Asia/Riyadh" }),
+    );
+    const status = ksaNow <= effectiveStartTime ? "on-time" : "late";
 
     const attendance = await Attendance.create({
       trainee_id: trainee._id,
