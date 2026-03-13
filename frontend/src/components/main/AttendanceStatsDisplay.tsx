@@ -32,8 +32,6 @@ interface AttendanceStatsDisplayProps {
   currentShift?: Shift | null;
 }
 
-const TOTAL_TRAINEES = 100;
-
 const formatShiftTime = (startTime: string, endTime: string): string => {
   const formatTime = (timeStr: string): string => {
     if (!timeStr) return "";
@@ -87,6 +85,12 @@ export default function AttendanceStatsDisplay({
   // Get entries with data
   const entriesWithData = entries.filter((e) => e.militaryId);
 
+  // Calculate total trainees in system
+  const totalTraineesInSystem = shifts.reduce(
+    (sum, shift) => sum + (shift.trainees_count || 0),
+    0,
+  );
+
   // Get shift breakdown by actual shift attended (shift_id)
   const shiftBreakdown: Record<string, number> = {};
   entriesWithData.forEach((entry) => {
@@ -136,7 +140,7 @@ export default function AttendanceStatsDisplay({
             </span>
           </div>
           <Badge className="bg-blue-500/20 text-blue-700">
-            {entriesWithData.length} من {TOTAL_TRAINEES}
+            {entriesWithData.length} من {totalTraineesInSystem}
           </Badge>
         </div>
 

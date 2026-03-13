@@ -11,6 +11,30 @@ class AttendanceService {
       };
     }
 
+    // Validate that the provided date is today (KSA timezone)
+    const now = new Date();
+    const ksaNow = new Date(
+      now.toLocaleString("en-US", { timeZone: "Asia/Riyadh" }),
+    );
+    const providedDate = new Date(date);
+    const ksaToday = new Date(
+      ksaNow.getFullYear(),
+      ksaNow.getMonth(),
+      ksaNow.getDate(),
+    );
+    const providedDateOnly = new Date(
+      providedDate.getFullYear(),
+      providedDate.getMonth(),
+      providedDate.getDate(),
+    );
+
+    if (providedDateOnly.getTime() !== ksaToday.getTime()) {
+      throw {
+        code: "INVALID_DATE",
+        message: "يمكن تسجيل الحضور لليوم الحالي فقط",
+      };
+    }
+
     // Find trainee
     const trainee = await Trainee.findOne({
       military_id: militaryId.trim(),
@@ -65,10 +89,6 @@ class AttendanceService {
     );
 
     // Create new attendance record using KSA time
-    const now = new Date();
-    const ksaNow = new Date(
-      now.toLocaleString("en-US", { timeZone: "Asia/Riyadh" }),
-    );
     const status = ksaNow <= effectiveStartTime ? "on-time" : "late";
 
     const attendance = await Attendance.create({
@@ -96,6 +116,30 @@ class AttendanceService {
       throw {
         code: "MISSING_FIELDS",
         message: "الرقم العسكري والتاريخ مطلوبة",
+      };
+    }
+
+    // Validate that the provided date is today (KSA timezone)
+    const now = new Date();
+    const ksaNow = new Date(
+      now.toLocaleString("en-US", { timeZone: "Asia/Riyadh" }),
+    );
+    const providedDate = new Date(date);
+    const ksaToday = new Date(
+      ksaNow.getFullYear(),
+      ksaNow.getMonth(),
+      ksaNow.getDate(),
+    );
+    const providedDateOnly = new Date(
+      providedDate.getFullYear(),
+      providedDate.getMonth(),
+      providedDate.getDate(),
+    );
+
+    if (providedDateOnly.getTime() !== ksaToday.getTime()) {
+      throw {
+        code: "INVALID_DATE",
+        message: "يمكن تسجيل الحضور لليوم الحالي فقط",
       };
     }
 
@@ -142,8 +186,7 @@ class AttendanceService {
       };
     }
 
-    // Calculate duration
-    const now = new Date();
+    // Calculate duration (reuse 'now' variable from validation above)
     const durationMs = now - attendance.entry_time;
     const durationMinutes = Math.floor(durationMs / (1000 * 60));
 

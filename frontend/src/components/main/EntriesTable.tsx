@@ -9,6 +9,13 @@ import {
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ArrowDownToLine } from "lucide-react";
 
 interface Shift {
@@ -104,20 +111,37 @@ interface EntriesTableProps {
   entries: EntryRecord[];
   selectedDate: string;
   onDateChange: (date: string) => void;
+  selectedShiftFilter: string;
+  onShiftFilterChange: (filter: string) => void;
 }
 
 export default function EntriesTable({
   entries,
   selectedDate,
   onDateChange,
+  selectedShiftFilter,
+  onShiftFilterChange,
 }: EntriesTableProps) {
+  // Get unique shifts from entries
+  const uniqueShifts = Array.from(new Set(entries.map((e) => e.shift)))
+    .filter(Boolean)
+    .sort();
+
+  // Filter entries based on selected shift
+  const filteredEntries =
+    selectedShiftFilter === "all"
+      ? entries
+      : entries.filter((e) => e.shift === selectedShiftFilter);
+
   // Count entries with actual data (non-empty militaryId)
-  const entriesWithData = entries.filter((e) => e.militaryId.trim() !== "");
+  const entriesWithData = filteredEntries.filter(
+    (e) => e.militaryId.trim() !== "",
+  );
 
   return (
     <Card className="border border-border shadow-md">
       <div className="flex items-center justify-between border-b-2 border-border bg-slate-50 p-2">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <ArrowDownToLine className="h-5 w-5 text-success" />
             <h3 className="text-lg font-semibold text-foreground">
@@ -130,8 +154,25 @@ export default function EntriesTable({
             onChange={(e) => onDateChange(e.target.value)}
             className="w-36 h-9 text-sm bg-background border-border text-foreground"
           />
+          <Select
+            value={selectedShiftFilter}
+            onValueChange={onShiftFilterChange}>
+            <SelectTrigger className="w-40 h-9 text-sm border-border flex-row-reverse">
+              <SelectValue placeholder="اختر الشفت" />
+            </SelectTrigger>
+            <SelectContent dir="rtl">
+              <SelectItem value="all" className="text-sm">
+                الكل
+              </SelectItem>
+              {uniqueShifts.map((shift) => (
+                <SelectItem key={shift} value={shift} className="text-sm">
+                  {shift}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
-        <Badge className="bg-success/20 text-success border-success text-sm font-semibold px-4 py-2 text-base">
+        <Badge className="bg-success/20 text-success border-success font-semibold px-4 py-2 text-base">
           {entriesWithData.length} دخول
         </Badge>
       </div>
@@ -160,7 +201,7 @@ export default function EntriesTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {entries.length === 0 ? (
+            {filteredEntries.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={6}
@@ -169,7 +210,7 @@ export default function EntriesTable({
                 </TableCell>
               </TableRow>
             ) : (
-              entries.map((entry, index) => (
+              filteredEntries.map((entry, index) => (
                 <TableRow
                   key={entry.id}
                   className="border-b-2 border-gray-300 bg-white hover:bg-gray-50">

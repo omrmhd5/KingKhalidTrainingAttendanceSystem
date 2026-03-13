@@ -11,7 +11,7 @@ exports.recordEntry = async (req, res) => {
     res.status(201).json({ ...result, message: "Entry recorded successfully" });
   } catch (error) {
     const statusCode =
-      error.code === "MISSING_FIELDS"
+      error.code === "MISSING_FIELDS" || error.code === "INVALID_DATE"
         ? 400
         : error.code === "TRAINEE_NOT_FOUND" || error.code === "SHIFT_NOT_FOUND"
           ? 404
@@ -32,7 +32,7 @@ exports.recordExit = async (req, res) => {
     res.status(200).json({ ...result, message: "Exit recorded successfully" });
   } catch (error) {
     const statusCode =
-      error.code === "MISSING_FIELDS"
+      error.code === "MISSING_FIELDS" || error.code === "INVALID_DATE"
         ? 400
         : error.code === "TRAINEE_NOT_FOUND" || error.code === "NO_ENTRY"
           ? 404

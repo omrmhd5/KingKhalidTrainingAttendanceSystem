@@ -8,7 +8,6 @@ import {
 } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { ArrowUpFromLine } from "lucide-react";
 
 interface Shift {
@@ -80,6 +79,7 @@ interface ExitsTableProps {
   exits: ExitRecord[];
   entries: EntryRecord[];
   selectedShift: Shift | null;
+  selectedShiftFilter: string;
 }
 
 export interface EntryRecord {
@@ -95,10 +95,21 @@ export default function ExitsTable({
   exits,
   entries,
   selectedShift,
+  selectedShiftFilter,
 }: ExitsTableProps) {
+  // Filter exits based on selected shift
+  const filteredExits =
+    selectedShiftFilter === "all"
+      ? exits
+      : exits.filter((exit) => {
+          const correspondingEntry = entries.find(
+            (e) => e.militaryId === exit.militaryId,
+          );
+          return correspondingEntry?.shift === selectedShiftFilter;
+        ));
+
   // Count exits with actual data (non-empty militaryId)
-  const exitsWithData = exits.filter((e) => e.militaryId.trim() !== "");
-  const filteredExits = exitsWithData;
+  const exitsWithData = filteredExits.filter((e) => e.militaryId.trim() !== "");
 
   // Count attended trainees (unique entries with militaryId)
   const attendedCount = new Set(
@@ -113,7 +124,7 @@ export default function ExitsTable({
           <h3 className="text-lg font-semibold text-foreground">سجل الخروج</h3>
         </div>
         <Badge className="bg-warning/20 text-warning border-warning text-sm font-semibold px-4 py-2 text-base">
-          {filteredExits.length} خروج
+          {exitsWithData.length} خروج
         </Badge>
       </div>
       <div className="w-full">
@@ -138,7 +149,7 @@ export default function ExitsTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {exits.length === 0 ? (
+            {filteredExits.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={5}
@@ -147,7 +158,7 @@ export default function ExitsTable({
                 </TableCell>
               </TableRow>
             ) : (
-              exits.map((exit) => {
+              filteredExits.map((exit) => {
                 // Format duration from backend
                 const hours = Math.floor((exit.durationMinutes || 0) / 60);
                 const minutes = (exit.durationMinutes || 0) % 60;

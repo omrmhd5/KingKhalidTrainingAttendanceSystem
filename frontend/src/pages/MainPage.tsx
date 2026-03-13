@@ -27,6 +27,7 @@ interface ShiftAPIResponse {
 export default function MainPage() {
   const today = format(new Date(), "yyyy-MM-dd");
   const [selectedDate, setSelectedDate] = useState<string>(today);
+  const [selectedShiftFilter, setSelectedShiftFilter] = useState<string>("all");
   const [entries, setEntries] = useState<EntryRecord[]>([]);
   const [exits, setExits] = useState<ExitRecord[]>([]);
   const [scanning, setScanning] = useState(false);
@@ -57,10 +58,15 @@ export default function MainPage() {
           const shiftStartTime = parseInt(startH) * 100 + parseInt(startM);
           const shiftEndTime = parseInt(endH) * 100 + parseInt(endM);
 
-          if (
-            currentTimeIn24 >= shiftStartTime &&
-            currentTimeIn24 < shiftEndTime
-          ) {
+          // Handle overnight shifts (end time < start time, e.g., 21:00 to 03:00)
+          const isOvernightShift = shiftEndTime < shiftStartTime;
+          const isActive = isOvernightShift
+            ? currentTimeIn24 >= shiftStartTime ||
+              currentTimeIn24 < shiftEndTime
+            : currentTimeIn24 >= shiftStartTime &&
+              currentTimeIn24 < shiftEndTime;
+
+          if (isActive) {
             return shift;
           }
         }
@@ -296,6 +302,8 @@ export default function MainPage() {
             entries={entries}
             selectedDate={selectedDate}
             onDateChange={setSelectedDate}
+            selectedShiftFilter={selectedShiftFilter}
+            onShiftFilterChange={setSelectedShiftFilter}
           />
         </div>
 
@@ -305,6 +313,7 @@ export default function MainPage() {
             exits={exits}
             entries={entries}
             selectedShift={selectedShift}
+            selectedShiftFilter={selectedShiftFilter}
           />
         </div>
       </div>
