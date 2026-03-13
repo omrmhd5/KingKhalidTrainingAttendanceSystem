@@ -9,6 +9,7 @@ import {
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowUpFromLine } from "lucide-react";
+import { formatTime12HourKSA } from "@/lib/timeUtils";
 
 interface Shift {
   id: string;
@@ -17,27 +18,6 @@ interface Shift {
   end_time: string;
   grace_minutes: number;
 }
-
-const formatTime12Hour = (dateTimeString: string): string => {
-  try {
-    const date = new Date(dateTimeString);
-    // Convert to KSA timezone
-    const ksaTime = new Date(
-      date.toLocaleString("en-US", { timeZone: "Asia/Riyadh" }),
-    );
-    const hours = ksaTime.getHours();
-    const minutes = ksaTime.getMinutes();
-    const seconds = ksaTime.getSeconds();
-
-    const period = hours >= 12 ? "م" : "ص";
-    const h = hours % 12 || 12;
-
-    const pad = (num: number) => String(num).padStart(2, "0");
-    return `${h}:${pad(minutes)}:${pad(seconds)} ${period}`;
-  } catch {
-    return dateTimeString;
-  }
-};
 
 const formatShiftTime = (startTime: string, endTime: string): string => {
   const formatTime = (timeStr: string): string => {
@@ -106,7 +86,7 @@ export default function ExitsTable({
             (e) => e.militaryId === exit.militaryId,
           );
           return correspondingEntry?.shift === selectedShiftFilter;
-        ));
+        });
 
   // Count exits with actual data (non-empty militaryId)
   const exitsWithData = filteredExits.filter((e) => e.militaryId.trim() !== "");
@@ -181,7 +161,7 @@ export default function ExitsTable({
                       {exit.name}
                     </TableCell>
                     <TableCell className="text-center py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">
-                      {exit.exitTime ? formatTime12Hour(exit.exitTime) : ""}
+                      {exit.exitTime ? formatTime12HourKSA(exit.exitTime) : ""}
                     </TableCell>
                     <TableCell className="text-center font-medium py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">
                       {exit.exitTime && exit.entryTime ? timeDiff : ""}

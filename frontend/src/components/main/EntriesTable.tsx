@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ArrowDownToLine } from "lucide-react";
+import { formatTime12HourKSA } from "@/lib/timeUtils";
 
 interface Shift {
   id: string;
@@ -25,27 +26,6 @@ interface Shift {
   end_time: string;
   grace_minutes: number;
 }
-
-const formatTime12Hour = (dateTimeString: string): string => {
-  try {
-    const date = new Date(dateTimeString);
-    // Convert to KSA timezone
-    const ksaTime = new Date(
-      date.toLocaleString("en-US", { timeZone: "Asia/Riyadh" }),
-    );
-    const hours = ksaTime.getHours();
-    const minutes = ksaTime.getMinutes();
-    const seconds = ksaTime.getSeconds();
-
-    const period = hours >= 12 ? "م" : "ص";
-    const h = hours % 12 || 12;
-
-    const pad = (num: number) => String(num).padStart(2, "0");
-    return `${h}:${pad(minutes)}:${pad(seconds)} ${period}`;
-  } catch {
-    return dateTimeString;
-  }
-};
 
 const formatShiftTime = (startTime: string, endTime: string): string => {
   const formatTime = (timeStr: string): string => {
@@ -152,7 +132,7 @@ export default function EntriesTable({
             type="date"
             value={selectedDate}
             onChange={(e) => onDateChange(e.target.value)}
-            className="w-36 h-9 text-sm bg-background border-border text-foreground"
+            className="w-36 h-9 text-sm bg-background border-border text-foreground justify-start"
           />
           <Select
             value={selectedShiftFilter}
@@ -223,7 +203,7 @@ export default function EntriesTable({
                   </TableCell>
                   <TableCell className="text-center py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">
                     {entry.arrivalTime
-                      ? formatTime12Hour(entry.arrivalTime)
+                      ? formatTime12HourKSA(entry.arrivalTime)
                       : ""}
                   </TableCell>
                   <TableCell className="text-center py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">

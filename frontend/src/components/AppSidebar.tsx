@@ -35,6 +35,12 @@ const navItems = [
     roles: ["admin", "operator"],
   },
   {
+    title: "التقارير",
+    url: "/reports",
+    icon: FileText,
+    roles: ["admin", "operator", "viewer"],
+  },
+  {
     title: "المتدربون",
     url: "/trainees",
     icon: Users,
@@ -58,12 +64,7 @@ const navItems = [
     icon: Shield,
     roles: ["admin", "operator"],
   },
-  {
-    title: "التقارير",
-    url: "/reports",
-    icon: FileText,
-    roles: ["admin", "operator", "viewer"],
-  },
+
   { title: "الإعدادات", url: "/settings", icon: Settings, roles: ["admin"] },
 ];
 
