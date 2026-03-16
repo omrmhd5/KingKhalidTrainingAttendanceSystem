@@ -53,10 +53,14 @@ const attendanceSchema = new mongoose.Schema(
   },
 );
 
-// Compound index to ensure one entry per trainee per day
+// Indexes for performance optimization
+// Compound index for duplicate entry prevention and military_id + date queries
 attendanceSchema.index({ military_id: 1, date: 1 }, { unique: false });
-attendanceSchema.index({ date: 1 });
+// Compound index for escape/exit queries (also serves date-only queries)
+attendanceSchema.index({ date: 1, entry_time: 1, exit_time: 1 });
+// Simple indexes for shift filtering and trainee lookups
 attendanceSchema.index({ shift_id: 1 });
 attendanceSchema.index({ trainee_assigned_shift_id: 1 });
+attendanceSchema.index({ trainee_id: 1 });
 
 module.exports = mongoose.model("Attendance", attendanceSchema);

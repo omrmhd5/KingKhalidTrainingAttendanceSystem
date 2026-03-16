@@ -234,6 +234,8 @@ class AttendanceService {
       .populate("trainee_id")
       .populate("trainee_assigned_shift_id", "name start_time end_time")
       .populate("shift_id", "name start_time end_time")
+      .select("-notes")
+      .lean()
       .sort({ entry_time: 1, exit_time: 1 });
 
     return {
@@ -263,7 +265,10 @@ class AttendanceService {
     // Get all attendance records for the day
     const records = await Attendance.find({
       date: { $gte: startOfDay, $lt: endOfDay },
-    }).populate("shift_id", "name");
+    })
+      .populate("shift_id", "name")
+      .select("entry_time exit_time status shift_id")
+      .lean();
 
     // Calculate summary
     const totalRecords = records.length;
@@ -320,39 +325,57 @@ class AttendanceService {
     const endOfDay = new Date(startOfDay);
     endOfDay.setDate(endOfDay.getDate() + 1);
 
-    // Get all trainees
-    const allTrainees = await Trainee.find()
-      .populate("rank_id", "name")
-      .populate("specialty_id", "name")
-      .populate("shift_id", "name");
-
-    // Get all trainees who checked in on this date
-    const checkedInRecords = await Attendance.find({
-      date: { $gte: startOfDay, $lt: endOfDay },
-      entry_time: { $exists: true, $ne: null },
-    });
-
-    const checkedInTraineeIds = new Set(
-      checkedInRecords.map((r) => r.trainee_id.toString()),
-    );
-
-    // Find absences: trainees not in checked-in list
-    const absences = allTrainees.filter(
-      (trainee) => !checkedInTraineeIds.has(trainee._id.toString()),
-    );
+    // Use aggregation pipeline for efficient database-level processing
+    const absences = await Trainee.aggregate([
+      {
+        // Left join with attendance records
+        $lookup: {
+          from: "attendances",
+          let: { trainee_id: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ["$trainee_id", "$$trainee_id"] },
+                date: { $gte: startOfDay, $lt: endOfDay },
+                entry_time: { $ne: null },
+              },
+            },
+          ],
+          as: "attendance",
+        },
+      },
+      // Filter: trainees with no attendance records (absences)
+      {
+        $match: { attendance: { $size: 0 } },
+      },
+      // Join with shift data
+      {
+        $lookup: {
+          from: "shifts",
+          localField: "shift_id",
+          foreignField: "_id",
+          as: "shift_id",
+        },
+      },
+      {
+        $unwind: { path: "$shift_id", preserveNullAndEmptyArrays: true },
+      },
+      // Project only needed fields
+      {
+        $project: {
+          _id: 1,
+          military_id: 1,
+          civil_id: 1,
+          full_name: 1,
+          shift_id: { name: 1 },
+        },
+      },
+    ]);
 
     return {
       date,
       absenceCount: absences.length,
-      absences: absences.map((a) => ({
-        _id: a._id,
-        military_id: a.military_id,
-        civil_id: a.civil_id,
-        full_name: a.full_name,
-        rank_id: a.rank_id,
-        specialty_id: a.specialty_id,
-        shift_id: a.shift_id,
-      })),
+      absences,
     };
   }
   async getEscapes(date) {
@@ -380,6 +403,8 @@ class AttendanceService {
     })
       .populate("trainee_id", "full_name military_id civil_id")
       .populate("trainee_assigned_shift_id", "name")
+      .select("military_id entry_time trainee_id trainee_assigned_shift_id")
+      .lean()
       .sort({ entry_time: 1 });
 
     return {

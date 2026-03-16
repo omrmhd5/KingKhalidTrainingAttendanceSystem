@@ -58,4 +58,9 @@ const traineeSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
+// Indexes for performance optimization
+traineeSchema.index({ military_id: 1 });
+traineeSchema.index({ civil_id: 1 });
+traineeSchema.index({ shift_id: 1 });
+
 module.exports = mongoose.model("Trainee", traineeSchema);
