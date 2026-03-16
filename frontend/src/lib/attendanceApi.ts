@@ -57,6 +57,28 @@ export interface DailySummary {
   };
 }
 
+export interface Absence {
+  _id: string;
+  military_id: string;
+  full_name: string;
+  civil_id: string;
+  rank_id?: {
+    name: string;
+  };
+  specialty_id?: {
+    name: string;
+  };
+  shift_id?: {
+    name: string;
+  };
+}
+
+export interface AbsencesByDateResponse {
+  date: string;
+  absenceCount: number;
+  absences: Absence[];
+}
+
 export const attendanceApi = {
   async recordEntry(militaryId: string, shiftId: string, date: string) {
     const response = await axios.post(`${API_URL}/attendance/entry`, {
@@ -91,6 +113,13 @@ export const attendanceApi = {
 
   async getDailySummary(date: string): Promise<DailySummary> {
     const response = await axios.get(`${API_URL}/attendance/summary`, {
+      params: { date },
+    });
+    return response.data;
+  },
+
+  async getAbsences(date: string): Promise<AbsencesByDateResponse> {
+    const response = await axios.get(`${API_URL}/attendance/absences`, {
       params: { date },
     });
     return response.data;

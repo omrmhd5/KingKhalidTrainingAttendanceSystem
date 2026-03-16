@@ -7,24 +7,29 @@ import { format } from "date-fns";
 import { HoursTab } from "@/components/reports/HoursTab";
 import { AbsencesTab } from "@/components/reports/AbsencesTab";
 import { EscapesTab } from "@/components/reports/EscapesTab";
-import { attendanceApi, AttendanceRecord } from "@/lib/attendanceApi";
-
-interface Absence {
-  _id: string;
-  military_id: string;
-  full_name: string;
-  shift_id?: {
-    name: string;
-  };
-}
+import { attendanceApi, AttendanceRecord, Absence } from "@/lib/attendanceApi";
 
 export default function ReportsPage() {
   const [date, setDate] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [activeTab, setActiveTab] = useState("hours");
   const [hoursCount, setHoursCount] = useState(0);
   const [absencesCount, setAbsencesCount] = useState(0);
   const [escapesCount, setEscapesCount] = useState(0);
   const [absencesList, setAbsencesList] = useState<Absence[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Load saved tab from localStorage
+    const savedTab = localStorage.getItem("reportsActiveTab");
+    if (savedTab) {
+      setActiveTab(savedTab);
+    }
+  }, []);
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    localStorage.setItem("reportsActiveTab", value);
+  };
 
   // Mock absences data
   const mockAbsences: Absence[] = [
@@ -42,16 +47,20 @@ export default function ReportsPage() {
     const fetchCounts = async () => {
       try {
         setIsLoading(true);
-        const response = await attendanceApi.getAttendanceByDate(date);
-        const records = response.records || [];
+        const [attendanceRes, absencesRes] = await Promise.all([
+          attendanceApi.getAttendanceByDate(date),
+          attendanceApi.getAbsences(date),
+        ]);
+
+        const records = attendanceRes.records || [];
 
         // Count hours (all attendance records with entry_time)
         const hours = records.filter(
           (r: AttendanceRecord) => r.entry_time,
         ).length;
 
-        // Count absences from mock data
-        const absences = mockAbsences.length;
+        // Count absences from API
+        const absences = absencesRes.absenceCount || 0;
 
         // Count escapes (placeholder for future implementation)
         const escapes = 0;
@@ -59,7 +68,7 @@ export default function ReportsPage() {
         setHoursCount(hours);
         setAbsencesCount(absences);
         setEscapesCount(escapes);
-        setAbsencesList(mockAbsences);
+        setAbsencesList(absencesRes.absences || []);
       } catch (error) {
         console.error("Failed to fetch counts:", error);
         setHoursCount(0);
@@ -95,7 +104,7 @@ export default function ReportsPage() {
         />
       </div>
 
-      <Tabs defaultValue="hours" dir="rtl">
+      <Tabs value={activeTab} onValueChange={handleTabChange} dir="rtl">
         <TabsList>
           <TabsTrigger value="hours">الساعات ({hoursCount})</TabsTrigger>
           <TabsTrigger value="absences">الغيابات ({absencesCount})</TabsTrigger>

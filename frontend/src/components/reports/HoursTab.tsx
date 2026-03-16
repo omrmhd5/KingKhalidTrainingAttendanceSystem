@@ -120,7 +120,7 @@ export function HoursTab({ date }: HoursTabProps) {
   });
 
   return (
-    <Card dir="rtl">
+    <Card dir="rtl" className="bg-gray-50 border-gray-300">
       <CardContent className="p-6">
         <HoursReportFilters
           search={search}
@@ -130,17 +130,35 @@ export function HoursTab({ date }: HoursTabProps) {
           shifts={shifts}
         />
         <Table dir="rtl">
-          <TableHeader>
-            <TableRow>
-              <TableHead className="text-right">الرقم العسكري</TableHead>
-              <TableHead className="text-right">الإسم</TableHead>
-              <TableHead className="text-right">الشفت</TableHead>
-              <TableHead className="text-right">الحضور</TableHead>
-              <TableHead className="text-right">الخروج</TableHead>
-              <TableHead className="text-right">الساعات المجدولة</TableHead>
-              <TableHead className="text-right">الساعات المفقودة</TableHead>
-              <TableHead className="text-right">الساعات الفعلية</TableHead>
-              <TableHead className="text-center">الباركود</TableHead>
+          <TableHeader className="bg-gray-200">
+            <TableRow className="border-gray-300 hover:bg-gray-200">
+              <TableHead className="text-right text-gray-800 font-bold">
+                الرقم العسكري
+              </TableHead>
+              <TableHead className="text-right text-gray-800 font-bold">
+                الإسم
+              </TableHead>
+              <TableHead className="text-right text-gray-800 font-bold">
+                الشفت
+              </TableHead>
+              <TableHead className="text-right text-gray-800 font-bold">
+                الحضور
+              </TableHead>
+              <TableHead className="text-right text-gray-800 font-bold">
+                الخروج
+              </TableHead>
+              <TableHead className="text-right text-gray-800 font-bold">
+                الساعات المجدولة
+              </TableHead>
+              <TableHead className="text-right text-gray-800 font-bold">
+                الساعات المفقودة
+              </TableHead>
+              <TableHead className="text-right text-white font-bold bg-green-800">
+                الساعات الفعلية
+              </TableHead>
+              <TableHead className="text-center text-gray-800 font-bold">
+                الباركود
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -162,30 +180,32 @@ export function HoursTab({ date }: HoursTabProps) {
               </TableRow>
             ) : (
               hoursData?.map((h: HourRow) => (
-                <TableRow key={h.id} className="h-10">
-                  <TableCell className="font-medium text-right py-1">
+                <TableRow
+                  key={h.id}
+                  className="h-10 border-gray-200 hover:bg-gray-100">
+                  <TableCell className="font-medium text-right py-1 text-gray-700">
                     {h.militaryId}
                   </TableCell>
-                  <TableCell className="text-right py-1">
+                  <TableCell className="text-right py-1 text-gray-700">
                     {h.full_name}
                   </TableCell>
                   <TableCell
                     className={`text-center font-medium py-1 px-2 border-2 whitespace-nowrap ${getShiftCellColor(h.shift)}`}>
                     {h.shift}
                   </TableCell>
-                  <TableCell className="font-mono text-xs text-right py-1">
+                  <TableCell className="font-mono text-xs text-right py-1 text-gray-700">
                     {h.checkIn}
                   </TableCell>
-                  <TableCell className="font-mono text-xs text-right py-1">
+                  <TableCell className="font-mono text-xs text-right py-1 text-gray-700">
                     {h.checkOut}
                   </TableCell>
-                  <TableCell className="text-right py-1">
+                  <TableCell className="text-right py-1 text-gray-700">
                     {h.scheduledHours}
                   </TableCell>
-                  <TableCell className="text-right py-1">
+                  <TableCell className="text-right py-1 text-gray-700">
                     {h.lostHours}
                   </TableCell>
-                  <TableCell className="text-right py-1">
+                  <TableCell className="text-right py-1 text-green-900 font-semibold bg-green-300">
                     {h.actualHours}
                   </TableCell>
                   <TableCell className="text-center py-1">
