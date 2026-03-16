@@ -9,12 +9,34 @@ import { AbsencesTab } from "@/components/reports/AbsencesTab";
 import { EscapesTab } from "@/components/reports/EscapesTab";
 import { attendanceApi, AttendanceRecord } from "@/lib/attendanceApi";
 
+interface Absence {
+  _id: string;
+  military_id: string;
+  full_name: string;
+  shift_id?: {
+    name: string;
+  };
+}
+
 export default function ReportsPage() {
   const [date, setDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [hoursCount, setHoursCount] = useState(0);
   const [absencesCount, setAbsencesCount] = useState(0);
   const [escapesCount, setEscapesCount] = useState(0);
+  const [absencesList, setAbsencesList] = useState<Absence[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Mock absences data
+  const mockAbsences: Absence[] = [
+    {
+      _id: "669b45e8ea21a33679db2f7ed",
+      military_id: "456",
+      full_name: "محمد علي",
+      shift_id: {
+        name: "الشفت الثانية",
+      },
+    },
+  ];
 
   useEffect(() => {
     const fetchCounts = async () => {
@@ -28,10 +50,8 @@ export default function ReportsPage() {
           (r: AttendanceRecord) => r.entry_time,
         ).length;
 
-        // Count absences (records without entry_time)
-        const absences = records.filter(
-          (r: AttendanceRecord) => !r.entry_time,
-        ).length;
+        // Count absences from mock data
+        const absences = mockAbsences.length;
 
         // Count escapes (placeholder for future implementation)
         const escapes = 0;
@@ -39,11 +59,13 @@ export default function ReportsPage() {
         setHoursCount(hours);
         setAbsencesCount(absences);
         setEscapesCount(escapes);
+        setAbsencesList(mockAbsences);
       } catch (error) {
         console.error("Failed to fetch counts:", error);
         setHoursCount(0);
-        setAbsencesCount(0);
+        setAbsencesCount(1);
         setEscapesCount(0);
+        setAbsencesList(mockAbsences);
       } finally {
         setIsLoading(false);
       }
@@ -85,7 +107,11 @@ export default function ReportsPage() {
         </TabsContent>
 
         <TabsContent value="absences">
-          <AbsencesTab date={date} />
+          <AbsencesTab
+            date={date}
+            absences={absencesList}
+            isLoading={isLoading}
+          />
         </TabsContent>
 
         <TabsContent value="escapes">

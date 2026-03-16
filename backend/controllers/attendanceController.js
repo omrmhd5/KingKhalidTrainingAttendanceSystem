@@ -73,3 +73,17 @@ exports.getDailySummary = async (req, res) => {
     });
   }
 };
+
+exports.getAbsences = async (req, res) => {
+  try {
+    const { date } = req.query;
+    const result = await attendanceService.getAbsences(date);
+    res.status(200).json(result);
+  } catch (error) {
+    const statusCode = error.code === "MISSING_FIELDS" ? 400 : 500;
+    res.status(statusCode).json({
+      error: error.code || "SERVER_ERROR",
+      message: error.message,
+    });
+  }
+};

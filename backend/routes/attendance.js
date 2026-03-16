@@ -5,6 +5,7 @@ const {
   recordExit,
   getAttendanceByDate,
   getDailySummary,
+  getAbsences,
 } = require("../controllers/attendanceController");
 
 // Record entry
@@ -18,5 +19,8 @@ router.get("/by-date", getAttendanceByDate);
 
 // Get attendance summary for a specific date
 router.get("/summary", getDailySummary);
+
+// Get absences for a specific date
+router.get("/absences", getAbsences);
 
 module.exports = router;

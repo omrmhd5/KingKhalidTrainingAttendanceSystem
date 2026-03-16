@@ -302,6 +302,51 @@ class AttendanceService {
       },
     };
   }
+
+  async getAbsences(date) {
+    if (!date) {
+      throw {
+        code: "MISSING_FIELDS",
+        message: "التاريخ مطلوب",
+      };
+    }
+
+    const dateObj = new Date(date);
+    const startOfDay = new Date(
+      dateObj.getFullYear(),
+      dateObj.getMonth(),
+      dateObj.getDate(),
+    );
+    const endOfDay = new Date(startOfDay);
+    endOfDay.setDate(endOfDay.getDate() + 1);
+
+    // Get all trainees
+    const allTrainees = await Trainee.find()
+      .populate("rank_id", "name")
+      .populate("specialty_id", "name")
+      .populate("shift_id", "name");
+
+    // Get all trainees who checked in on this date
+    const checkedInRecords = await Attendance.find({
+      date: { $gte: startOfDay, $lt: endOfDay },
+      entry_time: { $exists: true, $ne: null },
+    });
+
+    const checkedInTraineeIds = new Set(
+      checkedInRecords.map((r) => r.trainee_id.toString()),
+    );
+
+    // Find absences: trainees not in checked-in list
+    const absences = allTrainees.filter(
+      (trainee) => !checkedInTraineeIds.has(trainee._id.toString()),
+    );
+
+    return {
+      date,
+      absenceCount: absences.length,
+      absences,
+    };
+  }
 }
 
 module.exports = new AttendanceService();

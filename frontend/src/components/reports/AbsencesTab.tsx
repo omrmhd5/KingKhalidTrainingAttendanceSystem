@@ -7,40 +7,50 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import Barcode from "react-barcode";
 
 interface AbsenceRecord {
-  id: string;
-  trainees?: {
-    full_name: string;
-    civil_id: string;
-    rank: string;
-  };
-  shifts?: {
+  _id: string;
+  military_id: string;
+  full_name: string;
+  shift_id?: {
     name: string;
   };
 }
 
 interface AbsencesTabProps {
   date: string;
+  absences?: AbsenceRecord[];
+  isLoading?: boolean;
 }
 
-export function AbsencesTab({ date }: AbsencesTabProps) {
-  const absences: AbsenceRecord[] = [];
-
+export function AbsencesTab({
+  date,
+  absences = [],
+  isLoading = false,
+}: AbsencesTabProps) {
   return (
     <Card dir="rtl">
-      <CardContent className="p-0">
+      <CardContent className="p-6">
         <Table dir="rtl">
           <TableHeader>
             <TableRow>
-              <TableHead className="text-right">اسم المتدرب</TableHead>
-              <TableHead className="text-right">رقم الهوية</TableHead>
-              <TableHead className="text-right">الرتبة</TableHead>
+              <TableHead className="text-right">الرقم العسكري</TableHead>
+              <TableHead className="text-right">الاسم</TableHead>
               <TableHead className="text-right">الشفت</TableHead>
+              <TableHead className="text-center">الباركود</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {absences?.length === 0 ? (
+            {isLoading ? (
+              <TableRow>
+                <TableCell
+                  colSpan={4}
+                  className="text-center py-8 text-muted-foreground">
+                  جاري التحميل...
+                </TableCell>
+              </TableRow>
+            ) : absences?.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={4}
@@ -50,15 +60,26 @@ export function AbsencesTab({ date }: AbsencesTabProps) {
               </TableRow>
             ) : (
               absences?.map((a: AbsenceRecord) => (
-                <TableRow key={a.id}>
-                  <TableCell className="font-medium">
-                    {a.trainees?.full_name}
+                <TableRow key={a._id} className="h-10">
+                  <TableCell className="font-medium text-right py-1">
+                    {a.military_id}
                   </TableCell>
-                  <TableCell className="font-mono text-xs">
-                    {a.trainees?.civil_id}
+                  <TableCell className="text-right py-1">
+                    {a.full_name}
                   </TableCell>
-                  <TableCell>{a.trainees?.rank}</TableCell>
-                  <TableCell>{a.shifts?.name}</TableCell>
+                  <TableCell className="text-right py-1">
+                    {a.shift_id?.name || "—"}
+                  </TableCell>
+                  <TableCell className="text-center py-1">
+                    <div className="flex justify-center scale-75 origin-center">
+                      <Barcode
+                        value={a.military_id.toString()}
+                        width={1.5}
+                        height={40}
+                        displayValue={true}
+                      />
+                    </div>
+                  </TableCell>
                 </TableRow>
               ))
             )}
