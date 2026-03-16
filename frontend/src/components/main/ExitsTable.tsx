@@ -103,8 +103,13 @@ export default function ExitsTable({
           <ArrowUpFromLine className="h-5 w-5 text-warning" />
           <h3 className="text-lg font-semibold text-foreground">سجل الخروج</h3>
         </div>
-        <Badge className="bg-warning/20 text-warning border-warning text-sm font-semibold px-4 py-2 text-base">
-          {exitsWithData.length} خروج
+        <Badge
+          className={`text-sm font-semibold px-4 py-2 text-base ${
+            exitsWithData.length === attendedCount
+              ? "bg-green-700 text-white border-green-900"
+              : "bg-warning/20 text-warning border-warning"
+          }`}>
+          {exitsWithData.length} خروج من أصل {attendedCount}
         </Badge>
       </div>
       <div className="w-full">
