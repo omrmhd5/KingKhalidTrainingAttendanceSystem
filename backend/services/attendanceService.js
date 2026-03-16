@@ -347,6 +347,46 @@ class AttendanceService {
       absences,
     };
   }
+  async getEscapes(date) {
+    if (!date) {
+      throw {
+        code: "MISSING_FIELDS",
+        message: "التاريخ مطلوب",
+      };
+    }
+
+    const dateObj = new Date(date);
+    const startOfDay = new Date(
+      dateObj.getFullYear(),
+      dateObj.getMonth(),
+      dateObj.getDate(),
+    );
+    const endOfDay = new Date(startOfDay);
+    endOfDay.setDate(endOfDay.getDate() + 1);
+
+    // Get all attendance records with entry_time but no exit_time (escapes)
+    const escapes = await Attendance.find({
+      date: { $gte: startOfDay, $lt: endOfDay },
+      entry_time: { $exists: true, $ne: null },
+      exit_time: { $exists: false, $eq: null },
+    })
+      .populate("trainee_id", "full_name military_id civil_id")
+      .populate("trainee_assigned_shift_id", "name")
+      .sort({ entry_time: 1 });
+
+    return {
+      date,
+      escapeCount: escapes.length,
+      escapes: escapes.map((e) => ({
+        _id: e._id,
+        military_id: e.military_id,
+        full_name: e.trainee_id?.full_name,
+        civil_id: e.trainee_id?.civil_id,
+        shift_id: e.trainee_assigned_shift_id,
+        entry_time: e.entry_time,
+      })),
+    };
+  }
 }
 
 module.exports = new AttendanceService();
