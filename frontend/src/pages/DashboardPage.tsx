@@ -1,55 +1,59 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, UserCheck, UserX, AlertTriangle } from "lucide-react";
-import { format } from "date-fns";
-import { useState } from "react";
-import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { useState, useEffect } from "react";
+import { format } from "date-fns";
+import { attendanceApi } from "@/lib/attendanceApi";
+
+interface DashboardStats {
+  date: string;
+  attended: number;
+  exited: number;
+  onTime: number;
+  late: number;
+  shiftSummary: Record<string, Record<string, number>>;
+}
 
 export default function DashboardPage() {
   const [date, setDate] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Mock data (previously from Supabase)
-  const traineesCount = 20;
-  const attendance = {
-    present: 15,
-    late: 2,
-    absent: 3,
-    escaped: 0,
-    total: 20,
-  };
-  const recentEscapes: Array<{
-    id: string;
-    trainees?: { full_name: string; rank?: string };
-    type?: string;
-    detected_at?: string;
-  }> = [];
+  useEffect(() => {
+    const fetchDashboardStats = async () => {
+      try {
+        setIsLoading(true);
+        const res = await attendanceApi.getDailySummary(date);
+        setStats(res as DashboardStats);
+      } catch (error) {
+        console.error("Failed to fetch dashboard stats:", error);
+        setStats(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const stats = [
-    {
-      title: "إجمالي المتدربين",
-      value: traineesCount,
-      icon: Users,
-      color: "text-primary",
-    },
-    {
-      title: "حاضرون",
-      value: attendance.present + attendance.late,
-      icon: UserCheck,
-      color: "text-success",
-    },
-    {
-      title: "غائبون",
-      value: attendance.absent,
-      icon: UserX,
-      color: "text-destructive",
-    },
-    {
-      title: "هاربون",
-      value: attendance.escaped,
-      icon: AlertTriangle,
-      color: "text-warning",
-    },
-  ];
+    if (date) {
+      fetchDashboardStats();
+    }
+  }, [date]);
+
+  // Get unique shifts for table headers
+  const allActualShifts = new Set<string>();
+  if (stats?.shiftSummary) {
+    Object.values(stats.shiftSummary).forEach((shiftMap) => {
+      Object.keys(shiftMap).forEach((shift) => allActualShifts.add(shift));
+    });
+  }
+  const sortedActualShifts = Array.from(allActualShifts).sort();
 
   return (
     <div className="space-y-6 animate-slide-in">
@@ -57,7 +61,7 @@ export default function DashboardPage() {
         <div>
           <h1 className="text-2xl font-bold">لوحة التحكم</h1>
           <p className="text-sm text-muted-foreground">
-            نظرة عامة على الحضور والإحصائيات
+            ملخص الحضور والإحصائيات اليومية
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -74,50 +78,110 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
-          <Card key={stat.title} className="stat-card">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                {stat.title}
-              </CardTitle>
-              <stat.icon className={`h-5 w-5 ${stat.color}`} />
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold">{stat.value}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <Card>
+        <CardHeader className="bg-blue-50">
+          <CardTitle className="text-lg text-blue-900">
+            ملخص الحضور حسب الشفت
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6">
+          {isLoading ? (
+            <p className="text-center text-muted-foreground">جاري التحميل...</p>
+          ) : (
+            <Table dir="rtl">
+              <TableHeader>
+                <TableRow className="bg-blue-100">
+                  <TableHead className="text-right text-blue-900 font-bold">
+                    الشفت المخصص
+                  </TableHead>
+                  {sortedActualShifts.map((shift) => (
+                    <TableHead
+                      key={shift}
+                      className="text-center text-blue-900 font-bold">
+                      {shift}
+                    </TableHead>
+                  ))}
+                  <TableHead className="text-center text-blue-900 font-bold">
+                    الإجمالي
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {stats && Object.entries(stats.shiftSummary).length > 0 ? (
+                  Object.entries(stats.shiftSummary).map(
+                    ([assignedShift, shiftCounts]) => {
+                      const total = Object.values(shiftCounts).reduce(
+                        (sum, count) => sum + count,
+                        0,
+                      );
+
+                      return (
+                        <TableRow key={assignedShift} className="border-b">
+                          <TableCell className="font-medium text-right text-blue-900">
+                            {assignedShift}
+                          </TableCell>
+                          {sortedActualShifts.map((actualShift) => (
+                            <TableCell
+                              key={actualShift}
+                              className="text-center text-blue-800">
+                              {shiftCounts[actualShift] || 0}
+                            </TableCell>
+                          ))}
+                          <TableCell className="text-center font-bold text-blue-900 bg-blue-50">
+                            {total}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    },
+                  )
+                ) : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={sortedActualShifts.length + 2}
+                      className="text-center py-8 text-muted-foreground">
+                      لا توجد بيانات حضور
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
 
       <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">أحداث الهروب الأخيرة</CardTitle>
+        <CardHeader className="bg-green-50">
+          <CardTitle className="text-lg text-green-900">
+            إحصائيات الحضور العامة
+          </CardTitle>
         </CardHeader>
-        <CardContent>
-          {recentEscapes && recentEscapes.length > 0 ? (
-            <div className="space-y-3">
-              {recentEscapes.map((e) => (
-                <div
-                  key={e.id}
-                  className="flex items-center justify-between rounded-md border p-3">
-                  <div>
-                    <p className="font-medium">{e.trainees?.full_name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {e.trainees?.rank} • {e.type}
-                    </p>
-                  </div>
-                  <span className="text-xs font-mono text-muted-foreground">
-                    {format(new Date(e.detected_at), "HH:mm")}
-                  </span>
-                </div>
-              ))}
+        <CardContent className="p-6">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <div className="p-4 bg-green-100 rounded-lg">
+              <p className="text-sm text-green-700">إجمالي الحاضرين</p>
+              <p className="text-3xl font-bold text-green-900">
+                {stats?.attended || 0}
+              </p>
             </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              لا توجد أحداث هروب في هذا التاريخ.
-            </p>
-          )}
+            <div className="p-4 bg-blue-100 rounded-lg">
+              <p className="text-sm text-blue-700">في الموعد</p>
+              <p className="text-3xl font-bold text-blue-900">
+                {stats?.onTime || 0}
+              </p>
+            </div>
+            <div className="p-4 bg-yellow-100 rounded-lg">
+              <p className="text-sm text-yellow-700">متأخرين</p>
+              <p className="text-3xl font-bold text-yellow-900">
+                {stats?.late || 0}
+              </p>
+            </div>
+            <div className="p-4 bg-orange-100 rounded-lg">
+              <p className="text-sm text-orange-700">خروج</p>
+              <p className="text-3xl font-bold text-orange-900">
+                {stats?.exited || 0}
+              </p>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>

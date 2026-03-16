@@ -262,49 +262,141 @@ class AttendanceService {
     const endOfDay = new Date(startOfDay);
     endOfDay.setDate(endOfDay.getDate() + 1);
 
-    // Get all attendance records for the day
-    const records = await Attendance.find({
-      date: { $gte: startOfDay, $lt: endOfDay },
-    })
-      .populate("shift_id", "name")
-      .select("entry_time exit_time status shift_id")
-      .lean();
+    // Use aggregation pipeline to efficiently calculate all stats and shifts summary in one query
+    const summaryData = await Attendance.aggregate([
+      // Filter by date first
+      {
+        $match: {
+          date: { $gte: startOfDay, $lt: endOfDay },
+        },
+      },
+      // Join with trainee_assigned_shift_id for assigned shift name
+      {
+        $lookup: {
+          from: "shifts",
+          localField: "trainee_assigned_shift_id",
+          foreignField: "_id",
+          as: "assignedShift",
+        },
+      },
+      {
+        $unwind: {
+          path: "$assignedShift",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      // Join with shift_id for actual shift name
+      {
+        $lookup: {
+          from: "shifts",
+          localField: "shift_id",
+          foreignField: "_id",
+          as: "actualShift",
+        },
+      },
+      {
+        $unwind: {
+          path: "$actualShift",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      // Project needed fields
+      {
+        $project: {
+          assignedShiftName: { $ifNull: ["$assignedShift.name", "Unknown"] },
+          actualShiftName: { $ifNull: ["$actualShift.name", "Unknown"] },
+          entry_time: 1,
+          exit_time: 1,
+          status: 1,
+        },
+      },
+      // Calculate statistics and shift summary
+      {
+        $facet: {
+          stats: [
+            {
+              $group: {
+                _id: null,
+                attended: {
+                  $sum: { $cond: [{ $ne: ["$entry_time", null] }, 1, 0] },
+                },
+                exited: {
+                  $sum: {
+                    $cond: [
+                      { $ne: [{ $type: "$exit_time" }, "missing"] },
+                      1,
+                      0,
+                    ],
+                  },
+                },
+                onTime: {
+                  $sum: { $cond: [{ $eq: ["$status", "on-time"] }, 1, 0] },
+                },
+                late: {
+                  $sum: { $cond: [{ $eq: ["$status", "late"] }, 1, 0] },
+                },
+              },
+            },
+          ],
+          shiftSummary: [
+            {
+              $match: {
+                entry_time: { $ne: null },
+              },
+            },
+            {
+              $group: {
+                _id: {
+                  assigned: "$assignedShiftName",
+                  actual: "$actualShiftName",
+                },
+                count: { $sum: 1 },
+              },
+            },
+            {
+              $group: {
+                _id: "$_id.assigned",
+                shifts: {
+                  $push: {
+                    name: "$_id.actual",
+                    count: "$count",
+                  },
+                },
+              },
+            },
+            {
+              $sort: { _id: 1 },
+            },
+          ],
+        },
+      },
+    ]);
 
-    // Calculate summary
-    const totalRecords = records.length;
-    const attendedCount = records.filter((r) => r.entry_time).length;
-    const exitedCount = records.filter((r) => r.exit_time).length;
-    const onTimeCount = records.filter((r) => r.status === "on-time").length;
-    const lateCount = records.filter((r) => r.status === "late").length;
+    // Extract stats
+    const stats = summaryData[0]?.stats[0] || {
+      attended: 0,
+      exited: 0,
+      onTime: 0,
+      late: 0,
+    };
 
-    // Group by shift
-    const byShift = {};
-    records.forEach((record) => {
-      const shiftName = record.shift_id?.name || "Unknown";
-      if (!byShift[shiftName]) {
-        byShift[shiftName] = {
-          attended: 0,
-          exited: 0,
-          onTime: 0,
-          late: 0,
-        };
-      }
-      if (record.entry_time) byShift[shiftName].attended++;
-      if (record.exit_time) byShift[shiftName].exited++;
-      if (record.status === "on-time") byShift[shiftName].onTime++;
-      if (record.status === "late") byShift[shiftName].late++;
+    // Convert shift summary array to object format for frontend
+    const shiftSummaryArray = summaryData[0]?.shiftSummary || [];
+    const shiftSummary = {};
+    shiftSummaryArray.forEach((assigned) => {
+      shiftSummary[assigned._id] = {};
+      assigned.shifts.forEach((shift) => {
+        shiftSummary[assigned._id][shift.name] = shift.count;
+      });
     });
 
     return {
       date,
-      summary: {
-        totalRecords,
-        attended: attendedCount,
-        exited: exitedCount,
-        onTime: onTimeCount,
-        late: lateCount,
-        byShift,
-      },
+      attended: stats.attended,
+      exited: stats.exited,
+      onTime: stats.onTime,
+      late: stats.late,
+      shiftSummary,
     };
   }
 

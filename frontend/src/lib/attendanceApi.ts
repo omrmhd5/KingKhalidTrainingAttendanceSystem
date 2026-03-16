@@ -39,22 +39,11 @@ export interface AttendanceByDateResponse {
 
 export interface DailySummary {
   date: string;
-  summary: {
-    totalRecords: number;
-    attended: number;
-    exited: number;
-    onTime: number;
-    late: number;
-    byShift: Record<
-      string,
-      {
-        attended: number;
-        exited: number;
-        onTime: number;
-        late: number;
-      }
-    >;
-  };
+  attended: number;
+  exited: number;
+  onTime: number;
+  late: number;
+  shiftSummary: Record<string, Record<string, number>>;
 }
 
 export interface Absence {
