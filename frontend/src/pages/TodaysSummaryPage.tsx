@@ -22,7 +22,7 @@ interface DashboardStats {
   shiftSummary: Record<string, Record<string, number>>;
 }
 
-export default function DashboardPage() {
+export default function TodaysSummaryPage() {
   const [date, setDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -59,7 +59,7 @@ export default function DashboardPage() {
     <div className="space-y-6 animate-slide-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">لوحة التحكم</h1>
+          <h1 className="text-2xl font-bold">ملخص اليوم</h1>
           <p className="text-sm text-muted-foreground">
             ملخص الحضور والإحصائيات اليومية
           </p>

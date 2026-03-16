@@ -5,7 +5,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import AuthPage from "@/pages/AuthPage";
-import DashboardPage from "@/pages/DashboardPage";
+import TodaysSummaryPage from "@/pages/TodaysSummaryPage";
 import MainPage from "@/pages/MainPage";
 import TraineesPage from "@/pages/TraineesPage";
 import BulkViewPage from "@/pages/BulkViewPage";
@@ -24,7 +24,7 @@ const App = () => (
         <Routes>
           <Route path="/auth" element={<AuthPage />} />
           <Route element={<DashboardLayout />}>
-            <Route path="/" element={<DashboardPage />} />
+            <Route path="/" element={<TodaysSummaryPage />} />
             <Route path="/main" element={<MainPage />} />
             <Route path="/trainees" element={<TraineesPage />} />
             <Route path="/bulk-view" element={<BulkViewPage />} />

@@ -1,5 +1,5 @@
 import {
-  LayoutDashboard,
+  BarChart3,
   Users,
   ScanBarcode,
   FileText,
@@ -23,9 +23,9 @@ import {
 
 const navItems = [
   {
-    title: "لوحة التحكم",
+    title: "ملخص اليوم",
     url: "/",
-    icon: LayoutDashboard,
+    icon: BarChart3,
     roles: ["admin", "operator", "viewer"],
   },
   {
