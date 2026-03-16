@@ -7,7 +7,12 @@ import { format } from "date-fns";
 import { HoursTab } from "@/components/reports/HoursTab";
 import { AbsencesTab } from "@/components/reports/AbsencesTab";
 import { EscapesTab } from "@/components/reports/EscapesTab";
-import { attendanceApi, AttendanceRecord, Absence } from "@/lib/attendanceApi";
+import {
+  attendanceApi,
+  AttendanceRecord,
+  Absence,
+  Escape,
+} from "@/lib/attendanceApi";
 
 export default function ReportsPage() {
   const [date, setDate] = useState(format(new Date(), "yyyy-MM-dd"));
@@ -16,6 +21,7 @@ export default function ReportsPage() {
   const [absencesCount, setAbsencesCount] = useState(0);
   const [escapesCount, setEscapesCount] = useState(0);
   const [absencesList, setAbsencesList] = useState<Absence[]>([]);
+  const [escapesList, setEscapesList] = useState<Escape[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -47,9 +53,10 @@ export default function ReportsPage() {
     const fetchCounts = async () => {
       try {
         setIsLoading(true);
-        const [attendanceRes, absencesRes] = await Promise.all([
+        const [attendanceRes, absencesRes, escapesRes] = await Promise.all([
           attendanceApi.getAttendanceByDate(date),
           attendanceApi.getAbsences(date),
+          attendanceApi.getEscapes(date),
         ]);
 
         const records = attendanceRes.records || [];
@@ -62,19 +69,21 @@ export default function ReportsPage() {
         // Count absences from API
         const absences = absencesRes.absenceCount || 0;
 
-        // Count escapes (placeholder for future implementation)
-        const escapes = 0;
+        // Count escapes from API
+        const escapes = escapesRes.escapeCount || 0;
 
         setHoursCount(hours);
         setAbsencesCount(absences);
         setEscapesCount(escapes);
         setAbsencesList(absencesRes.absences || []);
+        setEscapesList(escapesRes.escapes || []);
       } catch (error) {
         console.error("Failed to fetch counts:", error);
         setHoursCount(0);
         setAbsencesCount(1);
         setEscapesCount(0);
         setAbsencesList(mockAbsences);
+        setEscapesList([]);
       } finally {
         setIsLoading(false);
       }
@@ -124,7 +133,7 @@ export default function ReportsPage() {
         </TabsContent>
 
         <TabsContent value="escapes">
-          <EscapesTab date={date} />
+          <EscapesTab date={date} escapes={escapesList} isLoading={isLoading} />
         </TabsContent>
       </Tabs>
     </div>

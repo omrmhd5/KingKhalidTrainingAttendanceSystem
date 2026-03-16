@@ -344,7 +344,15 @@ class AttendanceService {
     return {
       date,
       absenceCount: absences.length,
-      absences,
+      absences: absences.map((a) => ({
+        _id: a._id,
+        military_id: a.military_id,
+        civil_id: a.civil_id,
+        full_name: a.full_name,
+        rank_id: a.rank_id,
+        specialty_id: a.specialty_id,
+        shift_id: a.shift_id,
+      })),
     };
   }
   async getEscapes(date) {

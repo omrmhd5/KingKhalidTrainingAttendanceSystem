@@ -79,6 +79,23 @@ export interface AbsencesByDateResponse {
   absences: Absence[];
 }
 
+export interface Escape {
+  _id: string;
+  military_id: string;
+  full_name: string;
+  civil_id: string;
+  shift_id?: {
+    name: string;
+  };
+  entry_time: string;
+}
+
+export interface EscapesByDateResponse {
+  date: string;
+  escapeCount: number;
+  escapes: Escape[];
+}
+
 export const attendanceApi = {
   async recordEntry(militaryId: string, shiftId: string, date: string) {
     const response = await axios.post(`${API_URL}/attendance/entry`, {
@@ -120,6 +137,13 @@ export const attendanceApi = {
 
   async getAbsences(date: string): Promise<AbsencesByDateResponse> {
     const response = await axios.get(`${API_URL}/attendance/absences`, {
+      params: { date },
+    });
+    return response.data;
+  },
+
+  async getEscapes(date: string): Promise<EscapesByDateResponse> {
+    const response = await axios.get(`${API_URL}/attendance/escapes`, {
       params: { date },
     });
     return response.data;

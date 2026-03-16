@@ -22,6 +22,7 @@ interface Shift {
 interface AbsenceRecord {
   _id: string;
   military_id: string;
+  civil_id: string;
   full_name: string;
   shift_id?: {
     name: string;
@@ -103,6 +104,9 @@ export function AbsencesTab({
                 الرقم العسكري
               </TableHead>
               <TableHead className="text-right text-white font-bold">
+                السجل المدني
+              </TableHead>
+              <TableHead className="text-right text-white font-bold">
                 الاسم
               </TableHead>
               <TableHead className="text-right text-white font-bold">
@@ -117,7 +121,7 @@ export function AbsencesTab({
             {isLoading ? (
               <TableRow>
                 <TableCell
-                  colSpan={4}
+                  colSpan={5}
                   className="text-center py-8 text-muted-foreground">
                   جاري التحميل...
                 </TableCell>
@@ -125,7 +129,7 @@ export function AbsencesTab({
             ) : filteredAbsences?.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={4}
+                  colSpan={5}
                   className="text-center py-8 text-muted-foreground">
                   لا توجد غيابات
                 </TableCell>
@@ -137,6 +141,9 @@ export function AbsencesTab({
                   className="h-10 border-red-300 hover:bg-red-200">
                   <TableCell className="font-medium text-right py-1 text-red-900">
                     {a.military_id}
+                  </TableCell>
+                  <TableCell className="text-right py-1 text-red-900">
+                    {a.civil_id}
                   </TableCell>
                   <TableCell className="text-right py-1 text-red-900">
                     {a.full_name}
