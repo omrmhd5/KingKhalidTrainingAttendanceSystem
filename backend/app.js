@@ -36,15 +36,10 @@ const disciplinaryRoutes = require("./routes/disciplinary");
 const attendanceRoutes = require("./routes/attendance");
 
 app.use("/api/users", userRoutes);
-app.use("/api/shifts", authenticateToken, requireAdmin, shiftRoutes);
-app.use("/api/ranks", authenticateToken, requireAdmin, rankRoutes);
-app.use(
-  "/api/specializations",
-  authenticateToken,
-  requireAdmin,
-  specializationRoutes,
-);
-app.use("/api/trainees", authenticateToken, requireAdmin, traineeRoutes);
+app.use("/api/shifts", authenticateToken, shiftRoutes);
+app.use("/api/ranks", authenticateToken, rankRoutes);
+app.use("/api/specializations", authenticateToken, specializationRoutes);
+app.use("/api/trainees", authenticateToken, traineeRoutes);
 app.use(
   "/api/violations",
   authenticateToken,
