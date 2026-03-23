@@ -11,15 +11,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Shield, LogIn } from "lucide-react";
+import { Shield, LogIn, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function AuthPage() {
-  const { user, loading, signIn, signUp } = useAuth();
-  const [isLogin, setIsLogin] = useState(true);
+  const { user, loading, signIn } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [fullName, setFullName] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const { toast } = useToast();
 
@@ -36,47 +34,44 @@ export default function AuthPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    const { error } = isLogin
-      ? await signIn(email, password)
-      : await signUp(email, password, fullName);
-    setSubmitting(false);
-    if (error) {
+
+    try {
+      const { error } = await signIn(email, password);
+
+      if (error) {
+        toast({
+          title: "خطأ",
+          description: error.message || "فشل في تسجيل الدخول",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
       toast({
         title: "خطأ",
-        description: error.message,
+        description: "حدث خطأ غير متوقع",
         variant: "destructive",
       });
-    } else if (!isLogin) {
-      toast({
-        title: "تم إنشاء الحساب",
-        description: "يرجى التحقق من بريدك الإلكتروني للتحقق من حسابك.",
-      });
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-primary p-4">
-      <Card className="w-full max-w-md border-sidebar-border shadow-2xl">
-        <CardHeader className="text-center space-y-3">
+    <div className="flex min-h-screen items-center justify-center bg-white p-4">
+      <Card className="w-full max-w-md border-sidebar-border shadow-2xl bg-blue-50">
+        <CardHeader className="text-center space-y-3 bg-blue-400 text-white rounded-t-lg">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-accent">
             <Shield className="h-7 w-7 text-accent-foreground" />
           </div>
-          <CardTitle className="text-2xl font-bold">مركز التدريب</CardTitle>
-          <CardDescription>نظام إدارة الحضور</CardDescription>
+          <CardTitle className="text-2xl font-bold text-white">
+            مركز التدريب
+          </CardTitle>
+          <CardDescription className="text-white text-sm">
+            نظام إدارة الحضور
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            {!isLogin && (
-              <div className="space-y-2">
-                <Label htmlFor="fullName">الاسم الكامل</Label>
-                <Input
-                  id="fullName"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  required
-                />
-              </div>
-            )}
             <div className="space-y-2">
               <Label htmlFor="email">البريد الإلكتروني</Label>
               <Input
@@ -84,9 +79,13 @@ export default function AuthPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={submitting}
                 required
+                dir="rtl"
+                placeholder="أدخل بريدك الإلكتروني"
               />
             </div>
+
             <div className="space-y-2">
               <Label htmlFor="password">كلمة المرور</Label>
               <Input
@@ -94,27 +93,27 @@ export default function AuthPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                disabled={submitting}
                 required
                 minLength={6}
+                dir="rtl"
+                placeholder="أدخل كلمة المرور"
               />
             </div>
+
             <Button type="submit" className="w-full" disabled={submitting}>
-              <LogIn className="ml-2 h-4 w-4" />
-              {submitting
-                ? "الرجاء الانتظار..."
-                : isLogin
-                  ? "تسجيل الدخول"
-                  : "إنشاء حساب"}
+              {submitting ? (
+                <>
+                  <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                  جاري تسجيل الدخول...
+                </>
+              ) : (
+                <>
+                  <LogIn className="ml-2 h-4 w-4" />
+                  تسجيل الدخول
+                </>
+              )}
             </Button>
-            <p className="text-center text-sm text-muted-foreground">
-              {isLogin ? "ليس لديك حساب؟" : "هل لديك حساب بالفعل?"}{" "}
-              <button
-                type="button"
-                onClick={() => setIsLogin(!isLogin)}
-                className="text-accent underline hover:opacity-80">
-                {isLogin ? "إنشاء حساب" : "تسجيل الدخول"}
-              </button>
-            </p>
           </form>
         </CardContent>
       </Card>

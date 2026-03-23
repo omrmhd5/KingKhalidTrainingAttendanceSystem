@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -25,19 +25,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Edit2, Trash2, Plus } from "lucide-react";
+import { Edit2, Trash2, Plus, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/components/ui/use-toast";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
-
-interface User {
-  _id: string;
-  username: string;
-  email: string;
-  role: "admin" | "operator" | "teacher";
-  class?: string;
-  created_at: string;
-}
+import { userApi, User, UserCreateInput, UserUpdateInput } from "@/lib/userApi";
 
 const ROLES = [
   { value: "admin", label: "مسؤول" },
@@ -47,23 +39,9 @@ const ROLES = [
 
 export function UsersManagementTab() {
   const { toast } = useToast();
-  const [users, setUsers] = useState<User[]>([
-    {
-      _id: "1",
-      username: "أحمد محمد",
-      email: "ahmed@example.com",
-      role: "admin",
-      created_at: new Date().toISOString(),
-    },
-    {
-      _id: "2",
-      username: "سارة علي",
-      email: "sarah@example.com",
-      role: "teacher",
-      class: "الفصل الأول",
-      created_at: new Date().toISOString(),
-    },
-  ]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -78,6 +56,27 @@ export function UsersManagementTab() {
     role: "operator" as "admin" | "operator" | "teacher",
     class: "",
   });
+
+  // Fetch users on component mount
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const data = await userApi.getAllUsers();
+      setUsers(data);
+    } catch (error: any) {
+      toast({
+        title: "خطأ",
+        description: error.response?.data?.message || "فشل في تحميل المستخدمين",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleOpenAdd = () => {
     setFormData({
@@ -110,7 +109,7 @@ export function UsersManagementTab() {
     setIsDeleteOpen(true);
   };
 
-  const handleAddUser = () => {
+  const handleAddUser = async () => {
     if (!formData.username || !formData.email || !formData.password) {
       toast({
         title: "خطأ",
@@ -138,24 +137,36 @@ export function UsersManagementTab() {
       return;
     }
 
-    const newUser: User = {
-      _id: Date.now().toString(),
-      username: formData.username,
-      email: formData.email,
-      role: formData.role,
-      class: formData.role === "teacher" ? formData.class : undefined,
-      created_at: new Date().toISOString(),
-    };
+    try {
+      setSubmitting(true);
+      const createData: UserCreateInput = {
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+        confirmPassword: formData.confirmPassword,
+        role: formData.role,
+        class: formData.role === "teacher" ? formData.class : undefined,
+      };
 
-    setUsers([...users, newUser]);
-    setIsAddOpen(false);
-    toast({
-      title: "نجاح",
-      description: "تم إضافة المستخدم بنجاح",
-    });
+      const response = await userApi.createUser(createData);
+      setUsers([...users, response.user]);
+      setIsAddOpen(false);
+      toast({
+        title: "نجاح",
+        description: "تم إضافة المستخدم بنجاح",
+      });
+    } catch (error: any) {
+      toast({
+        title: "خطأ",
+        description: error.response?.data?.message || "فشل في إضافة المستخدم",
+        variant: "destructive",
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const handleUpdateUser = () => {
+  const handleUpdateUser = async () => {
     if (!formData.username || !formData.email) {
       toast({
         title: "خطأ",
@@ -183,28 +194,46 @@ export function UsersManagementTab() {
       return;
     }
 
-    setUsers(
-      users.map((u) =>
-        u._id === selectedUser?._id
-          ? {
-              ...u,
-              username: formData.username,
-              email: formData.email,
-              role: formData.role,
-              class: formData.role === "teacher" ? formData.class : undefined,
-            }
-          : u,
-      ),
-    );
-    setIsEditOpen(false);
-    toast({
-      title: "نجاح",
-      description: "تم تحديث المستخدم بنجاح",
-    });
+    try {
+      setSubmitting(true);
+      const updateData: UserUpdateInput = {
+        username: formData.username,
+        email: formData.email,
+        role: formData.role,
+        class: formData.role === "teacher" ? formData.class : undefined,
+      };
+
+      if (formData.password) {
+        updateData.password = formData.password;
+        updateData.confirmPassword = formData.confirmPassword;
+      }
+
+      const response = await userApi.updateUser(selectedUser!._id, updateData);
+      setUsers(
+        users.map((u) => (u._id === selectedUser?._id ? response.user : u)),
+      );
+      setIsEditOpen(false);
+      toast({
+        title: "نجاح",
+        description: "تم تحديث المستخدم بنجاح",
+      });
+    } catch (error: any) {
+      toast({
+        title: "خطأ",
+        description: error.response?.data?.message || "فشل في تحديث المستخدم",
+        variant: "destructive",
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const handleDeleteUser = () => {
-    if (selectedUser) {
+  const handleDeleteUser = async () => {
+    if (!selectedUser) return;
+
+    try {
+      setSubmitting(true);
+      await userApi.deleteUser(selectedUser._id);
       setUsers(users.filter((u) => u._id !== selectedUser._id));
       setIsDeleteOpen(false);
       toast({
@@ -213,6 +242,14 @@ export function UsersManagementTab() {
       });
       setSelectedUser(null);
       setDeleteTargetName("");
+    } catch (error: any) {
+      toast({
+        title: "خطأ",
+        description: error.response?.data?.message || "فشل في حذف المستخدم",
+        variant: "destructive",
+      });
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -222,65 +259,75 @@ export function UsersManagementTab() {
         className="flex flex-row items-center justify-between"
         dir="rtl">
         <CardTitle>المستخدمون ({users.length})</CardTitle>
-        <Button size="sm" onClick={handleOpenAdd}>
+        <Button size="sm" onClick={handleOpenAdd} disabled={loading}>
           <Plus className="ml-2 h-4 w-4" />
           إضافة مستخدم
         </Button>
       </CardHeader>
       <CardContent className="p-0">
-        <Table dir="rtl">
-          <TableHeader>
-            <TableRow>
-              <TableHead className="text-right">اسم المستخدم</TableHead>
-              <TableHead className="text-right">البريد الإلكتروني</TableHead>
-              <TableHead className="text-right">الدور</TableHead>
-              <TableHead className="text-right">الفصل</TableHead>
-              <TableHead className="text-right">تاريخ الإنشاء</TableHead>
-              <TableHead className="text-right">الإجراءات</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {users.length === 0 ? (
+        {loading ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : (
+          <Table dir="rtl">
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-4">
-                  لا توجد مستخدمون
-                </TableCell>
+                <TableHead className="text-right">اسم المستخدم</TableHead>
+                <TableHead className="text-right">البريد الإلكتروني</TableHead>
+                <TableHead className="text-right">الدور</TableHead>
+                <TableHead className="text-right">الفصل</TableHead>
+                <TableHead className="text-right">تاريخ الإنشاء</TableHead>
+                <TableHead className="text-right">الإجراءات</TableHead>
               </TableRow>
-            ) : (
-              users.map((user) => (
-                <TableRow key={user._id}>
-                  <TableCell className="font-medium">{user.username}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>
-                    <span className="inline-block px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
-                      {ROLES.find((r) => r.value === user.role)?.label}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    {user.role === "teacher" ? user.class || "-" : "-"}
-                  </TableCell>
-                  <TableCell>
-                    {format(new Date(user.created_at), "dd/MM/yyyy")}
-                  </TableCell>
-                  <TableCell className="text-right flex gap-2 justify-start">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleOpenEdit(user)}>
-                      <Edit2 className="h-4 w-4 text-blue-500" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleOpenDelete(user)}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
+            </TableHeader>
+            <TableBody>
+              {users.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-4">
+                    لا توجد مستخدمون
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ) : (
+                users.map((user) => (
+                  <TableRow key={user._id}>
+                    <TableCell className="font-medium">
+                      {user.username}
+                    </TableCell>
+                    <TableCell>{user.email}</TableCell>
+                    <TableCell>
+                      <span className="inline-block px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
+                        {ROLES.find((r) => r.value === user.role)?.label}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      {user.role === "teacher" ? user.class || "-" : "-"}
+                    </TableCell>
+                    <TableCell>
+                      {format(new Date(user.createdAt), "dd/MM/yyyy")}
+                    </TableCell>
+                    <TableCell className="text-right flex gap-2 justify-start">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleOpenEdit(user)}
+                        disabled={submitting}>
+                        <Edit2 className="h-4 w-4 text-blue-500" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleOpenDelete(user)}
+                        disabled={submitting}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        )}
       </CardContent>
 
       {/* Add User Modal */}
@@ -397,10 +444,22 @@ export function UsersManagementTab() {
           </div>
 
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setIsAddOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsAddOpen(false)}
+              disabled={submitting}>
               إلغاء
             </Button>
-            <Button onClick={handleAddUser}>إضافة</Button>
+            <Button onClick={handleAddUser} disabled={submitting}>
+              {submitting ? (
+                <>
+                  <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                  جاري الإضافة...
+                </>
+              ) : (
+                "إضافة"
+              )}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -519,10 +578,22 @@ export function UsersManagementTab() {
           </div>
 
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setIsEditOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsEditOpen(false)}
+              disabled={submitting}>
               إلغاء
             </Button>
-            <Button onClick={handleUpdateUser}>تحديث</Button>
+            <Button onClick={handleUpdateUser} disabled={submitting}>
+              {submitting ? (
+                <>
+                  <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                  جاري التحديث...
+                </>
+              ) : (
+                "تحديث"
+              )}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
