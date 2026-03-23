@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Navigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UsersManagementTab } from "@/components/settings/UsersManagementTab";
 import { ShiftsManagementTab } from "@/components/settings/ShiftsManagementTab";
@@ -6,7 +8,13 @@ import { RanksManagementTab } from "@/components/settings/RanksManagementTab";
 import { SpecializationsManagementTab } from "@/components/settings/SpecializationsManagementTab";
 
 export default function SettingsPage() {
+  const { role } = useAuth();
   const [activeTab, setActiveTab] = useState("users");
+
+  // Only admins can access settings
+  if (role !== "admin") {
+    return <Navigate to="/" replace />;
+  }
 
   useEffect(() => {
     // Load saved tab from localStorage

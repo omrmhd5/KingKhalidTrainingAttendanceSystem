@@ -37,6 +37,16 @@ const ROLES = [
   { value: "teacher", label: "معلم" },
 ];
 
+const ROLE_COLORS: Record<string, { bg: string; text: string }> = {
+  admin: { bg: "bg-red-100", text: "text-red-800" },
+  operator: { bg: "bg-yellow-100", text: "text-yellow-800" },
+  teacher: { bg: "bg-green-100", text: "text-green-800" },
+};
+
+const getRoleColor = (role: string) => {
+  return ROLE_COLORS[role] || { bg: "bg-blue-100", text: "text-blue-800" };
+};
+
 export function UsersManagementTab() {
   const { toast } = useToast();
   const [users, setUsers] = useState<User[]>([]);
@@ -296,7 +306,10 @@ export function UsersManagementTab() {
                     </TableCell>
                     <TableCell>{user.email}</TableCell>
                     <TableCell>
-                      <span className="inline-block px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
+                      <span
+                        className={`inline-block px-3 py-1 rounded-full text-sm ${
+                          getRoleColor(user.role).bg
+                        } ${getRoleColor(user.role).text}`}>
                         {ROLES.find((r) => r.value === user.role)?.label}
                       </span>
                     </TableCell>

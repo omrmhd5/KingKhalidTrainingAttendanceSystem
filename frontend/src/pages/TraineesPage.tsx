@@ -22,6 +22,31 @@ import { rankApi } from "@/lib/rankApi";
 import { specializationApi } from "@/lib/specializationApi";
 import { shiftApi } from "@/lib/shiftApi";
 
+interface Rank {
+  _id: string;
+  name: string;
+}
+
+interface Specialization {
+  _id: string;
+  name: string;
+}
+
+interface Shift {
+  _id: string;
+  name: string;
+}
+
+interface Trainee {
+  _id: string;
+  civil_id: string;
+  military_id: string;
+  full_name: string;
+  rank_id: Rank | string;
+  specialty_id: Specialization | string;
+  shift_id: Shift | string;
+}
+
 interface TraineeForm {
   civil_id: string;
   military_id: string;
@@ -53,12 +78,12 @@ export default function TraineesPage() {
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [deleteTargetName, setDeleteTargetName] = useState("");
   const [form, setForm] = useState<TraineeForm>(emptyForm);
-  const [trainees, setTrainees] = useState<any[]>([]);
+  const [trainees, setTrainees] = useState<Trainee[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [ranks, setRanks] = useState<any[]>([]);
-  const [specializations, setSpecializations] = useState<any[]>([]);
-  const [shifts, setShifts] = useState<any[]>([]);
+  const [ranks, setRanks] = useState<Rank[]>([]);
+  const [specializations, setSpecializations] = useState<Specialization[]>([]);
+  const [shifts, setShifts] = useState<Shift[]>([]);
   const [selectedTrainees, setSelectedTrainees] = useState<Set<string>>(
     new Set(),
   );
@@ -135,31 +160,38 @@ export default function TraineesPage() {
     isPending: isSaving,
   };
 
-  const filtered = trainees.filter((t: any) => {
+  const filtered = trainees.filter((t: Trainee) => {
     const matchesSearch = [t.full_name, t.civil_id, t.military_id].some((v) =>
       v?.toLowerCase().includes(search.toLowerCase()),
     );
     const matchesRank =
-      !filterRank || filterRank === "all" || t.rank_id?._id === filterRank;
+      !filterRank ||
+      filterRank === "all" ||
+      (t.rank_id as Rank)?._id === filterRank;
     const matchesSpecialty =
       !filterSpecialty ||
       filterSpecialty === "all" ||
-      t.specialty_id?._id === filterSpecialty;
+      (t.specialty_id as Specialization)?._id === filterSpecialty;
     const matchesShift =
-      !filterShift || filterShift === "all" || t.shift_id?._id === filterShift;
+      !filterShift ||
+      filterShift === "all" ||
+      (t.shift_id as Shift)?._id === filterShift;
 
     return matchesSearch && matchesRank && matchesSpecialty && matchesShift;
   });
 
-  const openEdit = (t: any) => {
+  const openEdit = (t: Trainee) => {
     setEditing(t._id);
     setForm({
       civil_id: t.civil_id,
       military_id: t.military_id,
       full_name: t.full_name,
-      rank_id: (t.rank_id?._id || t.rank_id) ?? "",
-      specialty_id: (t.specialty_id?._id || t.specialty_id) ?? "",
-      shift_id: (t.shift_id?._id || t.shift_id) ?? "",
+      rank_id: ((t.rank_id as Rank)?._id || (t.rank_id as string)) ?? "",
+      specialty_id:
+        ((t.specialty_id as Specialization)?._id ||
+          (t.specialty_id as string)) ??
+        "",
+      shift_id: ((t.shift_id as Shift)?._id || (t.shift_id as string)) ?? "",
     });
     setDialogOpen(true);
   };
@@ -252,9 +284,9 @@ export default function TraineesPage() {
             className="mt-3 space-y-1 text-sm text-muted-foreground"
             dir="rtl">
             <p>إجمالي: {trainees.length} متدرب</p>
-            {shifts.map((shift: any) => {
+            {shifts.map((shift: Shift) => {
               const count = trainees.filter(
-                (t: any) => t.shift_id?._id === shift._id,
+                (t: Trainee) => (t.shift_id as Shift)?._id === shift._id,
               ).length;
               return (
                 <p key={shift._id} dir="ltr">
@@ -330,15 +362,17 @@ export default function TraineesPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="text-center w-12">
-                  <Checkbox
-                    checked={
-                      selectedTrainees.size === filtered.length &&
-                      filtered.length > 0
-                    }
-                    onCheckedChange={toggleSelectAll}
-                  />
-                </TableHead>
+                {canWrite && (
+                  <TableHead className="text-center w-12">
+                    <Checkbox
+                      checked={
+                        selectedTrainees.size === filtered.length &&
+                        filtered.length > 0
+                      }
+                      onCheckedChange={toggleSelectAll}
+                    />
+                  </TableHead>
+                )}
                 <TableHead className="text-right">الرقم العسكري</TableHead>
                 <TableHead className="text-right">السجل المدني</TableHead>
                 <TableHead className="text-right">الاسم</TableHead>
@@ -346,14 +380,16 @@ export default function TraineesPage() {
                 <TableHead className="text-right">التخصص</TableHead>
                 <TableHead className="text-right">الشفت</TableHead>
                 <TableHead className="text-center">الباركود</TableHead>
-                <TableHead className="text-right">الإجراءات</TableHead>
+                {canWrite && (
+                  <TableHead className="text-right">الإجراءات</TableHead>
+                )}
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
                   <TableCell
-                    colSpan={9}
+                    colSpan={canWrite ? 9 : 8}
                     className="text-center py-8 text-muted-foreground">
                     جاري التحميل...
                   </TableCell>
@@ -361,20 +397,22 @@ export default function TraineesPage() {
               ) : filtered?.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={9}
+                    colSpan={canWrite ? 9 : 8}
                     className="text-center py-8 text-muted-foreground">
                     لم يتم العثور على متدربين
                   </TableCell>
                 </TableRow>
               ) : (
-                filtered?.map((t: any) => (
+                filtered?.map((t: Trainee) => (
                   <TableRow key={t._id}>
-                    <TableCell className="text-center w-12">
-                      <Checkbox
-                        checked={selectedTrainees.has(t._id)}
-                        onCheckedChange={() => toggleSelectTrainee(t._id)}
-                      />
-                    </TableCell>
+                    {canWrite && (
+                      <TableCell className="text-center w-12">
+                        <Checkbox
+                          checked={selectedTrainees.has(t._id)}
+                          onCheckedChange={() => toggleSelectTrainee(t._id)}
+                        />
+                      </TableCell>
+                    )}
                     <TableCell className="font-medium text-right">
                       {t.military_id}
                     </TableCell>
@@ -383,13 +421,13 @@ export default function TraineesPage() {
                       {t.full_name}
                     </TableCell>
                     <TableCell className="text-right">
-                      {(t as any).rank_id?.name ?? "—"}
+                      {(t.rank_id as Rank)?.name ?? "—"}
                     </TableCell>
                     <TableCell className="text-right">
-                      {(t as any).specialty_id?.name ?? "—"}
+                      {(t.specialty_id as Specialization)?.name ?? "—"}
                     </TableCell>
                     <TableCell className="text-right">
-                      {(t as any).shift_id?.name ?? "—"}
+                      {(t.shift_id as Shift)?.name ?? "—"}
                     </TableCell>
                     <TableCell className="text-center py-2">
                       <div className="flex justify-center scale-75 origin-center">
@@ -401,22 +439,24 @@ export default function TraineesPage() {
                         />
                       </div>
                     </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center gap-2 justify-start">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => openEdit(t)}>
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => openDelete(t._id, t.full_name)}>
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </TableCell>
+                    {canWrite && (
+                      <TableCell className="text-right">
+                        <div className="flex items-center gap-2 justify-start">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openEdit(t)}>
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openDelete(t._id, t.full_name)}>
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))
               )}
