@@ -1,14 +1,13 @@
-import axios from "axios";
-import { API_URL } from "./api";
+import { apiClient } from "./api";
 
 export const traineeApi = {
   async getAllTrainees() {
-    const response = await axios.get(`${API_URL}/trainees`);
+    const response = await apiClient.get(`/trainees`);
     return response.data;
   },
 
   async getTraineeById(id: string) {
-    const response = await axios.get(`${API_URL}/trainees/${id}`);
+    const response = await apiClient.get(`/trainees/${id}`);
     return response.data;
   },
 
@@ -20,7 +19,7 @@ export const traineeApi = {
     specialty_id: string;
     shift_id: string;
   }) {
-    const response = await axios.post(`${API_URL}/trainees`, data);
+    const response = await apiClient.post(`/trainees`, data);
     return response.data;
   },
 
@@ -35,17 +34,17 @@ export const traineeApi = {
       shift_id?: string;
     },
   ) {
-    const response = await axios.put(`${API_URL}/trainees/${id}`, data);
+    const response = await apiClient.put(`/trainees/${id}`, data);
     return response.data;
   },
 
   async deleteTrainee(id: string) {
-    const response = await axios.delete(`${API_URL}/trainees/${id}`);
+    const response = await apiClient.delete(`/trainees/${id}`);
     return response.data;
   },
 
   async searchByIds(ids: string[], searchType: "military" | "civil") {
-    const response = await axios.post(`${API_URL}/trainees/search`, {
+    const response = await apiClient.post(`/trainees/search`, {
       ids,
       searchType,
     });

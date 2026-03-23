@@ -1,5 +1,4 @@
-import axios from "axios";
-import { API_URL } from "./api";
+import { apiClient, API_URL } from "./api";
 
 export interface Trainee {
   _id: string;
@@ -87,7 +86,7 @@ export interface EscapesByDateResponse {
 
 export const attendanceApi = {
   async recordEntry(militaryId: string, shiftId: string, date: string) {
-    const response = await axios.post(`${API_URL}/attendance/entry`, {
+    const response = await apiClient.post(`/attendance/entry`, {
       military_id: militaryId,
       shift_id: shiftId,
       date,
@@ -96,7 +95,7 @@ export const attendanceApi = {
   },
 
   async recordExit(militaryId: string, date: string) {
-    const response = await axios.post(`${API_URL}/attendance/exit`, {
+    const response = await apiClient.post(`/attendance/exit`, {
       military_id: militaryId,
       date,
     });
@@ -111,28 +110,28 @@ export const attendanceApi = {
     if (shiftId) {
       params.shift_id = shiftId;
     }
-    const response = await axios.get(`${API_URL}/attendance/by-date`, {
+    const response = await apiClient.get(`/attendance/by-date`, {
       params,
     });
     return response.data;
   },
 
   async getDailySummary(date: string): Promise<DailySummary> {
-    const response = await axios.get(`${API_URL}/attendance/summary`, {
+    const response = await apiClient.get(`/attendance/summary`, {
       params: { date },
     });
     return response.data;
   },
 
   async getAbsences(date: string): Promise<AbsencesByDateResponse> {
-    const response = await axios.get(`${API_URL}/attendance/absences`, {
+    const response = await apiClient.get(`/attendance/absences`, {
       params: { date },
     });
     return response.data;
   },
 
   async getEscapes(date: string): Promise<EscapesByDateResponse> {
-    const response = await axios.get(`${API_URL}/attendance/escapes`, {
+    const response = await apiClient.get(`/attendance/escapes`, {
       params: { date },
     });
     return response.data;

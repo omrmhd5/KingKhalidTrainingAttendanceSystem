@@ -1,11 +1,9 @@
-import axios from "axios";
-
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+import { apiClient } from "./api";
 
 const violationApi = {
   // Create a new violation
   createViolation: async (trainee_id: string, description: string) => {
-    const response = await axios.post(`${BASE_URL}/violations`, {
+    const response = await apiClient.post(`/violations`, {
       trainee_id,
       description,
     });
@@ -14,37 +12,33 @@ const violationApi = {
 
   // Get all violations
   getAllViolations: async () => {
-    const response = await axios.get(`${BASE_URL}/violations`);
+    const response = await apiClient.get(`/violations`);
     return response.data;
   },
 
   // Get violations by trainee ID
   getViolationsByTraineeId: async (trainee_id: string) => {
-    const response = await axios.get(
-      `${BASE_URL}/violations/trainee/${trainee_id}`,
-    );
+    const response = await apiClient.get(`/violations/trainee/${trainee_id}`);
     return response.data;
   },
 
   // Delete a specific violation
   deleteViolation: async (violationId: string) => {
-    const response = await axios.delete(
-      `${BASE_URL}/violations/${violationId}`,
-    );
+    const response = await apiClient.delete(`/violations/${violationId}`);
     return response.data;
   },
 
   // Delete all violations for a trainee
   deleteAllViolationsByTrainee: async (trainee_id: string) => {
-    const response = await axios.delete(
-      `${BASE_URL}/violations/trainee/${trainee_id}/all`,
+    const response = await apiClient.delete(
+      `/violations/trainee/${trainee_id}/all`,
     );
     return response.data;
   },
 
   // Update a violation
   updateViolation: async (violationId: string, description: string) => {
-    const response = await axios.put(`${BASE_URL}/violations/${violationId}`, {
+    const response = await apiClient.put(`/violations/${violationId}`, {
       description,
     });
     return response.data;

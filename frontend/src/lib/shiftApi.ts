@@ -1,9 +1,8 @@
-import axios from "axios";
-import { API_URL } from "./api";
+import { apiClient } from "./api";
 
 export const shiftApi = {
   async getAllShifts() {
-    const response = await axios.get(`${API_URL}/shifts`);
+    const response = await apiClient.get(`/shifts`);
     return response.data;
   },
 
@@ -13,7 +12,7 @@ export const shiftApi = {
     end_time: string;
     grace_minutes: number;
   }) {
-    const response = await axios.post(`${API_URL}/shifts`, data);
+    const response = await apiClient.post(`/shifts`, data);
     return response.data;
   },
 
@@ -26,12 +25,12 @@ export const shiftApi = {
       grace_minutes: number;
     },
   ) {
-    const response = await axios.put(`${API_URL}/shifts/${id}`, data);
+    const response = await apiClient.put(`/shifts/${id}`, data);
     return response.data;
   },
 
   async deleteShift(id: string) {
-    const response = await axios.delete(`${API_URL}/shifts/${id}`);
+    const response = await apiClient.delete(`/shifts/${id}`);
     return response.data;
   },
 };
