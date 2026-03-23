@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { UsersManagementTab } from "@/components/settings/UsersManagementTab";
 import { ShiftsManagementTab } from "@/components/settings/ShiftsManagementTab";
 import { RanksManagementTab } from "@/components/settings/RanksManagementTab";
 import { SpecializationsManagementTab } from "@/components/settings/SpecializationsManagementTab";
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState("shifts");
+  const [activeTab, setActiveTab] = useState("users");
 
   useEffect(() => {
     // Load saved tab from localStorage
@@ -26,10 +27,16 @@ export default function SettingsPage() {
 
       <Tabs value={activeTab} onValueChange={handleTabChange} dir="rtl">
         <TabsList>
+          <TabsTrigger value="users">المستخدمون</TabsTrigger>
           <TabsTrigger value="shifts">ادارة الشفتات</TabsTrigger>
           <TabsTrigger value="ranks">إدارة الرتب</TabsTrigger>
           <TabsTrigger value="specializations">إدارة التخصصات</TabsTrigger>
         </TabsList>
+
+        {/* Users */}
+        <TabsContent value="users">
+          <UsersManagementTab />
+        </TabsContent>
 
         {/* Shifts */}
         <TabsContent value="shifts">
