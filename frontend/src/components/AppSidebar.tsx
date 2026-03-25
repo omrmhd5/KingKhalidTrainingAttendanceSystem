@@ -6,6 +6,7 @@ import {
   Settings,
   Shield,
   AlertCircle,
+  BookOpen,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
@@ -64,7 +65,12 @@ const navItems = [
     icon: Shield,
     roles: ["admin", "operator"],
   },
-
+  {
+    title: "الفصول الدراسية",
+    url: "/classes",
+    icon: BookOpen,
+    roles: ["admin", "operator"],
+  },
   { title: "الإعدادات", url: "/settings", icon: Settings, roles: ["admin"] },
 ];
 

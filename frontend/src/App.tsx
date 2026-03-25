@@ -13,6 +13,7 @@ import ViolationsPage from "@/pages/ViolationsPage";
 import DisciplinaryPage from "@/pages/DisciplinaryPage";
 import ReportsPage from "@/pages/ReportsPage";
 import SettingsPage from "@/pages/SettingsPage";
+import ClassesPage from "@/pages/ClassesPage";
 import NotFound from "./pages/NotFound";
 
 const App = () => (
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/violations" element={<ViolationsPage />} />
             <Route path="/disciplinary" element={<DisciplinaryPage />} />
             <Route path="/reports" element={<ReportsPage />} />
+            <Route path="/classes" element={<ClassesPage />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Route>
           <Route path="*" element={<NotFound />} />
