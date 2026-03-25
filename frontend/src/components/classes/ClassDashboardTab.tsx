@@ -146,7 +146,7 @@ export function ClassDashboardTab({ canWrite = true }: ClassDashboardTabProps) {
             <SelectTrigger dir="rtl">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent dir="rtl" className="flex-row-reverse">
               <SelectItem value="absence">الغياب</SelectItem>
               <SelectItem value="escape">الهروب</SelectItem>
             </SelectContent>
@@ -161,7 +161,7 @@ export function ClassDashboardTab({ canWrite = true }: ClassDashboardTabProps) {
             <SelectTrigger dir="rtl">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent dir="rtl" className="flex-row-reverse">
               {classes.map((cls) => (
                 <SelectItem key={cls._id} value={cls._id}>
                   {cls.name}

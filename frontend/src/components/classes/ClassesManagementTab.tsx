@@ -70,6 +70,7 @@ export function ClassesManagementTab({
   const [deleteTargetName, setDeleteTargetName] = useState("");
   const [formData, setFormData] = useState({
     name: "",
+    teacherId: "",
   });
 
   // Mock data for now
@@ -124,13 +125,16 @@ export function ClassesManagementTab({
   };
 
   const handleOpenAdd = () => {
-    setFormData({ name: "" });
+    setFormData({ name: "", teacherId: "" });
     setIsAddOpen(true);
   };
 
   const handleOpenEdit = (classItem: Class) => {
     setSelectedClass(classItem);
-    setFormData({ name: classItem.name });
+    setFormData({
+      name: classItem.name,
+      teacherId: classItem.teacher?._id || "",
+    });
     setIsEditOpen(true);
   };
 
@@ -189,9 +193,14 @@ export function ClassesManagementTab({
     try {
       setSubmitting(true);
       // TODO: Call API to update class
+      const selectedTeacher = formData.teacherId
+        ? teachers.find((t) => t._id === formData.teacherId) || null
+        : null;
       setClasses(
         classes.map((c) =>
-          c._id === selectedClass?._id ? { ...c, name: formData.name } : c,
+          c._id === selectedClass?._id
+            ? { ...c, name: formData.name, teacher: selectedTeacher }
+            : c,
         ),
       );
       setIsEditOpen(false);
@@ -400,6 +409,29 @@ export function ClassesManagementTab({
                     }
                     dir="rtl"
                   />
+                </div>
+                <div>
+                  <Label
+                    htmlFor="edit-teacher"
+                    className="text-right block mb-2">
+                    المعلم
+                  </Label>
+                  <Select
+                    value={formData.teacherId}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, teacherId: value })
+                    }>
+                    <SelectTrigger id="edit-teacher" dir="rtl">
+                      <SelectValue placeholder="اختر معلم" />
+                    </SelectTrigger>
+                    <SelectContent dir="rtl">
+                      {teachers.map((teacher) => (
+                        <SelectItem key={teacher._id} value={teacher._id}>
+                          {teacher.username}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
