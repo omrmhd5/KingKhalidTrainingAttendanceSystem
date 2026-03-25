@@ -104,7 +104,7 @@ export default function ExitsTable({
           <h3 className="text-lg font-semibold text-foreground">سجل الخروج</h3>
         </div>
         <Badge
-          className={`text-sm font-semibold px-4 py-2 text-base ${
+          className={`font-semibold px-4 py-2 text-base ${
             exitsWithData.length === attendedCount
               ? "bg-green-700 text-white border-green-900"
               : "bg-warning/20 text-warning border-warning"

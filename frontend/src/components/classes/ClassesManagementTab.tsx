@@ -28,7 +28,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
-import { StudentAssignmentModal } from "./StudentAssignmentModal";
+import { ClassStudentsModal } from "./ClassStudentsModal";
+import { AddStudentsModal } from "./AssignStudentsModal";
 
 interface Class {
   _id: string;
@@ -64,6 +65,7 @@ export function ClassesManagementTab({
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [showStudentModal, setShowStudentModal] = useState(false);
+  const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedClass, setSelectedClass] = useState<Class | null>(null);
   const [deleteTargetName, setDeleteTargetName] = useState("");
   const [formData, setFormData] = useState({
@@ -298,6 +300,16 @@ export function ClassesManagementTab({
                           <Button
                             variant="ghost"
                             size="icon"
+                            title="إضافة طلاب"
+                            onClick={() => {
+                              setSelectedClass(classItem);
+                              setShowAssignModal(true);
+                            }}>
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             onClick={() => handleOpenEdit(classItem)}>
                             <Edit className="h-4 w-4" />
                           </Button>
@@ -423,13 +435,22 @@ export function ClassesManagementTab({
         </>
       )}
 
-      {/* Student Assignment Modal */}
+      {/* Student Assignment Modal - View/Delete current students */}
       {selectedClass && (
-        <StudentAssignmentModal
+        <ClassStudentsModal
           open={showStudentModal}
           onOpenChange={setShowStudentModal}
           classItem={selectedClass}
           canWrite={canWrite}
+        />
+      )}
+
+      {/* Assign Students Modal - Add new students */}
+      {selectedClass && canWrite && (
+        <AddStudentsModal
+          open={showAssignModal}
+          onOpenChange={setShowAssignModal}
+          classItem={selectedClass}
         />
       )}
     </>

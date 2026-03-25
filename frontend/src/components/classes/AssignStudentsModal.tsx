@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -16,16 +17,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Search, Loader2, Trash2 } from "lucide-react";
+import { Search, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
 
 interface Student {
   _id: string;
   full_name: string;
   civil_id: string;
   military_id: string;
-  currentClassId?: string;
 }
 
 interface ClassItem {
@@ -36,65 +35,94 @@ interface ClassItem {
 
 const ITEMS_PER_PAGE = 10;
 
-interface ClassStudentsModalProps {
+interface AddStudentsModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   classItem: ClassItem;
-  canWrite?: boolean;
 }
 
-export function ClassStudentsModal({
+export function AddStudentsModal({
   open,
   onOpenChange,
   classItem,
-  canWrite = true,
-}: ClassStudentsModalProps) {
+}: AddStudentsModalProps) {
   const { toast } = useToast();
   const [search, setSearch] = useState("");
+  const [selectedStudents, setSelectedStudents] = useState<Set<string>>(
+    new Set(),
+  );
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [deleting, setDeleting] = useState<string | null>(null);
-  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
-  const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  // Mock data - Students currently in this class
+  // Mock data - All available students (not in this class)
   // TODO: Replace with actual API call
-  const classStudents: Student[] = [
+  const availableStudents: Student[] = [
     {
-      _id: "s1",
-      full_name: "محمد أحمد",
-      civil_id: "1234567890",
-      military_id: "001",
+      _id: "s6",
+      full_name: "خالد منصور",
+      civil_id: "1234567895",
+      military_id: "006",
     },
     {
-      _id: "s2",
-      full_name: "فاطمة علي",
-      civil_id: "1234567891",
-      military_id: "002",
+      _id: "s7",
+      full_name: "ليلى حسن",
+      civil_id: "1234567896",
+      military_id: "007",
     },
     {
-      _id: "s3",
-      full_name: "عمر محمد",
-      civil_id: "1234567892",
-      military_id: "003",
+      _id: "s8",
+      full_name: "يوسف إبراهيم",
+      civil_id: "1234567897",
+      military_id: "008",
     },
     {
-      _id: "s4",
-      full_name: "نور احمد",
-      civil_id: "1234567893",
-      military_id: "004",
+      _id: "s9",
+      full_name: "ريم عبدالله",
+      civil_id: "1234567898",
+      military_id: "009",
     },
     {
-      _id: "s5",
-      full_name: "سارة علي",
-      civil_id: "1234567894",
-      military_id: "005",
+      _id: "s10",
+      full_name: "أحمد سعيد",
+      civil_id: "1234567899",
+      military_id: "010",
+    },
+    {
+      _id: "s11",
+      full_name: "هناء محمود",
+      civil_id: "1234567900",
+      military_id: "011",
+    },
+    {
+      _id: "s12",
+      full_name: "إبراهيم حسين",
+      civil_id: "1234567901",
+      military_id: "012",
+    },
+    {
+      _id: "s13",
+      full_name: "مريم محمد",
+      civil_id: "1234567902",
+      military_id: "013",
+    },
+    {
+      _id: "s14",
+      full_name: "علي حسن",
+      civil_id: "1234567903",
+      military_id: "014",
+    },
+    {
+      _id: "s15",
+      full_name: "زينب علي",
+      civil_id: "1234567904",
+      military_id: "015",
     },
   ];
 
   // Filter students by search
   const filteredStudents = useMemo(() => {
-    return classStudents.filter((student) =>
+    return availableStudents.filter((student) =>
       [student.full_name, student.civil_id, student.military_id].some((v) =>
         v?.toLowerCase().includes(search.toLowerCase()),
       ),
@@ -108,29 +136,52 @@ export function ClassStudentsModal({
     currentPage * ITEMS_PER_PAGE,
   );
 
-  const handleDeleteStudent = async (studentId: string) => {
-    try {
-      setDeleting(studentId);
-      // TODO: Call API to remove student from class
-      toast({
-        title: "نجاح",
-        description: "تم حذف الطالب من الفصل",
-      });
-    } catch (error: unknown) {
-      toast({
-        title: "خطأ",
-        description: "فشل في حذف الطالب",
-        variant: "destructive",
-      });
-    } finally {
-      setDeleting(null);
-      setConfirmDeleteOpen(false);
+  const handleSelectStudent = (id: string) => {
+    const newSelected = new Set(selectedStudents);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedStudents(newSelected);
+  };
+
+  const handleSelectAll = () => {
+    if (selectedStudents.size === paginatedStudents.length) {
+      setSelectedStudents(new Set());
+    } else {
+      setSelectedStudents(new Set(paginatedStudents.map((s) => s._id)));
     }
   };
 
-  const handleOpenDeleteConfirm = (student: Student) => {
-    setStudentToDelete(student);
-    setConfirmDeleteOpen(true);
+  const handleAssignStudents = async () => {
+    if (selectedStudents.size === 0) {
+      toast({
+        title: "تنبيه",
+        description: "يرجى تحديد طلاب للتعيين",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      // TODO: Call API to assign students to class
+      toast({
+        title: "نجاح",
+        description: `تم تعيين ${selectedStudents.size} طالب(ة) للفصل`,
+      });
+      setSelectedStudents(new Set());
+      onOpenChange(false);
+    } catch (error: unknown) {
+      toast({
+        title: "خطأ",
+        description: "فشل في تعيين الطلاب",
+        variant: "destructive",
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -140,7 +191,7 @@ export function ClassStudentsModal({
         className="max-w-2xl max-h-[80vh] overflow-y-auto scrollbar-thin">
         <DialogHeader>
           <DialogTitle className="text-right">
-            طلاب الفصل: {classItem.name}
+            إضافة طلاب للفصل: {classItem.name}
           </DialogTitle>
         </DialogHeader>
 
@@ -165,12 +216,18 @@ export function ClassStudentsModal({
             <Table dir="rtl">
               <TableHeader>
                 <TableRow>
+                  <TableHead className="text-center w-12">
+                    <Checkbox
+                      checked={
+                        selectedStudents.size === paginatedStudents.length &&
+                        paginatedStudents.length > 0
+                      }
+                      onCheckedChange={handleSelectAll}
+                    />
+                  </TableHead>
                   <TableHead className="text-right">الاسم</TableHead>
                   <TableHead className="text-right">السجل المدني</TableHead>
                   <TableHead className="text-right">الرقم العسكري</TableHead>
-                  {canWrite && (
-                    <TableHead className="text-center">الإجراءات</TableHead>
-                  )}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -183,14 +240,22 @@ export function ClassStudentsModal({
                 ) : paginatedStudents.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={canWrite ? 4 : 3}
+                      colSpan={4}
                       className="text-center py-8 text-muted-foreground">
-                      لا يوجد طلاب
+                      لا يوجد طلاب متاحين
                     </TableCell>
                   </TableRow>
                 ) : (
                   paginatedStudents.map((student) => (
                     <TableRow key={student._id}>
+                      <TableCell className="text-center">
+                        <Checkbox
+                          checked={selectedStudents.has(student._id)}
+                          onCheckedChange={() =>
+                            handleSelectStudent(student._id)
+                          }
+                        />
+                      </TableCell>
                       <TableCell className="text-right font-medium">
                         {student.full_name}
                       </TableCell>
@@ -200,21 +265,6 @@ export function ClassStudentsModal({
                       <TableCell className="text-right">
                         {student.military_id}
                       </TableCell>
-                      {canWrite && (
-                        <TableCell className="text-center">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleOpenDeleteConfirm(student)}
-                            disabled={deleting === student._id}>
-                            {deleting === student._id ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            )}
-                          </Button>
-                        </TableCell>
-                      )}
                     </TableRow>
                   ))
                 )}
@@ -247,9 +297,9 @@ export function ClassStudentsModal({
             </div>
           )}
 
-          {/* Student Count */}
+          {/* Selected Count */}
           <div className="text-sm text-muted-foreground text-right">
-            إجمالي الطلاب: {filteredStudents.length}
+            عدد الطلاب المحددين: {selectedStudents.size}
           </div>
         </div>
 
@@ -257,23 +307,21 @@ export function ClassStudentsModal({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            disabled={deleting !== null}>
-            إغلاق
+            disabled={submitting}>
+            إلغاء
+          </Button>
+          <Button onClick={handleAssignStudents} disabled={submitting}>
+            {submitting ? (
+              <>
+                <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                جاري التعيين...
+              </>
+            ) : (
+              "تعيين الطلاب"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>
-
-      {/* Delete Confirmation Modal */}
-      {studentToDelete && (
-        <ConfirmDeleteModal
-          open={confirmDeleteOpen}
-          onOpenChange={setConfirmDeleteOpen}
-          itemName={studentToDelete.full_name}
-          itemType="الطالب"
-          onConfirm={() => handleDeleteStudent(studentToDelete._id)}
-          loading={deleting === studentToDelete._id}
-        />
-      )}
     </Dialog>
   );
 }
