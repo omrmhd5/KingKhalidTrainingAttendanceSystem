@@ -1,4 +1,5 @@
 import { apiClient } from "./api";
+import { Trainee } from "./traineeApi";
 
 export interface ClassStats {
   present: number;
@@ -17,7 +18,7 @@ export interface Class {
   _id: string;
   name: string;
   assignedTeacherId?: string | Teacher;
-  students: string[];
+  students: string[] | Trainee[];
   studentCount: number;
   stats: ClassStats;
   createdAt: string;

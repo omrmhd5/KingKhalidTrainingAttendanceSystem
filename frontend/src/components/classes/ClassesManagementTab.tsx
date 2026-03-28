@@ -441,6 +441,7 @@ export function ClassesManagementTab({
           onOpenChange={setShowStudentModal}
           classItem={selectedClass}
           canWrite={canWrite}
+          onStudentRemoved={loadClasses}
         />
       )}
 
@@ -450,6 +451,7 @@ export function ClassesManagementTab({
           open={showAssignModal}
           onOpenChange={setShowAssignModal}
           classItem={selectedClass}
+          onStudentsAdded={loadClasses}
         />
       )}
     </>

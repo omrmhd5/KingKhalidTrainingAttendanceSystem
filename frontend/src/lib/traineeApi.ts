@@ -1,13 +1,26 @@
 import { apiClient } from "./api";
 
+export interface Trainee {
+  _id: string;
+  full_name: string;
+  civil_id: string;
+  military_id: string;
+  class?: string;
+  rank_id: string;
+  specialty_id: string;
+  shift_id: string;
+  violations?: string[];
+  disciplinary?: string[];
+}
+
 export const traineeApi = {
   async getAllTrainees() {
-    const response = await apiClient.get(`/trainees`);
+    const response = await apiClient.get<Trainee[]>(`/trainees`);
     return response.data;
   },
 
   async getTraineeById(id: string) {
-    const response = await apiClient.get(`/trainees/${id}`);
+    const response = await apiClient.get<Trainee>(`/trainees/${id}`);
     return response.data;
   },
 

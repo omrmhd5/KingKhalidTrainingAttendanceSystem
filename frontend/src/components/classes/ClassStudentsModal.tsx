@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -19,19 +19,13 @@ import {
 import { Search, Loader2, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
+import { classApi, Class } from "@/lib/classApi";
 
 interface Student {
   _id: string;
   full_name: string;
   civil_id: string;
   military_id: string;
-  currentClassId?: string;
-}
-
-interface ClassItem {
-  _id: string;
-  name: string;
-  studentCount: number;
 }
 
 const ITEMS_PER_PAGE = 10;
@@ -39,8 +33,9 @@ const ITEMS_PER_PAGE = 10;
 interface ClassStudentsModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  classItem: ClassItem;
+  classItem: Class;
   canWrite?: boolean;
+  onStudentRemoved?: () => void;
 }
 
 export function ClassStudentsModal({
@@ -48,6 +43,7 @@ export function ClassStudentsModal({
   onOpenChange,
   classItem,
   canWrite = true,
+  onStudentRemoved,
 }: ClassStudentsModalProps) {
   const { toast } = useToast();
   const [search, setSearch] = useState("");
@@ -56,50 +52,41 @@ export function ClassStudentsModal({
   const [deleting, setDeleting] = useState<string | null>(null);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
+  const [classStudents, setClassStudents] = useState<Student[]>([]);
 
-  // Mock data - Students currently in this class
-  // TODO: Replace with actual API call
-  const classStudents: Student[] = [
-    {
-      _id: "s1",
-      full_name: "محمد أحمد",
-      civil_id: "1234567890",
-      military_id: "001",
-    },
-    {
-      _id: "s2",
-      full_name: "فاطمة علي",
-      civil_id: "1234567891",
-      military_id: "002",
-    },
-    {
-      _id: "s3",
-      full_name: "عمر محمد",
-      civil_id: "1234567892",
-      military_id: "003",
-    },
-    {
-      _id: "s4",
-      full_name: "نور احمد",
-      civil_id: "1234567893",
-      military_id: "004",
-    },
-    {
-      _id: "s5",
-      full_name: "سارة علي",
-      civil_id: "1234567894",
-      military_id: "005",
-    },
-  ];
+  useEffect(() => {
+    if (open) {
+      loadClassStudents();
+    }
+  }, [open, classItem._id]);
+
+  const loadClassStudents = async () => {
+    try {
+      setLoading(true);
+      const classData = await classApi.getClassById(classItem._id);
+      setClassStudents((classData.students as Student[]) || []);
+    } catch (error: unknown) {
+      toast({
+        title: "خطأ",
+        description: "فشل في تحميل طلاب الفصل",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Filter students by search
   const filteredStudents = useMemo(() => {
+    if (!search) {
+      return classStudents; // Show all students if search is empty
+    }
     return classStudents.filter((student) =>
       [student.full_name, student.civil_id, student.military_id].some((v) =>
         v?.toLowerCase().includes(search.toLowerCase()),
       ),
     );
-  }, [search]);
+  }, [search, classStudents]);
 
   // Paginate filtered students
   const totalPages = Math.ceil(filteredStudents.length / ITEMS_PER_PAGE);
@@ -111,11 +98,15 @@ export function ClassStudentsModal({
   const handleDeleteStudent = async (studentId: string) => {
     try {
       setDeleting(studentId);
-      // TODO: Call API to remove student from class
+      await classApi.removeStudent(classItem._id, studentId);
+      setClassStudents(classStudents.filter((s) => s._id !== studentId));
       toast({
         title: "نجاح",
         description: "تم حذف الطالب من الفصل",
       });
+      if (onStudentRemoved) {
+        onStudentRemoved();
+      }
     } catch (error: unknown) {
       toast({
         title: "خطأ",

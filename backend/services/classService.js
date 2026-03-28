@@ -1,5 +1,6 @@
 const Class = require("../models/Class");
 const User = require("../models/User");
+const Trainee = require("../models/Trainee");
 
 class ClassService {
   async getAllClasses(filters = {}) {
@@ -152,6 +153,9 @@ class ClassService {
       }
     }
 
+    // Update trainee's class field
+    await Trainee.updateMany({ _id: { $in: studentIds } }, { class: classId });
+
     await classItem.save();
     return await classItem.populate(
       "students",
@@ -169,6 +173,9 @@ class ClassService {
     classItem.students = classItem.students.filter(
       (id) => id.toString() !== studentId,
     );
+
+    // Clear the trainee's class field
+    await Trainee.findByIdAndUpdate(studentId, { class: null });
 
     await classItem.save();
     return await classItem.populate(

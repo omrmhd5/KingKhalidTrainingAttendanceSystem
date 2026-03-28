@@ -271,7 +271,6 @@ export function ClassStudentsModal({
           itemName={studentToDelete.full_name}
           itemType="الطالب"
           onConfirm={() => handleDeleteStudent(studentToDelete._id)}
-          loading={deleting === studentToDelete._id}
         />
       )}
     </Dialog>

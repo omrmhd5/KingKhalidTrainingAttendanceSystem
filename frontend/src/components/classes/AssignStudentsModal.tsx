@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -19,32 +19,23 @@ import {
 } from "@/components/ui/table";
 import { Search, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
-interface Student {
-  _id: string;
-  full_name: string;
-  civil_id: string;
-  military_id: string;
-}
-
-interface ClassItem {
-  _id: string;
-  name: string;
-  studentCount: number;
-}
+import { traineeApi, Trainee } from "@/lib/traineeApi";
+import { classApi, Class } from "@/lib/classApi";
 
 const ITEMS_PER_PAGE = 10;
 
 interface AddStudentsModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  classItem: ClassItem;
+  classItem: Class;
+  onStudentsAdded?: () => void;
 }
 
 export function AddStudentsModal({
   open,
   onOpenChange,
   classItem,
+  onStudentsAdded,
 }: AddStudentsModalProps) {
   const { toast } = useToast();
   const [search, setSearch] = useState("");
@@ -54,80 +45,44 @@ export function AddStudentsModal({
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [allTrainees, setAllTrainees] = useState<Trainee[]>([]);
 
-  // Mock data - All available students (not in this class)
-  // TODO: Replace with actual API call
-  const availableStudents: Student[] = [
-    {
-      _id: "s6",
-      full_name: "خالد منصور",
-      civil_id: "1234567895",
-      military_id: "006",
-    },
-    {
-      _id: "s7",
-      full_name: "ليلى حسن",
-      civil_id: "1234567896",
-      military_id: "007",
-    },
-    {
-      _id: "s8",
-      full_name: "يوسف إبراهيم",
-      civil_id: "1234567897",
-      military_id: "008",
-    },
-    {
-      _id: "s9",
-      full_name: "ريم عبدالله",
-      civil_id: "1234567898",
-      military_id: "009",
-    },
-    {
-      _id: "s10",
-      full_name: "أحمد سعيد",
-      civil_id: "1234567899",
-      military_id: "010",
-    },
-    {
-      _id: "s11",
-      full_name: "هناء محمود",
-      civil_id: "1234567900",
-      military_id: "011",
-    },
-    {
-      _id: "s12",
-      full_name: "إبراهيم حسين",
-      civil_id: "1234567901",
-      military_id: "012",
-    },
-    {
-      _id: "s13",
-      full_name: "مريم محمد",
-      civil_id: "1234567902",
-      military_id: "013",
-    },
-    {
-      _id: "s14",
-      full_name: "علي حسن",
-      civil_id: "1234567903",
-      military_id: "014",
-    },
-    {
-      _id: "s15",
-      full_name: "زينب علي",
-      civil_id: "1234567904",
-      military_id: "015",
-    },
-  ];
+  useEffect(() => {
+    if (open) {
+      loadAllTrainees();
+    }
+  }, [open]);
 
-  // Filter students by search
+  const loadAllTrainees = async () => {
+    try {
+      setLoading(true);
+      const data = await traineeApi.getAllTrainees();
+      setAllTrainees(data);
+    } catch (error: unknown) {
+      toast({
+        title: "خطأ",
+        description: "فشل في تحميل الطلاب",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Filter students by search - show all except those already in this class
   const filteredStudents = useMemo(() => {
-    return availableStudents.filter((student) =>
-      [student.full_name, student.civil_id, student.military_id].some((v) =>
-        v?.toLowerCase().includes(search.toLowerCase()),
-      ),
-    );
-  }, [search]);
+    return allTrainees.filter((student) => {
+      // Don't show students already in this class
+      if (classItem.students && classItem.students.includes(student._id)) {
+        return false;
+      }
+
+      // Filter by search term
+      return [student.full_name, student.civil_id, student.military_id].some(
+        (v) => v?.toLowerCase().includes(search.toLowerCase()),
+      );
+    });
+  }, [search, allTrainees, classItem.students]);
 
   // Paginate filtered students
   const totalPages = Math.ceil(filteredStudents.length / ITEMS_PER_PAGE);
@@ -135,6 +90,11 @@ export function AddStudentsModal({
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE,
   );
+
+  // Get students without a class (available for assignment)
+  const availableStudents = useMemo(() => {
+    return paginatedStudents.filter((student) => !student.class);
+  }, [paginatedStudents]);
 
   const handleSelectStudent = (id: string) => {
     const newSelected = new Set(selectedStudents);
@@ -147,10 +107,10 @@ export function AddStudentsModal({
   };
 
   const handleSelectAll = () => {
-    if (selectedStudents.size === paginatedStudents.length) {
+    if (selectedStudents.size === availableStudents.length) {
       setSelectedStudents(new Set());
     } else {
-      setSelectedStudents(new Set(paginatedStudents.map((s) => s._id)));
+      setSelectedStudents(new Set(availableStudents.map((s) => s._id)));
     }
   };
 
@@ -166,13 +126,20 @@ export function AddStudentsModal({
 
     try {
       setSubmitting(true);
-      // TODO: Call API to assign students to class
+      const studentIds = Array.from(selectedStudents);
+      await classApi.assignStudents(classItem._id, studentIds);
+
       toast({
         title: "نجاح",
         description: `تم تعيين ${selectedStudents.size} طالب(ة) للفصل`,
       });
+
       setSelectedStudents(new Set());
       onOpenChange(false);
+
+      if (onStudentsAdded) {
+        onStudentsAdded();
+      }
     } catch (error: unknown) {
       toast({
         title: "خطأ",
@@ -219,8 +186,8 @@ export function AddStudentsModal({
                   <TableHead className="text-center w-12">
                     <Checkbox
                       checked={
-                        selectedStudents.size === paginatedStudents.length &&
-                        paginatedStudents.length > 0
+                        selectedStudents.size === availableStudents.length &&
+                        availableStudents.length > 0
                       }
                       onCheckedChange={handleSelectAll}
                     />
@@ -228,45 +195,71 @@ export function AddStudentsModal({
                   <TableHead className="text-right">الاسم</TableHead>
                   <TableHead className="text-right">السجل المدني</TableHead>
                   <TableHead className="text-right">الرقم العسكري</TableHead>
+                  <TableHead className="text-right">الحالة</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center py-8">
+                    <TableCell colSpan={5} className="text-center py-8">
                       <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
                     </TableCell>
                   </TableRow>
                 ) : paginatedStudents.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={4}
+                      colSpan={5}
                       className="text-center py-8 text-muted-foreground">
                       لا يوجد طلاب متاحين
                     </TableCell>
                   </TableRow>
                 ) : (
-                  paginatedStudents.map((student) => (
-                    <TableRow key={student._id}>
-                      <TableCell className="text-center">
-                        <Checkbox
-                          checked={selectedStudents.has(student._id)}
-                          onCheckedChange={() =>
-                            handleSelectStudent(student._id)
-                          }
-                        />
-                      </TableCell>
-                      <TableCell className="text-right font-medium">
-                        {student.full_name}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {student.civil_id}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {student.military_id}
-                      </TableCell>
-                    </TableRow>
-                  ))
+                  paginatedStudents.map((student) => {
+                    const hasClass = !!student.class;
+                    const isSameClass = student.class === classItem._id;
+                    return (
+                      <TableRow
+                        key={student._id}
+                        className={hasClass ? "opacity-50 bg-muted" : ""}>
+                        <TableCell className="text-center">
+                          <Checkbox
+                            checked={selectedStudents.has(student._id)}
+                            onCheckedChange={() =>
+                              handleSelectStudent(student._id)
+                            }
+                            disabled={hasClass}
+                          />
+                        </TableCell>
+                        <TableCell className="text-right font-medium">
+                          {student.full_name}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {student.civil_id}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {student.military_id}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {hasClass ? (
+                            <span
+                              className={`text-xs px-2 py-1 rounded ${
+                                isSameClass
+                                  ? "bg-blue-100 text-blue-800"
+                                  : "bg-yellow-100 text-yellow-800"
+                              }`}>
+                              {isSameClass
+                                ? "معين بهذا الفصل"
+                                : "معين بفصل آخر"}
+                            </span>
+                          ) : (
+                            <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                              متاح
+                            </span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
                 )}
               </TableBody>
             </Table>

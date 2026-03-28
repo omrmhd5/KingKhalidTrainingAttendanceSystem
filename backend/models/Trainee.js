@@ -54,6 +54,10 @@ const traineeSchema = new mongoose.Schema(
         ref: "Disciplinary",
       },
     ],
+    class: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Class",
+    },
   },
   { timestamps: true },
 );
