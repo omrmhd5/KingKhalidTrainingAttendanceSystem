@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -50,8 +51,12 @@ export function ClassStudentsModal({
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [selectedStudents, setSelectedStudents] = useState<Set<string>>(
+    new Set(),
+  );
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
+  const [isBulkDelete, setIsBulkDelete] = useState(false);
   const [classStudents, setClassStudents] = useState<Student[]>([]);
 
   useEffect(() => {
@@ -119,8 +124,68 @@ export function ClassStudentsModal({
     }
   };
 
+  const handleDeleteSelectedStudents = async () => {
+    try {
+      setDeleting("bulk");
+      const studentIds = Array.from(selectedStudents);
+
+      // Delete each student
+      for (const studentId of studentIds) {
+        await classApi.removeStudent(classItem._id, studentId);
+      }
+
+      setClassStudents(
+        classStudents.filter((s) => !selectedStudents.has(s._id)),
+      );
+      setSelectedStudents(new Set());
+
+      toast({
+        title: "نجاح",
+        description: `تم حذف ${studentIds.length} طالب(ة) من الفصل`,
+      });
+
+      if (onStudentRemoved) {
+        onStudentRemoved();
+      }
+    } catch (error: unknown) {
+      toast({
+        title: "خطأ",
+        description: "فشل في حذف الطلاب",
+        variant: "destructive",
+      });
+    } finally {
+      setDeleting(null);
+      setConfirmDeleteOpen(false);
+    }
+  };
+
+  const handleSelectStudent = (id: string) => {
+    const newSelected = new Set(selectedStudents);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedStudents(newSelected);
+  };
+
+  const handleSelectAll = () => {
+    if (selectedStudents.size === paginatedStudents.length) {
+      setSelectedStudents(new Set());
+    } else {
+      setSelectedStudents(new Set(paginatedStudents.map((s) => s._id)));
+    }
+  };
+
   const handleOpenDeleteConfirm = (student: Student) => {
     setStudentToDelete(student);
+    setIsBulkDelete(false);
+    setConfirmDeleteOpen(true);
+  };
+
+  const handleOpenBulkDeleteConfirm = () => {
+    setStudentToDelete(null);
+    setIsBulkDelete(true);
     setConfirmDeleteOpen(true);
   };
 
@@ -156,6 +221,17 @@ export function ClassStudentsModal({
             <Table dir="rtl">
               <TableHeader>
                 <TableRow>
+                  {canWrite && (
+                    <TableHead className="text-center w-12">
+                      <Checkbox
+                        checked={
+                          selectedStudents.size === paginatedStudents.length &&
+                          paginatedStudents.length > 0
+                        }
+                        onCheckedChange={handleSelectAll}
+                      />
+                    </TableHead>
+                  )}
                   <TableHead className="text-right">الاسم</TableHead>
                   <TableHead className="text-right">السجل المدني</TableHead>
                   <TableHead className="text-right">الرقم العسكري</TableHead>
@@ -167,14 +243,16 @@ export function ClassStudentsModal({
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center py-8">
+                    <TableCell
+                      colSpan={canWrite ? 5 : 4}
+                      className="text-center py-8">
                       <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
                     </TableCell>
                   </TableRow>
                 ) : paginatedStudents.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={canWrite ? 4 : 3}
+                      colSpan={canWrite ? 5 : 4}
                       className="text-center py-8 text-muted-foreground">
                       لا يوجد طلاب
                     </TableCell>
@@ -182,6 +260,16 @@ export function ClassStudentsModal({
                 ) : (
                   paginatedStudents.map((student) => (
                     <TableRow key={student._id}>
+                      {canWrite && (
+                        <TableCell className="text-center">
+                          <Checkbox
+                            checked={selectedStudents.has(student._id)}
+                            onCheckedChange={() =>
+                              handleSelectStudent(student._id)
+                            }
+                          />
+                        </TableCell>
+                      )}
                       <TableCell className="text-right font-medium">
                         {student.full_name}
                       </TableCell>
@@ -197,7 +285,7 @@ export function ClassStudentsModal({
                             variant="ghost"
                             size="icon"
                             onClick={() => handleOpenDeleteConfirm(student)}
-                            disabled={deleting === student._id}>
+                            disabled={deleting !== null}>
                             {deleting === student._id ? (
                               <Loader2 className="h-4 w-4 animate-spin" />
                             ) : (
@@ -245,6 +333,15 @@ export function ClassStudentsModal({
         </div>
 
         <DialogFooter className="gap-2">
+          {canWrite && selectedStudents.size > 0 && (
+            <Button
+              variant="destructive"
+              onClick={handleOpenBulkDeleteConfirm}
+              disabled={deleting !== null}>
+              <Trash2 className="ml-2 h-4 w-4" />
+              حذف المحددين ({selectedStudents.size})
+            </Button>
+          )}
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
@@ -255,13 +352,23 @@ export function ClassStudentsModal({
       </DialogContent>
 
       {/* Delete Confirmation Modal */}
-      {studentToDelete && (
+      {(studentToDelete || isBulkDelete) && (
         <ConfirmDeleteModal
           open={confirmDeleteOpen}
           onOpenChange={setConfirmDeleteOpen}
-          itemName={studentToDelete.full_name}
-          itemType="الطالب"
-          onConfirm={() => handleDeleteStudent(studentToDelete._id)}
+          itemName={
+            isBulkDelete
+              ? `${selectedStudents.size} طالب(ة)`
+              : studentToDelete?.full_name || ""
+          }
+          itemType={isBulkDelete ? "الطلاب" : "الطالب"}
+          onConfirm={() => {
+            if (isBulkDelete) {
+              handleDeleteSelectedStudents();
+            } else if (studentToDelete) {
+              handleDeleteStudent(studentToDelete._id);
+            }
+          }}
         />
       )}
     </Dialog>

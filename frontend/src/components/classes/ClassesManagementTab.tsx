@@ -136,9 +136,11 @@ export function ClassesManagementTab({
         description: "تم إضافة الفصل بنجاح",
       });
     } catch (error: unknown) {
+      const errorMessage =
+        (error as any)?.response?.data?.message || "فشل في إضافة الفصل";
       toast({
         title: "خطأ",
-        description: "فشل في إضافة الفصل",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -171,9 +173,11 @@ export function ClassesManagementTab({
         description: "تم تحديث الفصل بنجاح",
       });
     } catch (error: unknown) {
+      const errorMessage =
+        (error as any)?.response?.data?.message || "فشل في تحديث الفصل";
       toast({
         title: "خطأ",
-        description: "فشل في تحديث الفصل",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -194,9 +198,11 @@ export function ClassesManagementTab({
         description: "تم حذف الفصل بنجاح",
       });
     } catch (error: unknown) {
+      const errorMessage =
+        (error as any)?.response?.data?.message || "فشل في حذف الفصل";
       toast({
         title: "خطأ",
-        description: "فشل في حذف الفصل",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

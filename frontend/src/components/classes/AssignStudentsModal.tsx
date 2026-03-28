@@ -39,6 +39,9 @@ export function AddStudentsModal({
 }: AddStudentsModalProps) {
   const { toast } = useToast();
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "available" | "assigned-this" | "assigned-other"
+  >("all");
   const [selectedStudents, setSelectedStudents] = useState<Set<string>>(
     new Set(),
   );
@@ -69,20 +72,47 @@ export function AddStudentsModal({
     }
   };
 
+  // Helper to check if student is in this class (handles both string IDs and objects)
+  const isStudentInThisClass = (student: Trainee): boolean => {
+    if (!classItem.students) return false;
+    return classItem.students.some((s) => {
+      if (typeof s === "string") {
+        return s === student._id;
+      } else {
+        return (s as any)._id === student._id;
+      }
+    });
+  };
+
   // Filter students by search - show all except those already in this class
   const filteredStudents = useMemo(() => {
     return allTrainees.filter((student) => {
-      // Don't show students already in this class
-      if (classItem.students && classItem.students.includes(student._id)) {
-        return false;
+      // Filter by search term first
+      const matchesSearch = [
+        student.full_name,
+        student.civil_id,
+        student.military_id,
+      ].some((v) => v?.toLowerCase().includes(search.toLowerCase()));
+
+      if (!matchesSearch) return false;
+
+      const inThisClass = isStudentInThisClass(student);
+      const hasOtherClass = !!student.class;
+      const inOtherClass = hasOtherClass && !inThisClass;
+
+      // Apply status filter
+      if (statusFilter === "available") {
+        return !hasOtherClass && !inThisClass;
+      } else if (statusFilter === "assigned-this") {
+        return inThisClass;
+      } else if (statusFilter === "assigned-other") {
+        return inOtherClass;
       }
 
-      // Filter by search term
-      return [student.full_name, student.civil_id, student.military_id].some(
-        (v) => v?.toLowerCase().includes(search.toLowerCase()),
-      );
+      // "all" shows everything
+      return true;
     });
-  }, [search, allTrainees, classItem.students]);
+  }, [search, allTrainees, classItem.students, statusFilter]);
 
   // Paginate filtered students
   const totalPages = Math.ceil(filteredStudents.length / ITEMS_PER_PAGE);
@@ -93,7 +123,9 @@ export function AddStudentsModal({
 
   // Get students without a class (available for assignment)
   const availableStudents = useMemo(() => {
-    return paginatedStudents.filter((student) => !student.class);
+    return paginatedStudents.filter(
+      (student) => !student.class && !isStudentInThisClass(student),
+    );
   }, [paginatedStudents]);
 
   const handleSelectStudent = (id: string) => {
@@ -178,6 +210,67 @@ export function AddStudentsModal({
             />
           </div>
 
+          {/* Status Filter Bubbles */}
+          <div className="flex flex-wrap gap-2">
+            {[
+              { key: "all", label: "الكل", color: "bg-gray-100 text-gray-800" },
+              {
+                key: "available",
+                label: "متاح",
+                color: "bg-green-100 text-green-800",
+              },
+              {
+                key: "assigned-this",
+                label: "معين بهذا الفصل",
+                color: "bg-blue-100 text-blue-800",
+              },
+              {
+                key: "assigned-other",
+                label: "معين بفصل آخر",
+                color: "bg-yellow-100 text-yellow-800",
+              },
+            ].map(({ key, label, color }) => {
+              const statusKey = key as
+                | "all"
+                | "available"
+                | "assigned-this"
+                | "assigned-other";
+              let count = 0;
+
+              allTrainees.forEach((student) => {
+                const inThisClass = isStudentInThisClass(student);
+                const hasOtherClass = !!student.class;
+                const inOtherClass = hasOtherClass && !inThisClass;
+
+                if (key === "all") {
+                  count++;
+                } else if (key === "available") {
+                  if (!hasOtherClass && !inThisClass) count++;
+                } else if (key === "assigned-this") {
+                  if (inThisClass) count++;
+                } else if (key === "assigned-other") {
+                  if (inOtherClass) count++;
+                }
+              });
+
+              return (
+                <button
+                  key={key}
+                  onClick={() => {
+                    setStatusFilter(statusKey);
+                    setCurrentPage(1);
+                  }}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                    statusFilter === statusKey
+                      ? `${color} ring-2 ring-offset-2 ring-offset-background`
+                      : `${color} opacity-60 hover:opacity-100`
+                  }`}>
+                  {label} ({count})
+                </button>
+              );
+            })}
+          </div>
+
           {/* Students Table */}
           <div className="overflow-x-auto border rounded">
             <Table dir="rtl">
@@ -215,19 +308,23 @@ export function AddStudentsModal({
                   </TableRow>
                 ) : (
                   paginatedStudents.map((student) => {
-                    const hasClass = !!student.class;
-                    const isSameClass = student.class === classItem._id;
+                    const inThisClass = isStudentInThisClass(student);
+                    const hasOtherClass = !!student.class;
                     return (
                       <TableRow
                         key={student._id}
-                        className={hasClass ? "opacity-50 bg-muted" : ""}>
+                        className={
+                          hasOtherClass || inThisClass
+                            ? "opacity-50 bg-muted"
+                            : ""
+                        }>
                         <TableCell className="text-center">
                           <Checkbox
                             checked={selectedStudents.has(student._id)}
                             onCheckedChange={() =>
                               handleSelectStudent(student._id)
                             }
-                            disabled={hasClass}
+                            disabled={hasOtherClass || inThisClass}
                           />
                         </TableCell>
                         <TableCell className="text-right font-medium">
@@ -240,16 +337,13 @@ export function AddStudentsModal({
                           {student.military_id}
                         </TableCell>
                         <TableCell className="text-right">
-                          {hasClass ? (
-                            <span
-                              className={`text-xs px-2 py-1 rounded ${
-                                isSameClass
-                                  ? "bg-blue-100 text-blue-800"
-                                  : "bg-yellow-100 text-yellow-800"
-                              }`}>
-                              {isSameClass
-                                ? "معين بهذا الفصل"
-                                : "معين بفصل آخر"}
+                          {inThisClass ? (
+                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                              معين بهذا الفصل
+                            </span>
+                          ) : hasOtherClass ? (
+                            <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
+                              معين بفصل آخر
                             </span>
                           ) : (
                             <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
