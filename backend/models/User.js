@@ -32,8 +32,8 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
     class: {
-      type: String,
-      trim: true,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Class",
       required: function () {
         return this.role === "teacher"; // Required if role is teacher
       },

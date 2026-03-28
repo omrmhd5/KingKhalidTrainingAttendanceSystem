@@ -116,6 +116,20 @@ class ClassService {
       throw new Error("الفصل غير موجود");
     }
 
+    // Check if class has students
+    if (classItem.students && classItem.students.length > 0) {
+      throw new Error(
+        `لا يمكن حذف الفصل لأنه يحتوي على ${classItem.students.length} طالب/طالبة. الرجاء إزالة جميع الطلاب أولاً.`,
+      );
+    }
+
+    // Remove teacher from this class
+    if (classItem.assignedTeacherId) {
+      await User.findByIdAndUpdate(classItem.assignedTeacherId, {
+        class: null,
+      });
+    }
+
     await Class.findByIdAndDelete(id);
     return { message: "تم حذف الفصل بنجاح" };
   }
@@ -192,6 +206,45 @@ class ClassService {
     }
 
     classItem.stats[statName] += 1;
+    await classItem.save();
+    return classItem;
+  }
+
+  async assignTeacherToClass(teacherId, classId) {
+    // Validate teacher exists and is a teacher
+    const teacher = await User.findById(teacherId);
+    if (!teacher) {
+      throw new Error("المعلم غير موجود");
+    }
+    if (teacher.role !== "teacher") {
+      throw new Error("يجب أن يكون المستخدم معلماً");
+    }
+
+    // Find and unassign teacher from any previous class
+    await Class.updateMany(
+      { assignedTeacherId: teacherId },
+      { assignedTeacherId: null },
+    );
+
+    // Assign teacher to new class
+    const classItem = await Class.findById(classId);
+    if (!classItem) {
+      throw new Error("الفصل غير موجود");
+    }
+
+    classItem.assignedTeacherId = teacherId;
+    await classItem.save();
+    return await classItem.populate("assignedTeacherId", "username email");
+  }
+
+  async unassignTeacherFromClass(classId) {
+    const classItem = await Class.findById(classId);
+
+    if (!classItem) {
+      throw new Error("الفصل غير موجود");
+    }
+
+    classItem.assignedTeacherId = null;
     await classItem.save();
     return classItem;
   }

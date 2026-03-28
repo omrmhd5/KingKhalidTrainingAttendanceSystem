@@ -1,4 +1,5 @@
 const userService = require("../services/userService");
+const classService = require("../services/classService");
 
 // Get all users
 exports.getAllUsers = async (req, res) => {
@@ -34,6 +35,17 @@ exports.getUserById = async (req, res) => {
 exports.createUser = async (req, res) => {
   try {
     const user = await userService.createUser(req.body);
+
+    // If teacher role and class provided, assign teacher to class
+    if (user.role === "teacher" && req.body.class) {
+      try {
+        await classService.assignTeacherToClass(user._id, req.body.class);
+      } catch (classError) {
+        console.error("Failed to assign teacher to class:", classError.message);
+        // Don't fail the user creation if class assignment fails
+      }
+    }
+
     res.status(201).json({
       message: "User created successfully",
       user,
@@ -46,7 +58,19 @@ exports.createUser = async (req, res) => {
 // Update user
 exports.updateUser = async (req, res) => {
   try {
+    const oldUser = await userService.getUserById(req.params.id);
     const user = await userService.updateUser(req.params.id, req.body);
+
+    // Handle class assignment for teachers
+    if (user.role === "teacher" && req.body.class) {
+      try {
+        // assignTeacherToClass handles moving from old class to new class
+        await classService.assignTeacherToClass(user._id, req.body.class);
+      } catch (classError) {
+        console.error("Failed to update class assignment:", classError.message);
+      }
+    }
+
     res.json({
       message: "User updated successfully",
       user,
@@ -59,6 +83,20 @@ exports.updateUser = async (req, res) => {
 // Delete user
 exports.deleteUser = async (req, res) => {
   try {
+    const user = await userService.getUserById(req.params.id);
+
+    // If teacher, unassign from class
+    if (user && user.role === "teacher" && user.class) {
+      try {
+        await classService.unassignTeacherFromClass(user.class);
+      } catch (classError) {
+        console.error(
+          "Failed to unassign teacher from class:",
+          classError.message,
+        );
+      }
+    }
+
     await userService.deleteUser(req.params.id);
     res.json({ message: "User deleted successfully" });
   } catch (error) {

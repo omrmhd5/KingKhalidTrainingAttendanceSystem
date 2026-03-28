@@ -20,8 +20,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
 import { userApi } from "@/lib/userApi";
+import { classApi, Class } from "@/lib/classApi";
 
 interface Teacher {
   _id: string;
@@ -40,7 +48,9 @@ export function TeachersManagementTab({
 }: TeachersManagementTabProps) {
   const { toast } = useToast();
   const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [classes, setClasses] = useState<Class[]>([]);
   const [loading, setLoading] = useState(true);
+  const [classesLoading, setClassesLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -58,7 +68,20 @@ export function TeachersManagementTab({
 
   useEffect(() => {
     loadTeachers();
+    loadClasses();
   }, []);
+
+  const loadClasses = async () => {
+    try {
+      setClassesLoading(true);
+      const data = await classApi.getAllClasses();
+      setClasses(data);
+    } catch (error: unknown) {
+      console.error("Failed to load classes:", error);
+    } finally {
+      setClassesLoading(false);
+    }
+  };
 
   const loadTeachers = async () => {
     try {
@@ -290,7 +313,10 @@ export function TeachersManagementTab({
                     </TableCell>
                     <TableCell className="text-right">
                       {teacher.class ? (
-                        <Badge variant="outline">{teacher.class}</Badge>
+                        <Badge variant="outline">
+                          {classes.find((c) => c._id === teacher.class)?.name ||
+                            "فصل محذوف"}
+                        </Badge>
                       ) : (
                         <span className="text-muted-foreground">غير معين</span>
                       )}
@@ -413,15 +439,22 @@ export function TeachersManagementTab({
                     className="text-right block mb-2">
                     الفصل
                   </Label>
-                  <Input
-                    id="teacher-class"
-                    placeholder="أدخل الفصل (مثال: الفصل الأول)"
+                  <Select
                     value={formData.class}
-                    onChange={(e) =>
-                      setFormData({ ...formData, class: e.target.value })
-                    }
-                    dir="rtl"
-                  />
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, class: value })
+                    }>
+                    <SelectTrigger id="teacher-class" dir="rtl">
+                      <SelectValue placeholder="اختر فصل" />
+                    </SelectTrigger>
+                    <SelectContent dir="rtl">
+                      {classes.map((cls) => (
+                        <SelectItem key={cls._id} value={cls._id}>
+                          {cls.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
@@ -536,15 +569,22 @@ export function TeachersManagementTab({
                     className="text-right block mb-2">
                     الفصل
                   </Label>
-                  <Input
-                    id="edit-teacher-class"
-                    placeholder="أدخل الفصل (مثال: الفصل الأول)"
+                  <Select
                     value={formData.class}
-                    onChange={(e) =>
-                      setFormData({ ...formData, class: e.target.value })
-                    }
-                    dir="rtl"
-                  />
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, class: value })
+                    }>
+                    <SelectTrigger id="edit-teacher-class" dir="rtl">
+                      <SelectValue placeholder="اختر فصل" />
+                    </SelectTrigger>
+                    <SelectContent dir="rtl">
+                      {classes.map((cls) => (
+                        <SelectItem key={cls._id} value={cls._id}>
+                          {cls.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
