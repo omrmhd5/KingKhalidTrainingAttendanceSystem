@@ -76,7 +76,12 @@ export function UsersManagementTab() {
     try {
       setLoading(true);
       const data = await userApi.getAllUsers();
-      setUsers(data);
+      // Sort by creation date - oldest first
+      const sortedData = data.sort(
+        (a, b) =>
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      );
+      setUsers(sortedData);
     } catch (error: any) {
       toast({
         title: "خطأ",

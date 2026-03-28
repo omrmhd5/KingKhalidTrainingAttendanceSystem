@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -8,9 +8,18 @@ import { ClassDashboardTab } from "@/components/classes/ClassDashboardTab";
 
 export default function ClassesPage() {
   const { role } = useAuth();
-  const [activeTab, setActiveTab] = useState("classes");
+  const [activeTab, setActiveTab] = useState(() => {
+    // Load from localStorage or default to "classes"
+    const savedTab = localStorage.getItem("classesActiveTab");
+    return savedTab || "classes";
+  });
 
   const canWrite = role === "admin";
+
+  // Save to localStorage when tab changes
+  useEffect(() => {
+    localStorage.setItem("classesActiveTab", activeTab);
+  }, [activeTab]);
 
   return (
     <div className="space-y-6 animate-slide-in">

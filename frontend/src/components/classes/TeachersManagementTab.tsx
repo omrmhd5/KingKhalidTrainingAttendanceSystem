@@ -21,15 +21,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
+import { userApi } from "@/lib/userApi";
 
 interface Teacher {
   _id: string;
   username: string;
   email: string;
-  assignedClass?: {
-    _id: string;
-    name: string;
-  } | null;
+  class?: string;
+  isActive: boolean;
 }
 
 interface TeachersManagementTabProps {
@@ -54,6 +53,7 @@ export function TeachersManagementTab({
     email: "",
     password: "",
     confirmPassword: "",
+    class: "",
   });
 
   useEffect(() => {
@@ -63,21 +63,8 @@ export function TeachersManagementTab({
   const loadTeachers = async () => {
     try {
       setLoading(true);
-      // TODO: Replace with actual API call
-      setTeachers([
-        {
-          _id: "t1",
-          username: "محمد علي",
-          email: "teacher1@example.com",
-          assignedClass: { _id: "c1", name: "الفصل الأول" },
-        },
-        {
-          _id: "t2",
-          username: "فاطمة عبدالله",
-          email: "teacher2@example.com",
-          assignedClass: null,
-        },
-      ]);
+      const data = await userApi.getAllUsers({ role: "teacher" });
+      setTeachers(data);
     } catch (error: unknown) {
       toast({
         title: "خطأ",
@@ -95,6 +82,7 @@ export function TeachersManagementTab({
       email: "",
       password: "",
       confirmPassword: "",
+      class: "",
     });
     setIsAddOpen(true);
   };
@@ -106,6 +94,7 @@ export function TeachersManagementTab({
       email: teacher.email,
       password: "",
       confirmPassword: "",
+      class: teacher.class || "",
     });
     setIsEditOpen(true);
   };
@@ -117,7 +106,12 @@ export function TeachersManagementTab({
   };
 
   const handleAddTeacher = async () => {
-    if (!formData.username || !formData.email || !formData.password) {
+    if (
+      !formData.username ||
+      !formData.email ||
+      !formData.password ||
+      !formData.class
+    ) {
       toast({
         title: "خطأ",
         description: "الرجاء ملء جميع الحقول",
@@ -137,18 +131,19 @@ export function TeachersManagementTab({
 
     try {
       setSubmitting(true);
-      // TODO: Call API to create teacher
-      const newTeacher: Teacher = {
-        _id: Date.now().toString(),
+      const response = await userApi.createUser({
         username: formData.username,
         email: formData.email,
-        assignedClass: null,
-      };
-      setTeachers([...teachers, newTeacher]);
+        password: formData.password,
+        confirmPassword: formData.confirmPassword,
+        role: "teacher",
+        class: formData.class,
+      });
+      setTeachers([...teachers, response.user]);
       setIsAddOpen(false);
       toast({
         title: "نجاح",
-        description: "تم إضافة المعلم بنجاح. سيتم تعيينه لفصل من تبويب الفصول",
+        description: "تم إضافة المعلم بنجاح",
       });
     } catch (error: unknown) {
       toast({
@@ -162,7 +157,7 @@ export function TeachersManagementTab({
   };
 
   const handleUpdateTeacher = async () => {
-    if (!formData.username || !formData.email) {
+    if (!formData.username || !formData.email || !formData.class) {
       toast({
         title: "خطأ",
         description: "الرجاء ملء جميع الحقول",
@@ -182,16 +177,25 @@ export function TeachersManagementTab({
 
     try {
       setSubmitting(true);
-      // TODO: Call API to update teacher
+      const updateData: any = {
+        username: formData.username,
+        email: formData.email,
+        role: "teacher",
+        class: formData.class,
+      };
+
+      if (formData.password) {
+        updateData.password = formData.password;
+        updateData.confirmPassword = formData.confirmPassword;
+      }
+
+      const response = await userApi.updateUser(
+        selectedTeacher!._id,
+        updateData,
+      );
       setTeachers(
         teachers.map((t) =>
-          t._id === selectedTeacher?._id
-            ? {
-                ...t,
-                username: formData.username,
-                email: formData.email,
-              }
-            : t,
+          t._id === selectedTeacher?._id ? response.user : t,
         ),
       );
       setIsEditOpen(false);
@@ -215,7 +219,7 @@ export function TeachersManagementTab({
 
     try {
       setSubmitting(true);
-      // TODO: Call API to delete teacher
+      await userApi.deleteUser(selectedTeacher._id);
       setTeachers(teachers.filter((t) => t._id !== selectedTeacher._id));
       setIsDeleteOpen(false);
       toast({
@@ -285,10 +289,8 @@ export function TeachersManagementTab({
                       {teacher.email}
                     </TableCell>
                     <TableCell className="text-right">
-                      {teacher.assignedClass ? (
-                        <Badge variant="outline">
-                          {teacher.assignedClass.name}
-                        </Badge>
+                      {teacher.class ? (
+                        <Badge variant="outline">{teacher.class}</Badge>
                       ) : (
                         <span className="text-muted-foreground">غير معين</span>
                       )}
@@ -405,9 +407,22 @@ export function TeachersManagementTab({
                   />
                 </div>
 
-                <p className="text-sm text-muted-foreground text-right">
-                  ملاحظة: سيتم تعيين الفصل للمعلم من تبويب الفصول
-                </p>
+                <div>
+                  <Label
+                    htmlFor="teacher-class"
+                    className="text-right block mb-2">
+                    الفصل
+                  </Label>
+                  <Input
+                    id="teacher-class"
+                    placeholder="أدخل الفصل (مثال: الفصل الأول)"
+                    value={formData.class}
+                    onChange={(e) =>
+                      setFormData({ ...formData, class: e.target.value })
+                    }
+                    dir="rtl"
+                  />
+                </div>
               </div>
 
               <DialogFooter className="gap-2">
@@ -514,6 +529,23 @@ export function TeachersManagementTab({
                     />
                   </div>
                 )}
+
+                <div>
+                  <Label
+                    htmlFor="edit-teacher-class"
+                    className="text-right block mb-2">
+                    الفصل
+                  </Label>
+                  <Input
+                    id="edit-teacher-class"
+                    placeholder="أدخل الفصل (مثال: الفصل الأول)"
+                    value={formData.class}
+                    onChange={(e) =>
+                      setFormData({ ...formData, class: e.target.value })
+                    }
+                    dir="rtl"
+                  />
+                </div>
               </div>
 
               <DialogFooter className="gap-2">
