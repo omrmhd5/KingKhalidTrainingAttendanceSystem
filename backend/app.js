@@ -34,6 +34,7 @@ const traineeRoutes = require("./routes/trainees");
 const violationRoutes = require("./routes/violations");
 const disciplinaryRoutes = require("./routes/disciplinary");
 const attendanceRoutes = require("./routes/attendance");
+const classRoutes = require("./routes/classes");
 
 app.use("/api/users", userRoutes);
 app.use("/api/shifts", authenticateToken, shiftRoutes);
@@ -58,6 +59,7 @@ app.use(
   requireAdminOrOperator,
   attendanceRoutes,
 );
+app.use("/api/classes", authenticateToken, classRoutes);
 
 // Health check
 app.get("/api/health", (req, res) => {

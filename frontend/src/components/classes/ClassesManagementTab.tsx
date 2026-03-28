@@ -30,23 +30,8 @@ import {
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
 import { ClassStudentsModal } from "./ClassStudentsModal";
 import { AddStudentsModal } from "./AssignStudentsModal";
-
-interface Class {
-  _id: string;
-  name: string;
-  teacher: {
-    _id: string;
-    username: string;
-    email: string;
-  } | null;
-  studentCount: number;
-}
-
-interface Teacher {
-  _id: string;
-  username: string;
-  email: string;
-}
+import { classApi, Class, Teacher } from "@/lib/classApi";
+import { userApi, User } from "@/lib/userApi";
 
 interface ClassesManagementTabProps {
   canWrite?: boolean;
@@ -57,7 +42,7 @@ export function ClassesManagementTab({
 }: ClassesManagementTabProps) {
   const { toast } = useToast();
   const [classes, setClasses] = useState<Class[]>([]);
-  const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [teachers, setTeachers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
@@ -82,25 +67,8 @@ export function ClassesManagementTab({
   const loadClasses = async () => {
     try {
       setLoading(true);
-      // TODO: Replace with actual API call
-      setClasses([
-        {
-          _id: "1",
-          name: "الفصل الأول",
-          teacher: {
-            _id: "t1",
-            username: "معلم1",
-            email: "teacher1@example.com",
-          },
-          studentCount: 30,
-        },
-        {
-          _id: "2",
-          name: "الفصل الثاني",
-          teacher: null,
-          studentCount: 0,
-        },
-      ]);
+      const data = await classApi.getAllClasses();
+      setClasses(data);
     } catch (error: unknown) {
       toast({
         title: "خطأ",
@@ -114,11 +82,8 @@ export function ClassesManagementTab({
 
   const loadTeachers = async () => {
     try {
-      // TODO: Replace with actual API call
-      setTeachers([
-        { _id: "t1", username: "معلم1", email: "teacher1@example.com" },
-        { _id: "t2", username: "معلم2", email: "teacher2@example.com" },
-      ]);
+      const data = await userApi.getAllUsers({ role: "teacher" });
+      setTeachers(data);
     } catch (error) {
       console.error("Failed to load teachers:", error);
     }
@@ -131,9 +96,13 @@ export function ClassesManagementTab({
 
   const handleOpenEdit = (classItem: Class) => {
     setSelectedClass(classItem);
+    const teacherId =
+      typeof classItem.assignedTeacherId === "string"
+        ? classItem.assignedTeacherId
+        : (classItem.assignedTeacherId as Teacher | undefined)?._id;
     setFormData({
       name: classItem.name,
-      teacherId: classItem.teacher?._id || "",
+      teacherId: teacherId || "",
     });
     setIsEditOpen(true);
   };
@@ -156,14 +125,11 @@ export function ClassesManagementTab({
 
     try {
       setSubmitting(true);
-      // TODO: Call API to create class
-      const newClass: Class = {
-        _id: Date.now().toString(),
+      const response = await classApi.createClass({
         name: formData.name,
-        teacher: null,
-        studentCount: 0,
-      };
-      setClasses([...classes, newClass]);
+        assignedTeacherId: formData.teacherId || undefined,
+      });
+      setClasses([...classes, response.class]);
       setIsAddOpen(false);
       toast({
         title: "نجاح",
@@ -192,16 +158,12 @@ export function ClassesManagementTab({
 
     try {
       setSubmitting(true);
-      // TODO: Call API to update class
-      const selectedTeacher = formData.teacherId
-        ? teachers.find((t) => t._id === formData.teacherId) || null
-        : null;
+      const response = await classApi.updateClass(selectedClass!._id, {
+        name: formData.name,
+        assignedTeacherId: formData.teacherId || undefined,
+      });
       setClasses(
-        classes.map((c) =>
-          c._id === selectedClass?._id
-            ? { ...c, name: formData.name, teacher: selectedTeacher }
-            : c,
-        ),
+        classes.map((c) => (c._id === selectedClass?._id ? response.class : c)),
       );
       setIsEditOpen(false);
       toast({
@@ -224,7 +186,7 @@ export function ClassesManagementTab({
 
     try {
       setSubmitting(true);
-      // TODO: Call API to delete class
+      await classApi.deleteClass(selectedClass._id);
       setClasses(classes.filter((c) => c._id !== selectedClass._id));
       setIsDeleteOpen(false);
       toast({
@@ -289,7 +251,12 @@ export function ClassesManagementTab({
                       {classItem.name}
                     </TableCell>
                     <TableCell className="text-right">
-                      {classItem.teacher?.username || "—"}
+                      {typeof classItem.assignedTeacherId === "string"
+                        ? teachers.find(
+                            (t) => t._id === classItem.assignedTeacherId,
+                          )?.username || "—"
+                        : (classItem.assignedTeacherId as Teacher | undefined)
+                            ?.username || "—"}
                     </TableCell>
                     <TableCell className="text-right">
                       <Button
