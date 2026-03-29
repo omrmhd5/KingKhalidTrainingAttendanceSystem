@@ -1,13 +1,6 @@
 import { apiClient } from "./api";
 import { Trainee } from "./traineeApi";
 
-export interface ClassStats {
-  present: number;
-  absence: number;
-  escapes: number;
-  violations: number;
-}
-
 export interface Teacher {
   _id: string;
   username: string;
@@ -21,7 +14,6 @@ export interface Class {
   schedule?: string;
   students: string[] | Trainee[];
   studentCount: number;
-  stats: ClassStats;
   createdAt: string;
   updatedAt: string;
 }
@@ -95,29 +87,6 @@ export const classApi = {
   async removeStudent(classId: string, studentId: string) {
     const response = await apiClient.delete<{ message: string; class: Class }>(
       `/classes/${classId}/students/${studentId}`,
-    );
-    return response.data;
-  },
-
-  // Get class statistics
-  async getClassStats(id: string) {
-    const response = await apiClient.get<ClassStats>(`/classes/${id}/stats`);
-    return response.data;
-  },
-
-  // Update class statistics
-  async updateClassStats(id: string, stats: Partial<ClassStats>) {
-    const response = await apiClient.put<{ message: string; class: Class }>(
-      `/classes/${id}/stats`,
-      { stats },
-    );
-    return response.data;
-  },
-
-  // Increment class statistic
-  async incrementStat(id: string, statName: keyof ClassStats) {
-    const response = await apiClient.post<{ message: string; class: Class }>(
-      `/classes/${id}/stats/${statName}/increment`,
     );
     return response.data;
   },

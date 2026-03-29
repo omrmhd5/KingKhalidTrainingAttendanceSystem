@@ -292,68 +292,98 @@ export function ClassesManagementTab({
                   </TableCell>
                 </TableRow>
               ) : (
-                classes.map((classItem) => (
-                  <TableRow key={classItem._id}>
-                    <TableCell className="font-medium text-right">
-                      {classItem.name}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {typeof classItem.assignedTeacherId === "string"
-                        ? teachers.find(
-                            (t) => t._id === classItem.assignedTeacherId,
-                          )?.username || "—"
-                        : (classItem.assignedTeacherId as Teacher | undefined)
-                            ?.username || "—"}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {typeof classItem.schedule === "string"
-                        ? schedules.find((s) => s._id === classItem.schedule)
-                            ?.name || "—"
-                        : (classItem.schedule as ClassTimeSchedule | undefined)
-                            ?.name || "—"}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedClass(classItem);
-                          setShowStudentModal(true);
-                        }}>
-                        <Users className="h-4 w-4 ml-1" />
-                        {classItem.studentCount}
-                      </Button>
-                    </TableCell>
-                    {canWrite && (
-                      <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            title="إضافة طلاب"
-                            onClick={() => {
-                              setSelectedClass(classItem);
-                              setShowAssignModal(true);
-                            }}>
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleOpenEdit(classItem)}>
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleOpenDelete(classItem)}>
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
+                classes
+                  .sort((a, b) => {
+                    let scheduleAStart = "";
+                    let scheduleBStart = "";
+
+                    if (typeof a.schedule === "string") {
+                      scheduleAStart =
+                        schedules.find((s) => s._id === a.schedule)
+                          ?.start_time || "";
+                    } else {
+                      scheduleAStart =
+                        (a.schedule as ClassTimeSchedule | undefined)
+                          ?.start_time || "";
+                    }
+
+                    if (typeof b.schedule === "string") {
+                      scheduleBStart =
+                        schedules.find((s) => s._id === b.schedule)
+                          ?.start_time || "";
+                    } else {
+                      scheduleBStart =
+                        (b.schedule as ClassTimeSchedule | undefined)
+                          ?.start_time || "";
+                    }
+
+                    return scheduleAStart.localeCompare(scheduleBStart);
+                  })
+                  .map((classItem) => (
+                    <TableRow key={classItem._id}>
+                      <TableCell className="font-medium text-right">
+                        {classItem.name}
                       </TableCell>
-                    )}
-                  </TableRow>
-                ))
+                      <TableCell className="text-right">
+                        {typeof classItem.assignedTeacherId === "string"
+                          ? teachers.find(
+                              (t) => t._id === classItem.assignedTeacherId,
+                            )?.username || "—"
+                          : (classItem.assignedTeacherId as Teacher | undefined)
+                              ?.username || "—"}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {typeof classItem.schedule === "string"
+                          ? schedules.find((s) => s._id === classItem.schedule)
+                              ?.name || "—"
+                          : (
+                              classItem.schedule as
+                                | ClassTimeSchedule
+                                | undefined
+                            )?.name || "—"}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedClass(classItem);
+                            setShowStudentModal(true);
+                          }}>
+                          <Users className="h-4 w-4 ml-1" />
+                          {classItem.studentCount}
+                        </Button>
+                      </TableCell>
+                      {canWrite && (
+                        <TableCell className="text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              title="إضافة طلاب"
+                              onClick={() => {
+                                setSelectedClass(classItem);
+                                setShowAssignModal(true);
+                              }}>
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleOpenEdit(classItem)}>
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleOpenDelete(classItem)}>
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  ))
               )}
             </TableBody>
           </Table>

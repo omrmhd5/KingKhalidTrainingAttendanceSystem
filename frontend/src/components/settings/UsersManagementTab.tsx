@@ -30,6 +30,7 @@ import { format } from "date-fns";
 import { useToast } from "@/components/ui/use-toast";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
 import { userApi, User, UserCreateInput, UserUpdateInput } from "@/lib/userApi";
+import { classApi, Class } from "@/lib/classApi";
 
 const ROLES = [
   { value: "admin", label: "مسؤول" },
@@ -50,6 +51,7 @@ const getRoleColor = (role: string) => {
 export function UsersManagementTab() {
   const { toast } = useToast();
   const [users, setUsers] = useState<User[]>([]);
+  const [classes, setClasses] = useState<Class[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
@@ -70,7 +72,22 @@ export function UsersManagementTab() {
   // Fetch users on component mount
   useEffect(() => {
     fetchUsers();
+    fetchClasses();
   }, []);
+
+  const fetchClasses = async () => {
+    try {
+      const data = await classApi.getAllClasses();
+      setClasses(data);
+    } catch (error: any) {
+      console.error("Failed to load classes:", error);
+    }
+  };
+
+  const getClassName = (classId: string): string => {
+    const classItem = classes.find((c) => c._id === classId);
+    return classItem?.name || classId;
+  };
 
   const fetchUsers = async () => {
     try {
@@ -319,7 +336,9 @@ export function UsersManagementTab() {
                       </span>
                     </TableCell>
                     <TableCell>
-                      {user.role === "teacher" ? user.class || "-" : "-"}
+                      {user.role === "teacher"
+                        ? getClassName(user.class) || "-"
+                        : "-"}
                     </TableCell>
                     <TableCell>
                       {format(new Date(user.createdAt), "dd/MM/yyyy")}
@@ -448,15 +467,22 @@ export function UsersManagementTab() {
                 <Label htmlFor="add-class" className="text-right block mb-2">
                   الفصل
                 </Label>
-                <Input
-                  id="add-class"
-                  placeholder="أدخل اسم الفصل"
+                <Select
                   value={formData.class}
-                  onChange={(e) =>
-                    setFormData({ ...formData, class: e.target.value })
-                  }
-                  dir="rtl"
-                />
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, class: value })
+                  }>
+                  <SelectTrigger id="add-class" dir="rtl">
+                    <SelectValue placeholder="اختر الفصل" />
+                  </SelectTrigger>
+                  <SelectContent dir="rtl">
+                    {classes.map((classItem) => (
+                      <SelectItem key={classItem._id} value={classItem._id}>
+                        {classItem.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             )}
           </div>
@@ -582,15 +608,22 @@ export function UsersManagementTab() {
                 <Label htmlFor="edit-class" className="text-right block mb-2">
                   الفصل
                 </Label>
-                <Input
-                  id="edit-class"
-                  placeholder="أدخل اسم الفصل"
+                <Select
                   value={formData.class}
-                  onChange={(e) =>
-                    setFormData({ ...formData, class: e.target.value })
-                  }
-                  dir="rtl"
-                />
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, class: value })
+                  }>
+                  <SelectTrigger id="edit-class" dir="rtl">
+                    <SelectValue placeholder="اختر الفصل" />
+                  </SelectTrigger>
+                  <SelectContent dir="rtl">
+                    {classes.map((classItem) => (
+                      <SelectItem key={classItem._id} value={classItem._id}>
+                        {classItem.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             )}
           </div>

@@ -36,6 +36,7 @@ const disciplinaryRoutes = require("./routes/disciplinary");
 const attendanceRoutes = require("./routes/attendance");
 const classRoutes = require("./routes/classes");
 const classTimeScheduleRoutes = require("./routes/classTimeSchedules");
+const classReportRoutes = require("./routes/classReports");
 
 app.use("/api/users", userRoutes);
 app.use("/api/shifts", authenticateToken, shiftRoutes);
@@ -66,6 +67,7 @@ app.use(
   authenticateToken,
   classTimeScheduleRoutes,
 );
+app.use("/api/class-reports", authenticateToken, classReportRoutes);
 
 // Health check
 app.get("/api/health", (req, res) => {
