@@ -102,11 +102,10 @@ class ClassTimeScheduleService {
       throw new Error("الجدول الزمني غير موجود");
     }
 
-    // Remove schedule from all classes
+    // Check if schedule has classes assigned
     if (schedule.classes && schedule.classes.length > 0) {
-      await Class.updateMany(
-        { _id: { $in: schedule.classes } },
-        { $unset: { schedule: 1 } },
+      throw new Error(
+        `لا يمكن حذف الجدول الزمني لأنه يحتوي على ${schedule.classes.length} فصل/فصول. الرجاء إزالة جميع الفصول أولاً.`,
       );
     }
 

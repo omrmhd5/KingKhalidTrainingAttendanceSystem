@@ -399,11 +399,15 @@ export function ClassesManagementTab({
                       <SelectValue placeholder="اختر جدول" />
                     </SelectTrigger>
                     <SelectContent dir="rtl">
-                      {schedules.map((schedule) => (
-                        <SelectItem key={schedule._id} value={schedule._id}>
-                          {schedule.name}
-                        </SelectItem>
-                      ))}
+                      {[...schedules]
+                        .sort((a, b) =>
+                          a.start_time.localeCompare(b.start_time),
+                        )
+                        .map((schedule) => (
+                          <SelectItem key={schedule._id} value={schedule._id}>
+                            {schedule.name}
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -492,11 +496,15 @@ export function ClassesManagementTab({
                       <SelectValue placeholder="اختر جدول" />
                     </SelectTrigger>
                     <SelectContent dir="rtl">
-                      {schedules.map((schedule) => (
-                        <SelectItem key={schedule._id} value={schedule._id}>
-                          {schedule.name}
-                        </SelectItem>
-                      ))}
+                      {[...schedules]
+                        .sort((a, b) =>
+                          a.start_time.localeCompare(b.start_time),
+                        )
+                        .map((schedule) => (
+                          <SelectItem key={schedule._id} value={schedule._id}>
+                            {schedule.name}
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
                 </div>
