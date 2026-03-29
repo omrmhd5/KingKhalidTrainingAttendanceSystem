@@ -18,6 +18,7 @@ export interface Class {
   _id: string;
   name: string;
   assignedTeacherId?: string | Teacher;
+  schedule?: string;
   students: string[] | Trainee[];
   studentCount: number;
   stats: ClassStats;
@@ -28,11 +29,13 @@ export interface Class {
 export interface ClassCreateInput {
   name: string;
   assignedTeacherId?: string;
+  schedule: string;
 }
 
 export interface ClassUpdateInput {
   name?: string;
   assignedTeacherId?: string;
+  schedule?: string;
 }
 
 export const classApi = {

@@ -1,6 +1,7 @@
 const Class = require("../models/Class");
 const User = require("../models/User");
 const Trainee = require("../models/Trainee");
+const ClassTimeSchedule = require("../models/ClassTimeSchedule");
 
 class ClassService {
   async getAllClasses(filters = {}) {
@@ -13,6 +14,7 @@ class ClassService {
 
     return await Class.find(query)
       .populate("assignedTeacherId", "username email")
+      .populate("schedule", "name start_time end_time")
       .populate("students", "full_name civil_id military_id")
       .sort({ createdAt: -1 });
   }
@@ -20,6 +22,7 @@ class ClassService {
   async getClassById(id) {
     const classItem = await Class.findById(id)
       .populate("assignedTeacherId", "username email")
+      .populate("schedule", "name start_time end_time")
       .populate("students", "full_name civil_id military_id");
 
     if (!classItem) {
@@ -30,11 +33,16 @@ class ClassService {
   }
 
   async createClass(data) {
-    const { name, assignedTeacherId } = data;
+    const { name, assignedTeacherId, schedule } = data;
 
     // Validation
     if (!name || !name.trim()) {
       throw new Error("اسم الفصل مطلوب");
+    }
+
+    // Schedule is required
+    if (!schedule) {
+      throw new Error("الجدول الزمني مطلوب");
     }
 
     // Check if class name already exists
@@ -54,18 +62,36 @@ class ClassService {
       }
     }
 
+    // Validate schedule - it's required
+    const scheduleItem = await ClassTimeSchedule.findById(schedule);
+    if (!scheduleItem) {
+      throw new Error("الجدول غير موجود");
+    }
+
     // Create class
     const newClass = new Class({
       name: name.trim(),
       assignedTeacherId: assignedTeacherId || null,
+      schedule: schedule,
     });
 
     await newClass.save();
-    return await newClass.populate("assignedTeacherId", "username email");
+
+    // Add class to schedule's classes array
+    await ClassTimeSchedule.findByIdAndUpdate(
+      schedule,
+      { $addToSet: { classes: newClass._id } },
+      { new: true },
+    );
+
+    // Re-query to get populated data
+    return await Class.findById(newClass._id)
+      .populate("assignedTeacherId", "username email")
+      .populate("schedule", "name start_time end_time");
   }
 
   async updateClass(id, data) {
-    const { name, assignedTeacherId } = data;
+    const { name, assignedTeacherId, schedule } = data;
     const classItem = await Class.findById(id);
 
     if (!classItem) {
@@ -106,8 +132,38 @@ class ClassService {
       }
     }
 
+    // Handle schedule update with bidirectional sync
+    if (schedule !== undefined) {
+      // Validate that schedule exists
+      const scheduleItem = await ClassTimeSchedule.findById(schedule);
+      if (!scheduleItem) {
+        throw new Error("الجدول غير موجود");
+      }
+
+      // Remove class from old schedule
+      if (classItem.schedule && classItem.schedule.toString() !== schedule) {
+        await ClassTimeSchedule.findByIdAndUpdate(
+          classItem.schedule,
+          { $pull: { classes: classItem._id } },
+          { new: true },
+        );
+      }
+
+      // Add class to new schedule
+      await ClassTimeSchedule.findByIdAndUpdate(
+        schedule,
+        { $addToSet: { classes: classItem._id } },
+        { new: true },
+      );
+
+      classItem.schedule = schedule;
+    }
+
     await classItem.save();
-    return await classItem.populate("assignedTeacherId", "username email");
+    // Re-query to get populated data
+    return await Class.findById(classItem._id)
+      .populate("assignedTeacherId", "username email")
+      .populate("schedule", "name start_time end_time");
   }
 
   async deleteClass(id) {
@@ -129,6 +185,15 @@ class ClassService {
       await User.findByIdAndUpdate(classItem.assignedTeacherId, {
         class: null,
       });
+    }
+
+    // Remove class from schedule if it exists
+    if (classItem.schedule) {
+      await ClassTimeSchedule.findByIdAndUpdate(
+        classItem.schedule,
+        { $pull: { classes: classItem._id } },
+        { new: true },
+      );
     }
 
     await Class.findByIdAndDelete(id);

@@ -32,6 +32,10 @@ import { ClassStudentsModal } from "./ClassStudentsModal";
 import { AddStudentsModal } from "./AssignStudentsModal";
 import { classApi, Class, Teacher } from "@/lib/classApi";
 import { userApi, User } from "@/lib/userApi";
+import {
+  classTimeScheduleApi,
+  ClassTimeSchedule,
+} from "@/lib/classTimeScheduleApi";
 
 interface ClassesManagementTabProps {
   canWrite?: boolean;
@@ -43,6 +47,7 @@ export function ClassesManagementTab({
   const { toast } = useToast();
   const [classes, setClasses] = useState<Class[]>([]);
   const [teachers, setTeachers] = useState<User[]>([]);
+  const [schedules, setSchedules] = useState<ClassTimeSchedule[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
@@ -56,12 +61,14 @@ export function ClassesManagementTab({
   const [formData, setFormData] = useState({
     name: "",
     teacherId: "",
+    scheduleId: "",
   });
 
   // Mock data for now
   useEffect(() => {
     loadClasses();
     loadTeachers();
+    loadSchedules();
   }, []);
 
   const loadClasses = async () => {
@@ -89,8 +96,17 @@ export function ClassesManagementTab({
     }
   };
 
+  const loadSchedules = async () => {
+    try {
+      const data = await classTimeScheduleApi.getAllSchedules();
+      setSchedules(data);
+    } catch (error) {
+      console.error("Failed to load schedules:", error);
+    }
+  };
+
   const handleOpenAdd = () => {
-    setFormData({ name: "", teacherId: "" });
+    setFormData({ name: "", teacherId: "", scheduleId: "" });
     setIsAddOpen(true);
   };
 
@@ -103,6 +119,10 @@ export function ClassesManagementTab({
     setFormData({
       name: classItem.name,
       teacherId: teacherId || "",
+      scheduleId:
+        typeof classItem.schedule === "string"
+          ? classItem.schedule
+          : (classItem.schedule as any)?._id || "",
     });
     setIsEditOpen(true);
   };
@@ -123,11 +143,21 @@ export function ClassesManagementTab({
       return;
     }
 
+    if (!formData.scheduleId) {
+      toast({
+        title: "خطأ",
+        description: "الرجاء اختيار جدول زمني",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       setSubmitting(true);
       const response = await classApi.createClass({
         name: formData.name,
         assignedTeacherId: formData.teacherId || undefined,
+        schedule: formData.scheduleId,
       });
       setClasses([...classes, response.class]);
       setIsAddOpen(false);
@@ -158,11 +188,21 @@ export function ClassesManagementTab({
       return;
     }
 
+    if (!formData.scheduleId) {
+      toast({
+        title: "خطأ",
+        description: "الرجاء اختيار جدول زمني",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       setSubmitting(true);
       const response = await classApi.updateClass(selectedClass!._id, {
         name: formData.name,
         assignedTeacherId: formData.teacherId || undefined,
+        schedule: formData.scheduleId,
       });
       setClasses(
         classes.map((c) => (c._id === selectedClass?._id ? response.class : c)),
@@ -235,6 +275,7 @@ export function ClassesManagementTab({
               <TableRow>
                 <TableHead className="text-right">الاسم</TableHead>
                 <TableHead className="text-right">المعلم</TableHead>
+                <TableHead className="text-right">الجدول</TableHead>
                 <TableHead className="text-right">عدد الطلاب</TableHead>
                 {canWrite && (
                   <TableHead className="text-center">الإجراءات</TableHead>
@@ -245,7 +286,7 @@ export function ClassesManagementTab({
               {classes.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={4}
+                    colSpan={5}
                     className="text-center py-8 text-muted-foreground">
                     لا توجد فصول
                   </TableCell>
@@ -263,6 +304,13 @@ export function ClassesManagementTab({
                           )?.username || "—"
                         : (classItem.assignedTeacherId as Teacher | undefined)
                             ?.username || "—"}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {typeof classItem.schedule === "string"
+                        ? schedules.find((s) => s._id === classItem.schedule)
+                            ?.name || "—"
+                        : (classItem.schedule as ClassTimeSchedule | undefined)
+                            ?.name || "—"}
                     </TableCell>
                     <TableCell className="text-right">
                       <Button
@@ -336,6 +384,29 @@ export function ClassesManagementTab({
                     dir="rtl"
                   />
                 </div>
+                <div>
+                  <Label
+                    htmlFor="add-schedule"
+                    className="text-right block mb-2">
+                    الجدول الزمني
+                  </Label>
+                  <Select
+                    value={formData.scheduleId}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, scheduleId: value })
+                    }>
+                    <SelectTrigger id="add-schedule" dir="rtl">
+                      <SelectValue placeholder="اختر جدول" />
+                    </SelectTrigger>
+                    <SelectContent dir="rtl">
+                      {schedules.map((schedule) => (
+                        <SelectItem key={schedule._id} value={schedule._id}>
+                          {schedule.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               <DialogFooter className="gap-2">
@@ -401,6 +472,29 @@ export function ClassesManagementTab({
                       {teachers.map((teacher) => (
                         <SelectItem key={teacher._id} value={teacher._id}>
                           {teacher.username}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label
+                    htmlFor="edit-schedule"
+                    className="text-right block mb-2">
+                    الجدول الزمني
+                  </Label>
+                  <Select
+                    value={formData.scheduleId}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, scheduleId: value })
+                    }>
+                    <SelectTrigger id="edit-schedule" dir="rtl">
+                      <SelectValue placeholder="اختر جدول" />
+                    </SelectTrigger>
+                    <SelectContent dir="rtl">
+                      {schedules.map((schedule) => (
+                        <SelectItem key={schedule._id} value={schedule._id}>
+                          {schedule.name}
                         </SelectItem>
                       ))}
                     </SelectContent>

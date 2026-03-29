@@ -19,6 +19,11 @@ const ClassSchema = new mongoose.Schema(
         ref: "Trainee",
       },
     ],
+    schedule: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "ClassTimeSchedule",
+      required: [true, "الجدول الزمني مطلوب"],
+    },
     stats: {
       present: {
         type: Number,

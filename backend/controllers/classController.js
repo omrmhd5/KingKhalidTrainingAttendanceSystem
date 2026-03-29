@@ -29,11 +29,12 @@ class ClassController {
 
   async createClass(req, res) {
     try {
-      const { name, assignedTeacherId } = req.body;
+      const { name, assignedTeacherId, schedule } = req.body;
 
       const newClass = await classService.createClass({
         name,
         assignedTeacherId,
+        schedule,
       });
 
       res.status(201).json({
@@ -49,11 +50,12 @@ class ClassController {
 
   async updateClass(req, res) {
     try {
-      const { name, assignedTeacherId } = req.body;
+      const { name, assignedTeacherId, schedule } = req.body;
 
       const updatedClass = await classService.updateClass(req.params.id, {
         name,
         assignedTeacherId,
+        schedule,
       });
 
       res.status(200).json({
