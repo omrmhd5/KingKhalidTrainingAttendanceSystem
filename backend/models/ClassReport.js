@@ -30,21 +30,18 @@ const ClassReportSchema = new mongoose.Schema(
         },
         status: {
           type: String,
-          enum: ["present", "absent", "escape"],
+          enum: ["absent", "escape", "violation"],
+          required: true,
+        },
+        violationType: {
+          type: Number,
+          enum: [1, 2, 3, 4],
           default: null,
         },
-        violations: [
-          {
-            type: {
-              type: Number,
-              enum: [1, 2, 3, 4],
-            },
-            description: {
-              type: String,
-              default: null,
-            },
-          },
-        ],
+        violationDescription: {
+          type: String,
+          default: null,
+        },
       },
     ],
     submittedAt: {

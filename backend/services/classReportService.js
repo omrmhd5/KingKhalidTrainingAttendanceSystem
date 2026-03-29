@@ -6,7 +6,7 @@ const Trainee = require("../models/Trainee");
 
 class ClassReportService {
   // Calculate stats based on student reports
-  calculateStats(studentReports) {
+  async calculateStats(studentReports, classId) {
     const stats = {
       present: 0,
       absence: 0,
@@ -14,14 +14,18 @@ class ClassReportService {
       violations: 0,
     };
 
+    // Count reported issues
     studentReports.forEach((report) => {
-      if (report.status === "present") stats.present++;
       if (report.status === "absent") stats.absence++;
       if (report.status === "escape") stats.escapes++;
-      if (report.violations && report.violations.length > 0) {
-        stats.violations += report.violations.length;
-      }
+      if (report.status === "violation") stats.violations++;
     });
+
+    // Calculate present count: total students - reported issues
+    const classItem = await Class.findById(classId);
+    if (classItem) {
+      stats.present = classItem.studentCount - studentReports.length;
+    }
 
     return stats;
   }
@@ -132,7 +136,7 @@ class ClassReportService {
     });
 
     // Calculate stats automatically
-    newReport.stats = this.calculateStats(studentReports);
+    newReport.stats = await this.calculateStats(studentReports, classId);
 
     await newReport.save();
 
@@ -188,7 +192,10 @@ class ClassReportService {
       }
       report.studentReports = studentReports;
       // Recalculate stats when student reports change
-      report.stats = this.calculateStats(studentReports);
+      report.stats = await this.calculateStats(
+        studentReports,
+        classId || report.classId,
+      );
     }
 
     // Update date if provided
