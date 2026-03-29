@@ -24,24 +24,6 @@ const ClassSchema = new mongoose.Schema(
       ref: "ClassTimeSchedule",
       required: [true, "الجدول الزمني مطلوب"],
     },
-    stats: {
-      present: {
-        type: Number,
-        default: 0,
-      },
-      absence: {
-        type: Number,
-        default: 0,
-      },
-      escapes: {
-        type: Number,
-        default: 0,
-      },
-      violations: {
-        type: Number,
-        default: 0,
-      },
-    },
   },
   {
     timestamps: true,

@@ -119,57 +119,6 @@ class ClassController {
       });
     }
   }
-
-  async getClassStats(req, res) {
-    try {
-      const classItem = await classService.getClassById(req.params.id);
-      res.status(200).json(classItem.stats);
-    } catch (error) {
-      res.status(404).json({
-        message: error.message || "الفصل غير موجود",
-      });
-    }
-  }
-
-  async updateClassStats(req, res) {
-    try {
-      const { stats } = req.body;
-
-      const updatedClass = await classService.updateClassStats(
-        req.params.id,
-        stats,
-      );
-
-      res.status(200).json({
-        message: "تم تحديث الإحصائيات بنجاح",
-        class: updatedClass,
-      });
-    } catch (error) {
-      res.status(400).json({
-        message: error.message || "فشل في تحديث الإحصائيات",
-      });
-    }
-  }
-
-  async incrementStat(req, res) {
-    try {
-      const { statName } = req.body;
-
-      const updatedClass = await classService.incrementClassStat(
-        req.params.id,
-        statName,
-      );
-
-      res.status(200).json({
-        message: "تم تحديث الإحصائية بنجاح",
-        class: updatedClass,
-      });
-    } catch (error) {
-      res.status(400).json({
-        message: error.message || "فشل في تحديث الإحصائية",
-      });
-    }
-  }
 }
 
 module.exports = new ClassController();

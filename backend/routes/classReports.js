@@ -12,12 +12,8 @@ router.get("/:id", classReportController.getClassReportById);
 // Create new report - any authenticated user (teacher can submit their own)
 router.post("/", classReportController.createClassReport);
 
-// Update report - admin/operator or the report creator
-router.put(
-  "/:id",
-  requireAdminOrOperator,
-  classReportController.updateClassReport,
-);
+// Update report - any authenticated user
+router.put("/:id", classReportController.updateClassReport);
 
 // Delete report - admin/operator only
 router.delete(
