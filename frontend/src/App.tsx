@@ -7,6 +7,7 @@ import DashboardLayout from "@/layouts/DashboardLayout";
 import AuthPage from "@/pages/AuthPage";
 import TodaysSummaryPage from "@/pages/TodaysSummaryPage";
 import MainPage from "@/pages/MainPage";
+import TeachersMainPage from "@/pages/TeachersMainPage";
 import TraineesPage from "@/pages/TraineesPage";
 import BulkViewPage from "@/pages/BulkViewPage";
 import ViolationsPage from "@/pages/ViolationsPage";
@@ -27,6 +28,7 @@ const App = () => (
           <Route element={<DashboardLayout />}>
             <Route path="/" element={<TodaysSummaryPage />} />
             <Route path="/main" element={<MainPage />} />
+            <Route path="/teacher" element={<TeachersMainPage />} />
             <Route path="/trainees" element={<TraineesPage />} />
             <Route path="/bulk-view" element={<BulkViewPage />} />
             <Route path="/violations" element={<ViolationsPage />} />

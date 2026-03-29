@@ -36,6 +36,12 @@ const navItems = [
     roles: ["admin", "operator"],
   },
   {
+    title: "فصلي",
+    url: "/teacher",
+    icon: BookOpen,
+    roles: ["teacher"],
+  },
+  {
     title: "التقارير",
     url: "/reports",
     icon: FileText,

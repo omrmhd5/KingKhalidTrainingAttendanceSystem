@@ -1,14 +1,23 @@
-import { Outlet, Navigate, useLocation } from "react-router-dom";
+import { Outlet, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { AppSidebar } from "@/components/AppSidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import KSADateTime from "@/components/KSADateTime";
 import { LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useEffect } from "react";
 
 export default function DashboardLayout() {
   const { user, role, loading, signOut } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
+
+  // Redirect teachers to their main page if accessing root
+  useEffect(() => {
+    if (role === "teacher" && location.pathname === "/") {
+      navigate("/teacher");
+    }
+  }, [role, location.pathname, navigate]);
 
   if (loading)
     return (
