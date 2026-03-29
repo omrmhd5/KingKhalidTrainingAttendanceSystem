@@ -6,7 +6,7 @@
 
 @layer base {
   * {
-    font-family: Cambria, serif;
+    @apply font-sans;
   }
 
   :root {
