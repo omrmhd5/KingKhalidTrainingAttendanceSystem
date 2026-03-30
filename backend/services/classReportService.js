@@ -67,6 +67,11 @@ class ClassReportService {
       query.classId = filters.classId;
     }
 
+    // Filter by schedule if provided
+    if (filters.scheduleId) {
+      query.schedule = filters.scheduleId;
+    }
+
     // Filter by date range if provided
     if (filters.startDate || filters.endDate) {
       query.date = {};

@@ -55,12 +55,14 @@ export const classReportApi = {
   async getClassReports(filters?: {
     teacherId?: string;
     classId?: string;
+    scheduleId?: string;
     startDate?: string;
     endDate?: string;
   }) {
     const params = new URLSearchParams();
     if (filters?.teacherId) params.append("teacherId", filters.teacherId);
     if (filters?.classId) params.append("classId", filters.classId);
+    if (filters?.scheduleId) params.append("scheduleId", filters.scheduleId);
     if (filters?.startDate) params.append("startDate", filters.startDate);
     if (filters?.endDate) params.append("endDate", filters.endDate);
 

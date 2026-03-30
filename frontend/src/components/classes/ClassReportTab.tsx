@@ -12,6 +12,10 @@ import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
 import { classReportApi, ClassReport } from "@/lib/classReportApi";
 import { classApi, Class } from "@/lib/classApi";
+import {
+  classTimeScheduleApi,
+  ClassTimeSchedule,
+} from "@/lib/classTimeScheduleApi";
 import ReportSummary from "@/components/teacher/ReportSummary";
 import { Trainee } from "@/lib/traineeApi";
 
@@ -24,22 +28,24 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
   const [loading, setLoading] = useState(true);
   const [reports, setReports] = useState<ClassReport[]>([]);
   const [classes, setClasses] = useState<Class[]>([]);
+  const [schedules, setSchedules] = useState<ClassTimeSchedule[]>([]);
   const [selectedClass, setSelectedClass] = useState<string>("all");
-  const [selectedDate, setSelectedDate] = useState<string>("");
+  const [selectedSchedule, setSelectedSchedule] = useState<string>("all");
+  const [selectedDate, setSelectedDate] = useState<string>(
+    new Date().toISOString().split("T")[0]
+  );
   const [selectedReportForSummary, setSelectedReportForSummary] =
     useState<ClassReport | null>(null);
   const [summaryOpen, setSummaryOpen] = useState(false);
 
   useEffect(() => {
-    // Set date to today
-    const today = new Date().toISOString().split("T")[0];
-    setSelectedDate(today);
     loadClasses();
+    loadSchedules();
   }, []);
 
   useEffect(() => {
     loadReports();
-  }, [selectedClass, selectedDate]);
+  }, [selectedClass, selectedSchedule, selectedDate]);
 
   const loadClasses = async () => {
     try {
@@ -57,6 +63,19 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
     }
   };
 
+  const loadSchedules = async () => {
+    try {
+      const schedulesData = await classTimeScheduleApi.getAllSchedules();
+      setSchedules(schedulesData);
+    } catch (error) {
+      toast({
+        title: "خطأ",
+        description: "فشل تحميل الجداول الزمنية",
+        variant: "destructive",
+      });
+    }
+  };
+
   const loadReports = async () => {
     try {
       setLoading(true);
@@ -67,6 +86,10 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
 
       if (selectedClass && selectedClass !== "all") {
         filters.classId = selectedClass;
+      }
+
+      if (selectedSchedule && selectedSchedule !== "all") {
+        filters.scheduleId = selectedSchedule;
       }
 
       const data = await classReportApi.getClassReports(filters);
@@ -110,11 +133,11 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
     }));
 
     return {
-      stats: report.stats || {
-        present: 0,
-        absence: 0,
-        escapes: 0,
-        violations: 0,
+      stats: {
+        present: report.stats?.present || 0,
+        absent: report.stats?.absence || 0,
+        escape: report.stats?.escapes || 0,
+        violations: report.stats?.violations || 0,
       },
       studentReports,
     };
@@ -129,40 +152,52 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
     <div
       key={report._id}
       onClick={() => handleReportClick(report)}
-      className="border-2 rounded-lg p-4 cursor-pointer hover:bg-gray-50 transition">
-      <div className="flex justify-between items-start mb-2" dir="rtl">
-        <div>
-          <div className="font-medium">
-            الجدول:{" "}
-            {typeof report.schedule === "object" ? report.schedule.name : "—"}
-          </div>
-          <div className="text-sm text-muted-foreground">
-            الفصل:{" "}
+      className="border-2 border-blue-100 rounded-lg p-4 cursor-pointer bg-blue-50 hover:bg-blue-100 transition">
+      <div className="space-y-2 mb-4 pb-3 border-b" dir="rtl">
+        {/* Row 1: Schedule */}
+        <div className="text-sm font-semibold">
+          {typeof report.schedule === "object" ? report.schedule.name : "—"}
+        </div>
+
+        {/* Row 2: Class and Teacher */}
+        <div className="flex items-center gap-3 text-sm">
+          <span>
             {typeof report.classId === "object" ? report.classId.name : "—"}
-          </div>
+          </span>
+          <span className="text-gray-400">|</span>
+          <span>
+            {typeof report.teacherId === "object"
+              ? report.teacherId.username
+              : "—"}
+          </span>
+        </div>
+
+        {/* Row 3: Date */}
+        <div className="text-xs text-muted-foreground">
+          {new Date(report.date).toLocaleDateString("en-US")}
         </div>
       </div>
       <div className="grid grid-cols-4 gap-2 text-xs">
-        <div className="text-center bg-green-50 p-2 rounded">
-          <div className="font-bold text-green-600">
+        <div className="text-center bg-green-200 p-2 rounded">
+          <div className="font-bold text-green-700">
             {report.stats?.present || 0}
           </div>
           <div className="text-muted-foreground">حاضرين</div>
         </div>
-        <div className="text-center bg-red-50 p-2 rounded">
-          <div className="font-bold text-red-600">
+        <div className="text-center bg-red-200 p-2 rounded">
+          <div className="font-bold text-red-700">
             {report.stats?.absence || 0}
           </div>
           <div className="text-muted-foreground">غياب</div>
         </div>
-        <div className="text-center bg-orange-50 p-2 rounded">
-          <div className="font-bold text-orange-600">
+        <div className="text-center bg-orange-200 p-2 rounded">
+          <div className="font-bold text-orange-700">
             {report.stats?.escapes || 0}
           </div>
           <div className="text-muted-foreground">هروب</div>
         </div>
-        <div className="text-center bg-red-50 p-2 rounded">
-          <div className="font-bold text-red-600">
+        <div className="text-center bg-red-200 p-2 rounded">
+          <div className="font-bold text-red-700">
             {report.stats?.violations || 0}
           </div>
           <div className="text-muted-foreground">مخالفات</div>
@@ -174,7 +209,7 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
   return (
     <div className="space-y-6">
       {/* Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4" dir="rtl">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4" dir="rtl">
         <div>
           <label className="text-sm font-medium text-right block mb-2">
             الفصل
@@ -185,11 +220,59 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
             </SelectTrigger>
             <SelectContent dir="rtl">
               <SelectItem value="all">الكل</SelectItem>
-              {classes.map((cls) => (
-                <SelectItem key={cls._id} value={cls._id}>
-                  {cls.name}
-                </SelectItem>
-              ))}
+              {[...classes]
+                .sort((a, b) => {
+                  let scheduleAStart = "";
+                  let scheduleBStart = "";
+
+                  if (typeof a.schedule === "string") {
+                    scheduleAStart =
+                      schedules.find((s) => s._id === a.schedule)
+                        ?.start_time || "";
+                  } else {
+                    scheduleAStart =
+                      (a.schedule as any)?.start_time || "";
+                  }
+
+                  if (typeof b.schedule === "string") {
+                    scheduleBStart =
+                      schedules.find((s) => s._id === b.schedule)
+                        ?.start_time || "";
+                  } else {
+                    scheduleBStart =
+                      (b.schedule as any)?.start_time || "";
+                  }
+
+                  return scheduleAStart.localeCompare(scheduleBStart);
+                })
+                .map((cls) => (
+                  <SelectItem key={cls._id} value={cls._id}>
+                    {cls.name}
+                  </SelectItem>
+                ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <label className="text-sm font-medium text-right block mb-2">
+            الجدول الزمني
+          </label>
+          <Select value={selectedSchedule} onValueChange={setSelectedSchedule}>
+            <SelectTrigger dir="rtl">
+              <SelectValue placeholder="اختر الجدول الزمني" />
+            </SelectTrigger>
+            <SelectContent dir="rtl">
+              <SelectItem value="all">الكل</SelectItem>
+              {[...schedules]
+                .sort((a, b) =>
+                  a.start_time.localeCompare(b.start_time),
+                )
+                .map((schedule) => (
+                  <SelectItem key={schedule._id} value={schedule._id}>
+                    {schedule.name}
+                  </SelectItem>
+                ))}
             </SelectContent>
           </Select>
         </div>

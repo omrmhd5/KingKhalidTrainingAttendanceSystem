@@ -3,11 +3,12 @@ const classReportService = require("../services/classReportService");
 class ClassReportController {
   async getAllClassReports(req, res) {
     try {
-      const { teacherId, classId, startDate, endDate } = req.query;
+      const { teacherId, classId, scheduleId, startDate, endDate } = req.query;
       const filters = {};
 
       if (teacherId) filters.teacherId = teacherId;
       if (classId) filters.classId = classId;
+      if (scheduleId) filters.scheduleId = scheduleId;
       if (startDate) filters.startDate = startDate;
       if (endDate) filters.endDate = endDate;
 
