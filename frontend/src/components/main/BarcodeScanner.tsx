@@ -38,15 +38,10 @@ export default function BarcodeScanner({
     try {
       await onScan(barcode.trim(), mode);
 
-      // Show success message
+      // Show success message (inline only, no toast popup)
       const successMsg =
         mode === "IN" ? "تم تسجيل الدخول بنجاح" : "تم تسجيل الخروج بنجاح";
       setSuccess(successMsg);
-      toast({
-        title: "نجح",
-        description: successMsg,
-        variant: "default",
-      });
     } catch (err: any) {
       // Extract error message
       const errorMessage =
