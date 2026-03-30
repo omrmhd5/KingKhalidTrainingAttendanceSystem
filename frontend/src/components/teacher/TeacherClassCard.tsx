@@ -8,6 +8,12 @@ interface TeacherClassCardProps {
   selectedDate: string;
   onDateChange: (date: string) => void;
   attendanceMap: Map<string, string>;
+  reportStats?: {
+    present: number;
+    absent: number;
+    escape: number;
+    violations: number;
+  };
 }
 
 export default function TeacherClassCard({
@@ -15,6 +21,7 @@ export default function TeacherClassCard({
   selectedDate,
   onDateChange,
   attendanceMap,
+  reportStats,
 }: TeacherClassCardProps) {
   return (
     <Card className="lg:col-span-2">
@@ -56,25 +63,25 @@ export default function TeacherClassCard({
         <div className="grid grid-cols-4 gap-2 pt-4 border-t">
           <div className="text-center space-y-1">
             <p className="text-2xl font-bold text-green-600">
-              {classData.stats.present}
+              {reportStats?.present ?? 0}
             </p>
             <p className="text-xs text-muted-foreground">الحاضرون</p>
           </div>
           <div className="text-center space-y-1">
             <p className="text-2xl font-bold text-red-600">
-              {classData.stats.absence}
+              {reportStats?.absent ?? 0}
             </p>
             <p className="text-xs text-muted-foreground">الغياب</p>
           </div>
           <div className="text-center space-y-1">
             <p className="text-2xl font-bold text-orange-600">
-              {classData.stats.escapes}
+              {reportStats?.escape ?? 0}
             </p>
             <p className="text-xs text-muted-foreground">الهروب</p>
           </div>
           <div className="text-center space-y-1">
             <p className="text-2xl font-bold text-purple-600">
-              {classData.stats.violations}
+              {reportStats?.violations ?? 0}
             </p>
             <p className="text-xs text-muted-foreground">المخالفات</p>
           </div>

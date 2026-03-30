@@ -77,12 +77,12 @@ export default function TeacherDailyReport({
         setLoading(true);
         setExistingReportId(null);
 
-        // Initialize all students as present
+        // Initialize all students with null status (not present until report is found)
         const updatedReports = (classData.students as Trainee[]).map(
           (student) => ({
             studentId: student._id,
             student,
-            status: "present" as "present" | "absent" | "escape" | null,
+            status: null as "present" | "absent" | "escape" | null,
             violations: [] as Array<{
               type: 1 | 2 | 3 | 4;
               description?: string;
@@ -169,6 +169,14 @@ export default function TeacherDailyReport({
               }
             });
           }
+
+          // After report is loaded, set any remaining null statuses to "present"
+          updatedReports.forEach((report) => {
+            if (report.status === null) {
+              report.status = "present";
+            }
+          });
+          console.log("✅ Set remaining students to present status");
         } else {
           console.log("⚠️ No reports found for this date");
         }
@@ -401,9 +409,7 @@ export default function TeacherDailyReport({
 
   // Calculate statistics
   const stats = {
-    present: studentReports.filter(
-      (r) => r.status !== "absent" && r.status !== "escape",
-    ).length,
+    present: studentReports.filter((r) => r.status === "present").length,
     absent: studentReports.filter((r) => r.status === "absent").length,
     escape: studentReports.filter((r) => r.status === "escape").length,
     violations: studentReports.reduce((sum, r) => sum + r.violations.length, 0),
@@ -412,9 +418,7 @@ export default function TeacherDailyReport({
   // Debug: Log stats calculation
   console.log("📊 Stats Summary:", stats);
   console.log("📊 Status breakdown:", {
-    presentCount: studentReports.filter(
-      (r) => r.status !== "absent" && r.status !== "escape",
-    ).length,
+    presentCount: studentReports.filter((r) => r.status === "present").length,
     absentCount: studentReports.filter((r) => r.status === "absent").length,
     escapeCount: studentReports.filter((r) => r.status === "escape").length,
     violationCount: studentReports.reduce(
@@ -435,6 +439,7 @@ export default function TeacherDailyReport({
           selectedDate={selectedDate}
           onDateChange={setSelectedDate}
           attendanceMap={new Map()}
+          reportStats={stats}
         />
         <TeacherScheduleCard classData={classData} />
       </div>
