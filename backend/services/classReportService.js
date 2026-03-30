@@ -6,6 +6,11 @@ const Trainee = require("../models/Trainee");
 
 class ClassReportService {
   // Calculate stats based on student reports
+  // Status Hierarchy:
+  // - present = total students - (unique absent + unique escape) → includes those with violations only
+  // - absence = count of unique students with absent status
+  // - escapes = count of unique students with escape status
+  // - violations = count of all violation entries (can coexist with absent/escape)
   async calculateStats(studentReports, classId) {
     const stats = {
       present: 0,
@@ -14,17 +19,36 @@ class ClassReportService {
       violations: 0,
     };
 
-    // Count reported issues
+    // Track unique students with each status
+    const studentsWithAbsence = new Set();
+    const studentsWithEscape = new Set();
+
     studentReports.forEach((report) => {
-      if (report.status === "absent") stats.absence++;
-      if (report.status === "escape") stats.escapes++;
-      if (report.status === "violation") stats.violations++;
+      const studentId = report.studentId.toString();
+
+      if (report.status === "absent") {
+        studentsWithAbsence.add(studentId);
+      }
+      if (report.status === "escape") {
+        studentsWithEscape.add(studentId);
+      }
+      if (report.status === "violation") {
+        stats.violations++;
+      }
     });
 
-    // Calculate present count: total students - reported issues
+    // Calculate counts of unique students
+    stats.absence = studentsWithAbsence.size;
+    stats.escapes = studentsWithEscape.size;
+
+    // Calculate present count: total students - (unique absent + unique escape)
+    // Students with violations only are still counted as present
     const classItem = await Class.findById(classId);
     if (classItem) {
-      stats.present = classItem.studentCount - studentReports.length;
+      stats.present =
+        classItem.studentCount -
+        studentsWithAbsence.size -
+        studentsWithEscape.size;
     }
 
     return stats;
@@ -96,7 +120,8 @@ class ClassReportService {
       throw new Error("معرف الجدول الزمني مطلوب");
     }
 
-    if (!studentReports || studentReports.length === 0) {
+    // studentReports can be empty if all students are present
+    if (studentReports === undefined) {
       throw new Error("تقارير الطلاب مطلوبة");
     }
 
@@ -118,11 +143,16 @@ class ClassReportService {
       throw new Error("الجدول الزمني غير موجود");
     }
 
-    // Validate all students exist
-    const studentIds = studentReports.map((r) => r.studentId);
-    const students = await Trainee.find({ _id: { $in: studentIds } });
-    if (students.length !== studentIds.length) {
-      throw new Error("بعض الطلاب غير موجودين");
+    // Validate all students exist (only if there are reported issues)
+    if (studentReports && studentReports.length > 0) {
+      // Get unique student IDs (same student can have multiple entries: absence + violation)
+      const uniqueStudentIds = [
+        ...new Set(studentReports.map((r) => r.studentId.toString())),
+      ];
+      const students = await Trainee.find({ _id: { $in: uniqueStudentIds } });
+      if (students.length !== uniqueStudentIds.length) {
+        throw new Error("بعض الطلاب غير موجودين");
+      }
     }
 
     // Create report
@@ -185,9 +215,12 @@ class ClassReportService {
 
     // Update student reports if provided
     if (studentReports) {
-      const studentIds = studentReports.map((r) => r.studentId);
-      const students = await Trainee.find({ _id: { $in: studentIds } });
-      if (students.length !== studentIds.length) {
+      // Get unique student IDs (same student can have multiple entries: absence + violation)
+      const uniqueStudentIds = [
+        ...new Set(studentReports.map((r) => r.studentId.toString())),
+      ];
+      const students = await Trainee.find({ _id: { $in: uniqueStudentIds } });
+      if (students.length !== uniqueStudentIds.length) {
         throw new Error("بعض الطلاب غير موجودين");
       }
       report.studentReports = studentReports;
