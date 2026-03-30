@@ -177,7 +177,13 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
           {new Date(report.date).toLocaleDateString("en-US")}
         </div>
       </div>
-      <div className="grid grid-cols-4 gap-2 text-xs">
+      <div className="grid grid-cols-5 gap-2 text-xs">
+        <div className="text-center bg-blue-200 p-2 rounded">
+          <div className="font-bold text-blue-700">
+            {(report.stats?.present || 0) + (report.stats?.absence || 0) + (report.stats?.escapes || 0)}
+          </div>
+          <div className="text-muted-foreground">الإجمالي</div>
+        </div>
         <div className="text-center bg-green-200 p-2 rounded">
           <div className="font-bold text-green-700">
             {report.stats?.present || 0}
@@ -293,7 +299,13 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
 
       {/* Summary Stats */}
       {reports.length > 0 && (
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-5 gap-2">
+          <div className="text-center space-y-1 bg-blue-100 border-2 border-blue-300 rounded-lg p-3">
+            <p className="text-2xl font-bold text-blue-600">
+              {reports.reduce((sum, r) => sum + ((r.stats?.present || 0) + (r.stats?.absence || 0) + (r.stats?.escapes || 0)), 0)}
+            </p>
+            <p className="text-xs text-muted-foreground">الإجمالي</p>
+          </div>
           <div className="text-center space-y-1 bg-green-100 border-2 border-green-300 rounded-lg p-3">
             <p className="text-2xl font-bold text-green-600">
               {reports.reduce((sum, r) => sum + (r.stats?.present || 0), 0)}
