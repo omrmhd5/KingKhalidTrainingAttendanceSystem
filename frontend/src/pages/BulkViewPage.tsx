@@ -231,8 +231,8 @@ export default function BulkViewPage() {
                 {filtered.length !== results.length && ` من ${results.length}`})
               </CardTitle>
               <div className="flex gap-2">
-                <ExportPDF data={filtered} />
                 <ExportExcel data={filtered} />
+                <ExportPDF data={filtered} />
               </div>
             </div>
           </CardHeader>

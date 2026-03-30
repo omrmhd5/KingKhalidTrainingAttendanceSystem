@@ -17,6 +17,8 @@ import Barcode from "react-barcode";
 import { TraineeFormModal } from "@/components/trainees/TraineeFormModal";
 import { TraineeSearchFilters } from "@/components/trainees/TraineeSearchFilters";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
+import { TraineesExportExcel } from "@/components/trainees/ExportExcel";
+import { TraineesExportPDF } from "@/components/trainees/ExportPDF";
 import { traineeApi } from "@/lib/traineeApi";
 import { rankApi } from "@/lib/rankApi";
 import { specializationApi } from "@/lib/specializationApi";
@@ -307,6 +309,12 @@ export default function TraineesPage() {
                   <Trash2 className="ml-2 h-4 w-4" />
                   حذف ({selectedTrainees.size})
                 </Button>
+              )}
+              {filtered.length > 0 && (
+                <>
+                  <TraineesExportExcel data={filtered} />
+                  <TraineesExportPDF data={filtered} />
+                </>
               )}
               <TraineeFormModal
                 open={dialogOpen}

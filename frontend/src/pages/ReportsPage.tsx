@@ -7,6 +7,8 @@ import { format } from "date-fns";
 import { HoursTab } from "@/components/reports/HoursTab";
 import { AbsencesTab } from "@/components/reports/AbsencesTab";
 import { EscapesTab } from "@/components/reports/EscapesTab";
+import { ReportsExportExcel } from "@/components/reports/ExportExcel";
+import { ReportsExportPDF } from "@/components/reports/ExportPDF";
 import {
   attendanceApi,
   AttendanceRecord,
@@ -20,6 +22,7 @@ export default function ReportsPage() {
   const [hoursCount, setHoursCount] = useState(0);
   const [absencesCount, setAbsencesCount] = useState(0);
   const [escapesCount, setEscapesCount] = useState(0);
+  const [hoursData, setHoursData] = useState<AttendanceRecord[]>([]);
   const [absencesList, setAbsencesList] = useState<Absence[]>([]);
   const [escapesList, setEscapesList] = useState<Escape[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -75,6 +78,7 @@ export default function ReportsPage() {
         setHoursCount(hours);
         setAbsencesCount(absences);
         setEscapesCount(escapes);
+        setHoursData(records);
         setAbsencesList(absencesRes.absences || []);
         setEscapesList(escapesRes.escapes || []);
       } catch (error) {
@@ -82,6 +86,7 @@ export default function ReportsPage() {
         setHoursCount(0);
         setAbsencesCount(1);
         setEscapesCount(0);
+        setHoursData([]);
         setAbsencesList(mockAbsences);
         setEscapesList([]);
       } finally {
@@ -103,14 +108,36 @@ export default function ReportsPage() {
         </p>
       </div>
 
-      <div className="flex items-center gap-2">
-        <Label className="text-sm">التاريخ</Label>
-        <Input
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          className="w-44 justify-end"
-        />
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Label className="text-sm">التاريخ</Label>
+          <Input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="w-44 justify-end"
+          />
+        </div>
+        <div className="flex gap-2">
+          {activeTab === "hours" && (
+            <>
+              <ReportsExportExcel data={hoursData} type="hours" />
+              <ReportsExportPDF data={hoursData} type="hours" />
+            </>
+          )}
+          {activeTab === "absences" && (
+            <>
+              <ReportsExportExcel data={absencesList} type="absences" />
+              <ReportsExportPDF data={absencesList} type="absences" />
+            </>
+          )}
+          {activeTab === "escapes" && (
+            <>
+              <ReportsExportExcel data={escapesList} type="escapes" />
+              <ReportsExportPDF data={escapesList} type="escapes" />
+            </>
+          )}
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={handleTabChange} dir="rtl">

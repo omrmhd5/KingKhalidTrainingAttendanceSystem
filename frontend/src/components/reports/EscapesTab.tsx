@@ -103,7 +103,7 @@ export function EscapesTab({
           <TableHeader className="bg-orange-600">
             <TableRow className="border-orange-600 hover:bg-orange-600">
               <TableHead className="text-right text-white font-bold">
-                الرقم
+                الرقم العسكري
               </TableHead>
               <TableHead className="text-right text-white font-bold">
                 السجل المدني
