@@ -63,4 +63,20 @@ export const traineeApi = {
     });
     return response.data;
   },
+
+  async bulkImportTrainees(
+    traineesData: Array<{
+      military_id: string;
+      civil_id?: string;
+      full_name: string;
+      rank_id?: string;
+      specialty_id?: string;
+      shift_id?: string;
+    }>,
+  ) {
+    const response = await apiClient.post(`/trainees/bulk-import`, {
+      trainees: traineesData,
+    });
+    return response.data;
+  },
 };

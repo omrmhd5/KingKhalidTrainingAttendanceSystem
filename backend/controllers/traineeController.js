@@ -66,3 +66,16 @@ exports.searchByIds = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.bulkImportTrainees = async (req, res) => {
+  try {
+    const { trainees } = req.body;
+    if (!trainees || !Array.isArray(trainees)) {
+      return res.status(400).json({ error: "Trainees array is required" });
+    }
+    const results = await traineeService.bulkImportTrainees(trainees);
+    res.status(201).json(results);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};

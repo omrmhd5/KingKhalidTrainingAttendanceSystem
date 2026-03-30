@@ -10,11 +10,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2, Upload } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import Barcode from "react-barcode";
 import { TraineeFormModal } from "@/components/trainees/TraineeFormModal";
+import { TraineeBulkImportModal } from "@/components/trainees/TraineeBulkImportModal";
 import { TraineeSearchFilters } from "@/components/trainees/TraineeSearchFilters";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
 import { TraineesExportExcel } from "@/components/trainees/ExportExcel";
@@ -75,6 +76,7 @@ export default function TraineesPage() {
   const [filterSpecialty, setFilterSpecialty] = useState("all");
   const [filterShift, setFilterShift] = useState("all");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [bulkImportOpen, setBulkImportOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
@@ -300,37 +302,46 @@ export default function TraineesPage() {
         </div>
         {canWrite && (
           <>
-            <div className="flex gap-2">
-              {selectedTrainees.size > 0 && (
+            <div className="flex flex-col gap-2">
+              <div className="flex gap-2">
+                {selectedTrainees.size > 0 && (
+                  <Button
+                    variant="destructive"
+                    onClick={handleBulkDelete}
+                    size="sm">
+                    <Trash2 className="ml-2 h-4 w-4" />
+                    حذف ({selectedTrainees.size})
+                  </Button>
+                )}
                 <Button
-                  variant="destructive"
-                  onClick={handleBulkDelete}
+                  variant="default"
+                  onClick={() => setBulkImportOpen(true)}
                   size="sm">
-                  <Trash2 className="ml-2 h-4 w-4" />
-                  حذف ({selectedTrainees.size})
+                  <Upload className="ml-2 h-4 w-4" />
+                  استيراد Excel
                 </Button>
-              )}
+                <TraineeFormModal
+                  open={dialogOpen}
+                  onOpenChange={(o) => {
+                    setDialogOpen(o);
+                    if (!o) {
+                      setEditing(null);
+                      setForm(emptyForm);
+                    }
+                  }}
+                  onSubmit={handleSubmit}
+                  form={form}
+                  setForm={setForm}
+                  editing={editing}
+                  isLoading={saveMutation.isPending}
+                />
+              </div>
               {filtered.length > 0 && (
-                <>
+                <div className="flex gap-2">
                   <TraineesExportExcel data={filtered} />
                   <TraineesExportPDF data={filtered} />
-                </>
+                </div>
               )}
-              <TraineeFormModal
-                open={dialogOpen}
-                onOpenChange={(o) => {
-                  setDialogOpen(o);
-                  if (!o) {
-                    setEditing(null);
-                    setForm(emptyForm);
-                  }
-                }}
-                onSubmit={handleSubmit}
-                form={form}
-                setForm={setForm}
-                editing={editing}
-                isLoading={saveMutation.isPending}
-              />
             </div>
             <ConfirmDeleteModal
               open={deleteOpen}
@@ -345,6 +356,14 @@ export default function TraineesPage() {
               onConfirm={confirmBulkDelete}
               itemName={`${selectedTrainees.size} متدربي`}
               itemType="المتدربين"
+            />
+            <TraineeBulkImportModal
+              open={bulkImportOpen}
+              onOpenChange={setBulkImportOpen}
+              onImportSuccess={loadTrainees}
+              ranks={ranks}
+              specializations={specializations}
+              shifts={shifts}
             />
           </>
         )}

@@ -218,6 +218,100 @@ class TraineeService {
       .populate("specialty_id", "name")
       .sort({ createdAt: 1 });
   }
+
+  async bulkImportTrainees(traineesData) {
+    if (!Array.isArray(traineesData) || traineesData.length === 0) {
+      throw new Error("Trainees data array is required");
+    }
+
+    const results = {
+      success: 0,
+      failed: 0,
+      errors: [],
+    };
+
+    // Process each trainee
+    for (let i = 0; i < traineesData.length; i++) {
+      const data = traineesData[i];
+      const rowNumber = i + 2;
+
+      try {
+        // Validate required fields
+        if (!data.military_id || !data.military_id.trim()) {
+          throw new Error("Military ID is required");
+        }
+        if (!data.full_name || !data.full_name.trim()) {
+          throw new Error("Full name is required");
+        }
+        if (!data.rank_id) {
+          throw new Error("Rank is required");
+        }
+        if (!data.specialty_id) {
+          throw new Error("Specialty is required");
+        }
+        if (!data.shift_id) {
+          throw new Error("Shift is required");
+        }
+
+        // Validate that rank, specialty, shift actually exist
+        const rank = await Rank.findById(data.rank_id);
+        if (!rank) {
+          throw new Error(`Rank with ID ${data.rank_id} not found`);
+        }
+
+        const specialty = await Specialization.findById(data.specialty_id);
+        if (!specialty) {
+          throw new Error(`Specialty with ID ${data.specialty_id} not found`);
+        }
+
+        const shift = await Shift.findById(data.shift_id);
+        if (!shift) {
+          throw new Error(`Shift with ID ${data.shift_id} not found`);
+        }
+
+        // Check if military ID already exists
+        const existing = await Trainee.findOne({
+          military_id: data.military_id.trim(),
+        });
+        if (existing) {
+          throw new Error("Military ID already exists");
+        }
+
+        // Create trainee object
+        const traineeObj = {
+          military_id: data.military_id.trim(),
+          full_name: data.full_name.trim(),
+          civil_id: data.civil_id ? data.civil_id.trim() : "",
+          rank_id: data.rank_id,
+          specialty_id: data.specialty_id,
+          shift_id: data.shift_id,
+        };
+
+        // Create and save trainee
+        const trainee = new Trainee(traineeObj);
+        await trainee.save();
+
+        // Add trainee to shift's trainees array
+        await Shift.findByIdAndUpdate(
+          data.shift_id,
+          { $push: { trainees: trainee._id } },
+          { new: true },
+        );
+        await shiftService.updateTraineesCount(data.shift_id);
+
+        results.success++;
+      } catch (error) {
+        results.failed++;
+        results.errors.push({
+          row: rowNumber,
+          militaryId: data.military_id,
+          error: error.message,
+        });
+      }
+    }
+
+    return results;
+  }
 }
 
 module.exports = new TraineeService();

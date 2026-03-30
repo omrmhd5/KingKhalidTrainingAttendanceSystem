@@ -13,6 +13,7 @@ router.get("/:id", requireAdminOrOperator, traineeController.getTrainee);
 router.post("/search", requireAdminOrOperator, traineeController.searchByIds);
 
 // Write operations - admin only
+router.post("/bulk-import", requireAdmin, traineeController.bulkImportTrainees);
 router.post("/", requireAdmin, traineeController.createTrainee);
 router.put("/:id", requireAdmin, traineeController.updateTrainee);
 router.delete("/:id", requireAdmin, traineeController.deleteTrainee);
