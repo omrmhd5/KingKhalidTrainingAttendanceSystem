@@ -99,6 +99,23 @@ export function TeachersManagementTab({
     }
   };
 
+  const getAvailableClasses = (currentClassId?: string | null): Class[] => {
+    // Filter classes: show unassigned classes + the currently assigned class
+    return classes.filter((cls) => {
+      // If class has no assignedTeacherId, show it
+      if (!cls.assignedTeacherId) return true;
+      // If we're editing and this is the current class, show it
+      if (
+        currentClassId && typeof cls.assignedTeacherId === "object"
+          ? cls.assignedTeacherId._id === currentClassId
+          : cls.assignedTeacherId === currentClassId
+      ) {
+        return true;
+      }
+      return false;
+    });
+  };
+
   const handleOpenAdd = () => {
     setFormData({
       username: "",
@@ -448,7 +465,7 @@ export function TeachersManagementTab({
                       <SelectValue placeholder="اختر فصل" />
                     </SelectTrigger>
                     <SelectContent dir="rtl">
-                      {classes.map((cls) => (
+                      {getAvailableClasses().map((cls) => (
                         <SelectItem key={cls._id} value={cls._id}>
                           {cls.name}
                         </SelectItem>
@@ -578,11 +595,13 @@ export function TeachersManagementTab({
                       <SelectValue placeholder="اختر فصل" />
                     </SelectTrigger>
                     <SelectContent dir="rtl">
-                      {classes.map((cls) => (
-                        <SelectItem key={cls._id} value={cls._id}>
-                          {cls.name}
-                        </SelectItem>
-                      ))}
+                      {getAvailableClasses(selectedTeacher?.class).map(
+                        (cls) => (
+                          <SelectItem key={cls._id} value={cls._id}>
+                            {cls.name}
+                          </SelectItem>
+                        ),
+                      )}
                     </SelectContent>
                   </Select>
                 </div>

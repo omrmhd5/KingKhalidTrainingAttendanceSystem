@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CheckCircle, Edit } from "lucide-react";
+import { CheckCircle } from "lucide-react";
 import { Trainee } from "@/lib/traineeApi";
 import { useState } from "react";
 
@@ -124,14 +124,23 @@ export default function ReportSummary({
 
               <Tabs value={activeTab} onValueChange={setActiveTab} dir="rtl">
                 <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="violations">
-                    المخالفات ({filteredViolations.length})
+                  <TabsTrigger value="violations" className="text-xs">
+                    <span>المخالفات</span>
+                    <span className="mr-1 font-bold">
+                      ({filteredViolations.length})
+                    </span>
                   </TabsTrigger>
-                  <TabsTrigger value="absent">
-                    الغياب ({filteredAbsent.length})
+                  <TabsTrigger value="absent" className="text-xs">
+                    <span>الغياب</span>
+                    <span className="mr-1 font-bold">
+                      ({filteredAbsent.length})
+                    </span>
                   </TabsTrigger>
-                  <TabsTrigger value="escape">
-                    الهروب ({filteredEscaped.length})
+                  <TabsTrigger value="escape" className="text-xs">
+                    <span>الهروب</span>
+                    <span className="mr-1 font-bold">
+                      ({filteredEscaped.length})
+                    </span>
                   </TabsTrigger>
                 </TabsList>
 
@@ -237,12 +246,8 @@ export default function ReportSummary({
         </div>
 
         <DialogFooter className="pt-4 gap-2">
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            className="flex items-center gap-2">
-            <Edit className="h-4 w-4" />
-            تعديل التقرير
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            إغلاق
           </Button>
         </DialogFooter>
       </DialogContent>

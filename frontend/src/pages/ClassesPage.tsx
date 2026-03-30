@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ClassesTimeScheduleTab } from "@/components/classes/ClassesTimeScheduleTab";
 import { ClassesManagementTab } from "@/components/classes/ClassesManagementTab";
 import { TeachersManagementTab } from "@/components/classes/TeachersManagementTab";
-import { ClassDashboardTab } from "@/components/classes/ClassDashboardTab";
+import { ClassReportTab } from "@/components/classes/ClassReportTab";
 
 export default function ClassesPage() {
   const { role } = useAuth();
@@ -41,7 +41,7 @@ export default function ClassesPage() {
               <TabsTrigger value="schedule">الجداول</TabsTrigger>
               <TabsTrigger value="classes">الفصول</TabsTrigger>
               <TabsTrigger value="teachers">المعلمون</TabsTrigger>
-              <TabsTrigger value="dashboard">لوحة التحكم</TabsTrigger>
+              <TabsTrigger value="reports">التقارير</TabsTrigger>
             </TabsList>
 
             <TabsContent value="schedule" className="mt-6">
@@ -56,8 +56,8 @@ export default function ClassesPage() {
               <TeachersManagementTab canWrite={canWrite} />
             </TabsContent>
 
-            <TabsContent value="dashboard" className="mt-6">
-              <ClassDashboardTab canWrite={canWrite} />
+            <TabsContent value="reports" className="mt-6">
+              <ClassReportTab canWrite={canWrite} />
             </TabsContent>
           </Tabs>
         </CardContent>
