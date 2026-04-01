@@ -231,6 +231,8 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
       className: string;
       teacherName: string;
       date: string;
+      violationType?: string;
+      violationDescription?: string;
     }> = [];
 
     reports.forEach((report) => {
@@ -294,6 +296,8 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
             className,
             teacherName,
             date: dateStr,
+            violationType: sr.violationType,
+            violationDescription: sr.violationDescription,
           });
         });
       } else if (statType === "total") {

@@ -18,6 +18,8 @@ interface StudentWithReport {
   className: string;
   teacherName: string;
   date: string;
+  violationType?: string;
+  violationDescription?: string;
 }
 
 interface StatDetailModalProps {
@@ -40,6 +42,13 @@ const colorTextStyles = {
   red: "text-red-700",
   orange: "text-orange-700",
   blue: "text-blue-700",
+};
+
+const violationTypes: Record<number | string, string> = {
+  1: "النوم في الفصل",
+  2: "استخدام الجوال في الفصل",
+  3: "عدم احترام المسؤول",
+  4: "مخالفة الأنظمة والتعليمات",
 };
 
 export default function StatDetailModal({
@@ -87,7 +96,10 @@ export default function StatDetailModal({
                 <div
                   key={`${item.studentId}-${idx}`}
                   className={`border-2 rounded-lg p-3 text-sm ${colorStyles[color]}`}>
-                  <div className="grid grid-cols-3 gap-4">
+                  <div
+                    className={`grid gap-4 ${
+                      item.violationType ? "grid-cols-4" : "grid-cols-3"
+                    }`}>
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">
                         الاسم
@@ -106,6 +118,24 @@ export default function StatDetailModal({
                       </p>
                       <p className="font-medium">{item.student.civil_id}</p>
                     </div>
+                    {item.violationType && (
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">
+                          المخالفة
+                        </p>
+                        <div className="font-medium">
+                          <p>
+                            {violationTypes[item.violationType] ||
+                              item.violationType}
+                          </p>
+                          {item.violationDescription && (
+                            <p className="text-xs text-gray-600 mt-1">
+                              {item.violationDescription}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
