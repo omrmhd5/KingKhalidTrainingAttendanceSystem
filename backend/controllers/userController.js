@@ -34,7 +34,8 @@ exports.getUserById = async (req, res) => {
 // Create user
 exports.createUser = async (req, res) => {
   try {
-    const user = await userService.createUser(req.body);
+    const result = await userService.createUser(req.body);
+    const { plainTextPassword, ...user } = result;
 
     // If teacher role and class provided, assign teacher to class
     if (user.role === "teacher" && req.body.class) {
@@ -49,6 +50,7 @@ exports.createUser = async (req, res) => {
     res.status(201).json({
       message: "User created successfully",
       user,
+      plainTextPassword,
     });
   } catch (error) {
     res.status(400).json({ message: error.message });

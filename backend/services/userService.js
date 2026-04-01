@@ -75,6 +75,9 @@ class UserService {
       }
     }
 
+    // Store plain text password before hashing
+    const plainTextPassword = password;
+
     // Create user
     const user = new User({
       username,
@@ -85,7 +88,13 @@ class UserService {
     });
 
     await user.save();
-    return user.toJSON();
+
+    // Return user with plain text password included (only for creation)
+    const userObj = user.toJSON();
+    return {
+      ...userObj,
+      plainTextPassword: plainTextPassword,
+    };
   }
 
   async updateUser(id, data) {

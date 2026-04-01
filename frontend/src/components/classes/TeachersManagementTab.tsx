@@ -183,7 +183,7 @@ export function TeachersManagementTab({
       setIsAddOpen(false);
       toast({
         title: "نجاح",
-        description: "تم إضافة المعلم بنجاح",
+        description: `تم إضافة المعلم بنجاح\nكلمة المرور: ${(response as any).plainTextPassword}`,
       });
     } catch (error: unknown) {
       toast({

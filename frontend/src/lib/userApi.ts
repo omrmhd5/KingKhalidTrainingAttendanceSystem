@@ -73,10 +73,11 @@ export const userApi = {
   },
 
   async createUser(data: UserCreateInput) {
-    const response = await apiClient.post<{ message: string; user: User }>(
-      "/users",
-      data,
-    );
+    const response = await apiClient.post<{
+      message: string;
+      user: User;
+      plainTextPassword?: string;
+    }>("/users", data);
     return response.data;
   },
 
