@@ -46,10 +46,10 @@ const getIdCellStyle = (
   isFirst: boolean = false,
 ): string => {
   if (hasViolation) {
-    return "bg-red-200 border-red-500";
+    return "bg-red-500 border-red-500";
   }
   if (hasDisciplinary) {
-    return "bg-blue-200 border-blue-500";
+    return "bg-blue-400 border-blue-500";
   }
   if (isFirst) {
     return "bg-yellow-200 border-yellow-500";

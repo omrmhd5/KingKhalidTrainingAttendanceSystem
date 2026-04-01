@@ -42,7 +42,13 @@ function getErrorMessage(error: unknown, fallback: string): string {
   return fallback;
 }
 
-export function ClassesTimeScheduleTab() {
+interface ClassesTimeScheduleTabProps {
+  canWrite?: boolean;
+}
+
+export function ClassesTimeScheduleTab({
+  canWrite = true,
+}: ClassesTimeScheduleTabProps = {}) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
 
@@ -223,50 +229,56 @@ export function ClassesTimeScheduleTab() {
         className="flex flex-row items-center justify-between"
         dir="rtl">
         <CardTitle>جداول الفصول ({schedules.length})</CardTitle>
-        <Button
-          size="sm"
-          onClick={() => {
-            setScheduleClassName("");
-            setScheduleStart("");
-            setScheduleEnd("");
-            setScheduleDialogOpen(true);
-          }}
-          disabled={loading}>
-          <Plus className="ml-2 h-4 w-4" />
-          إضافة جدول
-        </Button>
+        {canWrite && (
+          <Button
+            size="sm"
+            onClick={() => {
+              setScheduleClassName("");
+              setScheduleStart("");
+              setScheduleEnd("");
+              setScheduleDialogOpen(true);
+            }}
+            disabled={loading}>
+            <Plus className="ml-2 h-4 w-4" />
+            إضافة جدول
+          </Button>
+        )}
       </CardHeader>
       <CardContent className="p-0">
-        <ClassTimeScheduleModal
-          open={scheduleDialogOpen}
-          onOpenChange={setScheduleDialogOpen}
-          onSubmit={handleAddSchedule}
-          className={scheduleClassName}
-          setClassName={setScheduleClassName}
-          startTime={scheduleStart}
-          setStartTime={setScheduleStart}
-          endTime={scheduleEnd}
-          setEndTime={setScheduleEnd}
-        />
-        <ClassTimeScheduleModal
-          open={editDialogOpen}
-          onOpenChange={setEditDialogOpen}
-          onSubmit={handleUpdateSchedule}
-          isEditing={true}
-          className={editingScheduleName}
-          setClassName={setEditingScheduleName}
-          startTime={editingScheduleStart}
-          setStartTime={setEditingScheduleStart}
-          endTime={editingScheduleEnd}
-          setEndTime={setEditingScheduleEnd}
-        />
-        <ConfirmDeleteModal
-          open={deleteConfirmOpen}
-          onOpenChange={setDeleteConfirmOpen}
-          onConfirm={confirmDelete}
-          itemName={deleteTargetName}
-          itemType="جدول الفصل"
-        />
+        {canWrite && (
+          <>
+            <ClassTimeScheduleModal
+              open={scheduleDialogOpen}
+              onOpenChange={setScheduleDialogOpen}
+              onSubmit={handleAddSchedule}
+              className={scheduleClassName}
+              setClassName={setScheduleClassName}
+              startTime={scheduleStart}
+              setStartTime={setScheduleStart}
+              endTime={scheduleEnd}
+              setEndTime={setScheduleEnd}
+            />
+            <ClassTimeScheduleModal
+              open={editDialogOpen}
+              onOpenChange={setEditDialogOpen}
+              onSubmit={handleUpdateSchedule}
+              isEditing={true}
+              className={editingScheduleName}
+              setClassName={setEditingScheduleName}
+              startTime={editingScheduleStart}
+              setStartTime={setEditingScheduleStart}
+              endTime={editingScheduleEnd}
+              setEndTime={setEditingScheduleEnd}
+            />
+            <ConfirmDeleteModal
+              open={deleteConfirmOpen}
+              onOpenChange={setDeleteConfirmOpen}
+              onConfirm={confirmDelete}
+              itemName={deleteTargetName}
+              itemType="جدول الفصل"
+            />
+          </>
+        )}
         <Table dir="rtl">
           <TableHeader>
             <TableRow>
@@ -274,7 +286,9 @@ export function ClassesTimeScheduleTab() {
               <TableHead className="text-right">البداية</TableHead>
               <TableHead className="text-right">النهاية</TableHead>
               <TableHead className="text-right">عدد الفصول</TableHead>
-              <TableHead className="text-right">الإجراءات</TableHead>
+              {canWrite && (
+                <TableHead className="text-right">الإجراءات</TableHead>
+              )}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -320,22 +334,24 @@ export function ClassesTimeScheduleTab() {
                       <TableCell className="text-right font-semibold">
                         {s.classes?.length || 0}
                       </TableCell>
-                      <TableCell className="text-right flex gap-2 justify-start">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleEditSchedule(s)}
-                          disabled={submitting}>
-                          <Edit className="h-4 w-4 text-blue-500" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDeleteSchedule(s._id, s.name)}
-                          disabled={submitting}>
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </TableCell>
+                      {canWrite && (
+                        <TableCell className="text-right flex gap-2 justify-start">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleEditSchedule(s)}
+                            disabled={submitting}>
+                            <Edit className="h-4 w-4 text-blue-500" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDeleteSchedule(s._id, s.name)}
+                            disabled={submitting}>
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </TableCell>
+                      )}
                     </TableRow>
                   );
                 })

@@ -4,6 +4,7 @@ const userController = require("../controllers/userController");
 const {
   authenticateToken,
   requireAdmin,
+  requireAdminOrOperator,
 } = require("../middleware/authMiddleware");
 
 // Public routes
@@ -14,7 +15,12 @@ router.post("/logout", userController.logout);
 router.get("/me", authenticateToken, userController.getCurrentUser);
 
 // Admin routes (require admin role)
-router.get("/", authenticateToken, requireAdmin, userController.getAllUsers);
+router.get(
+  "/",
+  authenticateToken,
+  requireAdminOrOperator,
+  userController.getAllUsers,
+);
 router.get("/:id", authenticateToken, requireAdmin, userController.getUserById);
 router.post("/", authenticateToken, requireAdmin, userController.createUser);
 router.put("/:id", authenticateToken, requireAdmin, userController.updateUser);

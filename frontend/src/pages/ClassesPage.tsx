@@ -45,7 +45,7 @@ export default function ClassesPage() {
             </TabsList>
 
             <TabsContent value="schedule" className="mt-6">
-              <ClassesTimeScheduleTab />
+              <ClassesTimeScheduleTab canWrite={canWrite} />
             </TabsContent>
 
             <TabsContent value="classes" className="mt-6">
