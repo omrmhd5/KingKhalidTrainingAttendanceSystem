@@ -21,22 +21,44 @@ const ClassReportSchema = new mongoose.Schema(
       ref: "ClassTimeSchedule",
       required: [true, "معرف الجدول الزمني مطلوب"],
     },
-    studentReports: [
+    presentReports: [
       {
         studentId: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "Trainee",
           required: true,
         },
-        status: {
-          type: String,
-          enum: ["absent", "escape", "violation"],
+      },
+    ],
+    absenceReports: [
+      {
+        studentId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Trainee",
+          required: true,
+        },
+      },
+    ],
+    escapeReports: [
+      {
+        studentId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Trainee",
+          required: true,
+        },
+      },
+    ],
+    violationReports: [
+      {
+        studentId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Trainee",
           required: true,
         },
         violationType: {
           type: Number,
           enum: [1, 2, 3, 4],
-          default: null,
+          required: true,
         },
         violationDescription: {
           type: String,

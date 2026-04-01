@@ -104,79 +104,63 @@ export default function TeacherDailyReport({
         if (reports && reports.length > 0) {
           const report = reports[0];
           console.log("✅ Report found:", report);
-          console.log("📊 Raw studentReports from API:", report.studentReports);
+
           setExistingReportId(report._id);
 
-          // Loop through student reports and assign to UI
-          if (report.studentReports && report.studentReports.length > 0) {
-            report.studentReports.forEach((reportEntry: any, idx: number) => {
-              // Handle both populated object and string ID
-              const studentIdToFind =
-                typeof reportEntry.studentId === "string"
-                  ? reportEntry.studentId
-                  : reportEntry.studentId._id;
+          // Create a map to track which students are in which category
+          const presentStudentIds = new Set(
+            report.presentReports?.map((r: any) =>
+              typeof r.studentId === "string" ? r.studentId : r.studentId._id,
+            ) || [],
+          );
 
-              console.log(
-                `\n🔍 Entry ${idx}: StudentId=${studentIdToFind}, Status=${reportEntry.status}, ViolationType=${reportEntry.violationType}`,
-              );
+          const absenceStudentIds = new Set(
+            report.absenceReports?.map((r: any) =>
+              typeof r.studentId === "string" ? r.studentId : r.studentId._id,
+            ) || [],
+          );
 
-              const studentUI = updatedReports.find(
-                (r) => r.studentId === studentIdToFind,
-              );
+          const escapeStudentIds = new Set(
+            report.escapeReports?.map((r: any) =>
+              typeof r.studentId === "string" ? r.studentId : r.studentId._id,
+            ) || [],
+          );
 
-              console.log(`  Found in UI array: ${studentUI ? "✅" : "❌"}`);
-
-              if (studentUI) {
-                console.log(
-                  `  Before: status="${studentUI.status}", violations=${JSON.stringify(studentUI.violations)}`,
-                );
-
-                // Always process violations, regardless of other statuses
-                if (
-                  reportEntry.status === "violation" &&
-                  reportEntry.violationType
-                ) {
-                  studentUI.violations.push({
-                    type: reportEntry.violationType as 1 | 2 | 3 | 4,
-                    description: reportEntry.violationDescription,
-                  });
-                  console.log(
-                    `  Added violation type ${reportEntry.violationType}`,
-                  );
-                }
-
-                // Set status if absent/escape (violations can coexist with these)
-                if (reportEntry.status === "absent") {
-                  studentUI.status = "absent";
-                  console.log(
-                    `  After: status="absent" (with ${studentUI.violations.length} violations)`,
-                  );
-                } else if (
-                  reportEntry.status === "escape" &&
-                  studentUI.status !== "absent"
-                ) {
-                  // Only set escape if not already marked absent
-                  studentUI.status = "escape";
-                  console.log(
-                    `  After: status="escape" (with ${studentUI.violations.length} violations)`,
-                  );
-                } else if (reportEntry.status === "violation") {
-                  // If only violation (no absent/escape), keep present
-                  console.log(
-                    `  After: status="present" (with ${studentUI.violations.length} violations)`,
-                  );
-                }
-              }
+          const violationsByStudentId = new Map();
+          report.violationReports?.forEach((v: any) => {
+            const studentId =
+              typeof v.studentId === "string" ? v.studentId : v.studentId._id;
+            if (!violationsByStudentId.has(studentId)) {
+              violationsByStudentId.set(studentId, []);
+            }
+            violationsByStudentId.get(studentId).push({
+              type: v.violationType as 1 | 2 | 3 | 4,
+              description: v.violationDescription,
             });
-          }
+          });
 
-          // After report is loaded, set any remaining null statuses to "present"
-          updatedReports.forEach((report) => {
-            if (report.status === null) {
-              report.status = "present";
+          // Update student reports with loaded data
+          updatedReports.forEach((reportUI) => {
+            if (presentStudentIds.has(reportUI.studentId)) {
+              reportUI.status = "present";
+            } else if (absenceStudentIds.has(reportUI.studentId)) {
+              reportUI.status = "absent";
+            } else if (escapeStudentIds.has(reportUI.studentId)) {
+              reportUI.status = "escape";
+            }
+
+            // Add violations from map
+            if (violationsByStudentId.has(reportUI.studentId)) {
+              reportUI.violations = violationsByStudentId.get(
+                reportUI.studentId,
+              );
             }
           });
-          console.log("✅ Set remaining students to present status");
+
+          console.log(
+            "\n✨ Final updated reports after loading 4 arrays:",
+            updatedReports,
+          );
         } else {
           console.log("⚠️ No reports found for this date");
         }
@@ -188,11 +172,11 @@ export default function TeacherDailyReport({
         setStudentReports(updatedReports);
       } catch (error) {
         console.error("Failed to load report:", error);
-        // Reset to initial state on error - all present
+        // Reset to initial state on error - all null (not assigned)
         const reports = (classData.students as Trainee[]).map((student) => ({
           studentId: student._id,
           student,
-          status: "present" as "present" | "absent" | "escape" | null,
+          status: null as "present" | "absent" | "escape" | null,
           violations: [] as Array<{
             type: 1 | 2 | 3 | 4;
             description?: string;
@@ -312,30 +296,33 @@ export default function TeacherDailyReport({
 
     setSubmitting(true);
     try {
-      // Transform student reports for API - only include absent, escape, and violations
-      // A student can have both a status (absent/escape) AND violations
-      const apiStudentReports: any[] = [];
+      // Transform student reports for API - separate into 4 arrays
+      const presentReports: any[] = [];
+      const absenceReports: any[] = [];
+      const escapeReports: any[] = [];
+      const violationReports: any[] = [];
 
       studentReports.forEach((report) => {
-        // Add status entry if absent or escape
-        if (report.status === "absent") {
-          apiStudentReports.push({
+        // Add to status-specific arrays
+        if (report.status === "present") {
+          presentReports.push({
             studentId: report.studentId,
-            status: "absent",
+          });
+        } else if (report.status === "absent") {
+          absenceReports.push({
+            studentId: report.studentId,
           });
         } else if (report.status === "escape") {
-          apiStudentReports.push({
+          escapeReports.push({
             studentId: report.studentId,
-            status: "escape",
           });
         }
 
-        // Add violation entries (can exist with or without status)
+        // Add violation entries (can exist with any status)
         if (report.violations.length > 0) {
           report.violations.forEach((violation) => {
-            apiStudentReports.push({
+            violationReports.push({
               studentId: report.studentId,
-              status: "violation",
               violationType: violation.type,
               violationDescription: violation.description || null,
             });
@@ -343,10 +330,12 @@ export default function TeacherDailyReport({
         }
       });
 
-      console.log(
-        "🚀 Submitting to API - apiStudentReports:",
-        apiStudentReports,
-      );
+      console.log("🚀 Submitting to API - 4 arrays:", {
+        presentReports,
+        absenceReports,
+        escapeReports,
+        violationReports,
+      });
 
       const reportData = {
         date: selectedDate,
@@ -356,7 +345,10 @@ export default function TeacherDailyReport({
           typeof classData.schedule === "string"
             ? classData.schedule
             : (classData.schedule as any)?._id || "",
-        studentReports: apiStudentReports,
+        presentReports,
+        absenceReports,
+        escapeReports,
+        violationReports,
       };
 
       console.log("🚀 Full reportData being sent:", reportData);

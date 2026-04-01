@@ -34,14 +34,26 @@ class ClassReportController {
 
   async createClassReport(req, res) {
     try {
-      const { date, teacherId, classId, schedule, studentReports } = req.body;
+      const {
+        date,
+        teacherId,
+        classId,
+        schedule,
+        presentReports,
+        absenceReports,
+        escapeReports,
+        violationReports,
+      } = req.body;
 
       const newReport = await classReportService.createClassReport({
         date,
         teacherId,
         classId,
         schedule,
-        studentReports,
+        presentReports,
+        absenceReports,
+        escapeReports,
+        violationReports,
       });
 
       res.status(201).json({
@@ -57,7 +69,16 @@ class ClassReportController {
 
   async updateClassReport(req, res) {
     try {
-      const { date, teacherId, classId, schedule, studentReports } = req.body;
+      const {
+        date,
+        teacherId,
+        classId,
+        schedule,
+        presentReports,
+        absenceReports,
+        escapeReports,
+        violationReports,
+      } = req.body;
 
       const updatedReport = await classReportService.updateClassReport(
         req.params.id,
@@ -66,7 +87,10 @@ class ClassReportController {
           teacherId,
           classId,
           schedule,
-          studentReports,
+          presentReports,
+          absenceReports,
+          escapeReports,
+          violationReports,
         },
       );
 

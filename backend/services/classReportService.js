@@ -6,50 +6,18 @@ const Trainee = require("../models/Trainee");
 
 class ClassReportService {
   // Calculate stats based on student reports
-  // Status Hierarchy:
-  // - present = total students - (unique absent + unique escape) → includes those with violations only
-  // - absence = count of unique students with absent status
-  // - escapes = count of unique students with escape status
-  // - violations = count of all violation entries (can coexist with absent/escape)
-  async calculateStats(studentReports, classId) {
+  async calculateStats(
+    presentReports,
+    absenceReports,
+    escapeReports,
+    violationReports,
+  ) {
     const stats = {
-      present: 0,
-      absence: 0,
-      escapes: 0,
-      violations: 0,
+      present: presentReports ? presentReports.length : 0,
+      absence: absenceReports ? absenceReports.length : 0,
+      escapes: escapeReports ? escapeReports.length : 0,
+      violations: violationReports ? violationReports.length : 0,
     };
-
-    // Track unique students with each status
-    const studentsWithAbsence = new Set();
-    const studentsWithEscape = new Set();
-
-    studentReports.forEach((report) => {
-      const studentId = report.studentId.toString();
-
-      if (report.status === "absent") {
-        studentsWithAbsence.add(studentId);
-      }
-      if (report.status === "escape") {
-        studentsWithEscape.add(studentId);
-      }
-      if (report.status === "violation") {
-        stats.violations++;
-      }
-    });
-
-    // Calculate counts of unique students
-    stats.absence = studentsWithAbsence.size;
-    stats.escapes = studentsWithEscape.size;
-
-    // Calculate present count: total students - (unique absent + unique escape)
-    // Students with violations only are still counted as present
-    const classItem = await Class.findById(classId);
-    if (classItem) {
-      stats.present =
-        classItem.studentCount -
-        studentsWithAbsence.size -
-        studentsWithEscape.size;
-    }
 
     return stats;
   }
@@ -87,7 +55,10 @@ class ClassReportService {
       .populate("teacherId", "username email")
       .populate("classId", "name")
       .populate("schedule", "name start_time end_time")
-      .populate("studentReports.studentId", "full_name military_id civil_id")
+      .populate("presentReports.studentId", "full_name military_id civil_id")
+      .populate("absenceReports.studentId", "full_name military_id civil_id")
+      .populate("escapeReports.studentId", "full_name military_id civil_id")
+      .populate("violationReports.studentId", "full_name military_id civil_id")
       .sort({ date: -1 });
   }
 
@@ -96,7 +67,10 @@ class ClassReportService {
       .populate("teacherId", "username email")
       .populate("classId", "name")
       .populate("schedule", "name start_time end_time")
-      .populate("studentReports.studentId", "full_name military_id civil_id");
+      .populate("presentReports.studentId", "full_name military_id civil_id")
+      .populate("absenceReports.studentId", "full_name military_id civil_id")
+      .populate("escapeReports.studentId", "full_name military_id civil_id")
+      .populate("violationReports.studentId", "full_name military_id civil_id");
 
     if (!report) {
       throw new Error("التقرير غير موجود");
@@ -106,7 +80,16 @@ class ClassReportService {
   }
 
   async createClassReport(data) {
-    const { date, teacherId, classId, schedule, studentReports } = data;
+    const {
+      date,
+      teacherId,
+      classId,
+      schedule,
+      presentReports,
+      absenceReports,
+      escapeReports,
+      violationReports,
+    } = data;
 
     // Validation
     if (!date) {
@@ -125,9 +108,14 @@ class ClassReportService {
       throw new Error("معرف الجدول الزمني مطلوب");
     }
 
-    // studentReports can be empty if all students are present
-    if (studentReports === undefined) {
-      throw new Error("تقارير الطلاب مطلوبة");
+    // All report arrays must be provided (can be empty)
+    if (
+      presentReports === undefined ||
+      absenceReports === undefined ||
+      escapeReports === undefined ||
+      violationReports === undefined
+    ) {
+      throw new Error("جميع تقارير الطلاب مطلوبة");
     }
 
     // Validate teacher exists
@@ -148,12 +136,18 @@ class ClassReportService {
       throw new Error("الجدول الزمني غير موجود");
     }
 
-    // Validate all students exist (only if there are reported issues)
-    if (studentReports && studentReports.length > 0) {
-      // Get unique student IDs (same student can have multiple entries: absence + violation)
-      const uniqueStudentIds = [
-        ...new Set(studentReports.map((r) => r.studentId.toString())),
-      ];
+    // Collect all unique student IDs from all report types
+    const allStudentIds = [
+      ...presentReports.map((r) => r.studentId.toString()),
+      ...absenceReports.map((r) => r.studentId.toString()),
+      ...escapeReports.map((r) => r.studentId.toString()),
+      ...violationReports.map((r) => r.studentId.toString()),
+    ];
+
+    const uniqueStudentIds = [...new Set(allStudentIds)];
+
+    // Validate all students exist (only if there are any reports)
+    if (uniqueStudentIds.length > 0) {
       const students = await Trainee.find({ _id: { $in: uniqueStudentIds } });
       if (students.length !== uniqueStudentIds.length) {
         throw new Error("بعض الطلاب غير موجودين");
@@ -166,12 +160,20 @@ class ClassReportService {
       teacherId,
       classId,
       schedule,
-      studentReports,
+      presentReports,
+      absenceReports,
+      escapeReports,
+      violationReports,
       submittedAt: new Date(),
     });
 
     // Calculate stats automatically
-    newReport.stats = await this.calculateStats(studentReports, classId);
+    newReport.stats = await this.calculateStats(
+      presentReports,
+      absenceReports,
+      escapeReports,
+      violationReports,
+    );
 
     await newReport.save();
 
@@ -180,11 +182,23 @@ class ClassReportService {
       .populate("teacherId", "username email")
       .populate("classId", "name")
       .populate("schedule", "name start_time end_time")
-      .populate("studentReports.studentId", "full_name military_id civil_id");
+      .populate("presentReports.studentId", "full_name military_id civil_id")
+      .populate("absenceReports.studentId", "full_name military_id civil_id")
+      .populate("escapeReports.studentId", "full_name military_id civil_id")
+      .populate("violationReports.studentId", "full_name military_id civil_id");
   }
 
   async updateClassReport(id, data) {
-    const { date, teacherId, classId, schedule, studentReports } = data;
+    const {
+      date,
+      teacherId,
+      classId,
+      schedule,
+      presentReports,
+      absenceReports,
+      escapeReports,
+      violationReports,
+    } = data;
 
     const report = await ClassReport.findById(id);
     if (!report) {
@@ -218,21 +232,54 @@ class ClassReportService {
       report.schedule = schedule;
     }
 
-    // Update student reports if provided
-    if (studentReports) {
-      // Get unique student IDs (same student can have multiple entries: absence + violation)
-      const uniqueStudentIds = [
-        ...new Set(studentReports.map((r) => r.studentId.toString())),
+    // Update student reports if any provided
+    const hasReportUpdates =
+      presentReports !== undefined ||
+      absenceReports !== undefined ||
+      escapeReports !== undefined ||
+      violationReports !== undefined;
+
+    if (hasReportUpdates) {
+      const newPresentReports =
+        presentReports !== undefined ? presentReports : report.presentReports;
+      const newAbsenceReports =
+        absenceReports !== undefined ? absenceReports : report.absenceReports;
+      const newEscapeReports =
+        escapeReports !== undefined ? escapeReports : report.escapeReports;
+      const newViolationReports =
+        violationReports !== undefined
+          ? violationReports
+          : report.violationReports;
+
+      // Collect all unique student IDs from all report types
+      const allStudentIds = [
+        ...newPresentReports.map((r) => r.studentId.toString()),
+        ...newAbsenceReports.map((r) => r.studentId.toString()),
+        ...newEscapeReports.map((r) => r.studentId.toString()),
+        ...newViolationReports.map((r) => r.studentId.toString()),
       ];
-      const students = await Trainee.find({ _id: { $in: uniqueStudentIds } });
-      if (students.length !== uniqueStudentIds.length) {
-        throw new Error("بعض الطلاب غير موجودين");
+
+      const uniqueStudentIds = [...new Set(allStudentIds)];
+
+      // Validate all students exist
+      if (uniqueStudentIds.length > 0) {
+        const students = await Trainee.find({ _id: { $in: uniqueStudentIds } });
+        if (students.length !== uniqueStudentIds.length) {
+          throw new Error("بعض الطلاب غير موجودين");
+        }
       }
-      report.studentReports = studentReports;
-      // Recalculate stats when student reports change
+
+      report.presentReports = newPresentReports;
+      report.absenceReports = newAbsenceReports;
+      report.escapeReports = newEscapeReports;
+      report.violationReports = newViolationReports;
+
+      // Recalculate stats
       report.stats = await this.calculateStats(
-        studentReports,
-        classId || report.classId,
+        newPresentReports,
+        newAbsenceReports,
+        newEscapeReports,
+        newViolationReports,
       );
     }
 
@@ -248,7 +295,10 @@ class ClassReportService {
       .populate("teacherId", "username email")
       .populate("classId", "name")
       .populate("schedule", "name start_time end_time")
-      .populate("studentReports.studentId", "full_name military_id civil_id");
+      .populate("presentReports.studentId", "full_name military_id civil_id")
+      .populate("absenceReports.studentId", "full_name military_id civil_id")
+      .populate("escapeReports.studentId", "full_name military_id civil_id")
+      .populate("violationReports.studentId", "full_name military_id civil_id");
   }
 
   async deleteClassReport(id) {

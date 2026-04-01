@@ -2,8 +2,11 @@ import { apiClient } from "./api";
 
 export interface StudentReport {
   studentId: string;
-  status: "absent" | "escape" | "violation";
-  violationType?: number; // 1-4, only for violations
+}
+
+export interface ViolationStudentReport {
+  studentId: string;
+  violationType: number; // 1-4
   violationDescription?: string;
 }
 
@@ -20,7 +23,10 @@ export interface ClassReport {
   teacherId: string;
   classId: string;
   schedule: string;
-  studentReports: StudentReport[];
+  presentReports: StudentReport[];
+  absenceReports: StudentReport[];
+  escapeReports: StudentReport[];
+  violationReports: ViolationStudentReport[];
   stats: ClassReportStats;
   submittedAt: string;
   createdAt: string;
@@ -32,7 +38,10 @@ export interface ClassReportCreateInput {
   teacherId: string;
   classId: string;
   schedule: string;
-  studentReports: StudentReport[];
+  presentReports: StudentReport[];
+  absenceReports: StudentReport[];
+  escapeReports: StudentReport[];
+  violationReports: ViolationStudentReport[];
 }
 
 export interface ClassReportUpdateInput {
@@ -40,7 +49,10 @@ export interface ClassReportUpdateInput {
   teacherId?: string;
   classId?: string;
   schedule?: string;
-  studentReports?: StudentReport[];
+  presentReports?: StudentReport[];
+  absenceReports?: StudentReport[];
+  escapeReports?: StudentReport[];
+  violationReports?: ViolationStudentReport[];
 }
 
 export const classReportApi = {

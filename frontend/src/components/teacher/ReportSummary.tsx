@@ -49,6 +49,7 @@ export default function ReportSummary({
   const [activeTab, setActiveTab] = useState("violations");
   const [searchQuery, setSearchQuery] = useState("");
 
+  const studentsPresent = studentReports.filter((r) => r.status === "present");
   const studentsWithViolations = studentReports.filter(
     (r) => r.violations.length > 0,
   );
@@ -67,6 +68,7 @@ export default function ReportSummary({
     );
   };
 
+  const filteredPresent = filterStudents(studentsPresent);
   const filteredViolations = filterStudents(studentsWithViolations);
   const filteredAbsent = filterStudents(studentsAbsent);
   const filteredEscaped = filterStudents(studentsEscaped);
@@ -109,7 +111,8 @@ export default function ReportSummary({
           </div>
 
           {/* Violations Detail with Tabs */}
-          {(studentsWithViolations.length > 0 ||
+          {(studentsPresent.length > 0 ||
+            studentsWithViolations.length > 0 ||
             studentsAbsent.length > 0 ||
             studentsEscaped.length > 0) && (
             <div className="border-t pt-4 space-y-4">
@@ -123,7 +126,13 @@ export default function ReportSummary({
               />
 
               <Tabs value={activeTab} onValueChange={setActiveTab} dir="rtl">
-                <TabsList className="grid w-full grid-cols-3">
+                <TabsList className="grid w-full grid-cols-4">
+                  <TabsTrigger value="present" className="text-xs">
+                    <span>حاضرون</span>
+                    <span className="mr-1 font-bold">
+                      ({filteredPresent.length})
+                    </span>
+                  </TabsTrigger>
                   <TabsTrigger value="violations" className="text-xs">
                     <span>المخالفات</span>
                     <span className="mr-1 font-bold">
@@ -144,14 +153,14 @@ export default function ReportSummary({
                   </TabsTrigger>
                 </TabsList>
 
-                {/* Violations Tab */}
-                <TabsContent value="violations" className="space-y-2 mt-4">
-                  {filteredViolations.length > 0 ? (
+                {/* Present Tab */}
+                <TabsContent value="present" className="space-y-2 mt-4">
+                  {filteredPresent.length > 0 ? (
                     <div className="space-y-2 max-h-48 overflow-y-auto">
-                      {filteredViolations.map((report) => (
+                      {filteredPresent.map((report) => (
                         <div
                           key={report.studentId}
-                          className="bg-red-100 border-2 border-red-300 rounded-lg p-3 space-y-1 text-sm">
+                          className="bg-green-100 border-2 border-green-300 rounded-lg p-3 space-y-1 text-sm">
                           <div className="flex justify-between items-start">
                             <span className="font-medium">
                               {report.student.full_name}
@@ -160,22 +169,12 @@ export default function ReportSummary({
                               {report.student.military_id}
                             </span>
                           </div>
-                          <div className="flex flex-wrap gap-1">
-                            {report.violations.map((violation, idx) => (
-                              <Badge
-                                key={idx}
-                                variant="destructive"
-                                className="text-xs">
-                                {violationLabels[violation.type]}
-                              </Badge>
-                            ))}
-                          </div>
                         </div>
                       ))}
                     </div>
                   ) : (
                     <p className="text-center text-sm text-muted-foreground py-4">
-                      لا توجد مخالفات
+                      لا يوجد طلاب حاضرين
                     </p>
                   )}
                 </TabsContent>
@@ -231,16 +230,52 @@ export default function ReportSummary({
                     </p>
                   )}
                 </TabsContent>
+                {/* Violations Tab */}
+                <TabsContent value="violations" className="space-y-2 mt-4">
+                  {filteredViolations.length > 0 ? (
+                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                      {filteredViolations.map((report) => (
+                        <div
+                          key={report.studentId}
+                          className="bg-red-100 border-2 border-red-300 rounded-lg p-3 space-y-1 text-sm">
+                          <div className="flex justify-between items-start">
+                            <span className="font-medium">
+                              {report.student.full_name}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {report.student.military_id}
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap gap-1">
+                            {report.violations.map((violation, idx) => (
+                              <Badge
+                                key={idx}
+                                variant="destructive"
+                                className="text-xs">
+                                {violationLabels[violation.type]}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-center text-sm text-muted-foreground py-4">
+                      لا توجد مخالفات
+                    </p>
+                  )}
+                </TabsContent>
               </Tabs>
             </div>
           )}
 
           {/* All Clear Message */}
-          {studentsWithViolations.length === 0 &&
+          {studentsPresent.length === 0 &&
+            studentsWithViolations.length === 0 &&
             studentsAbsent.length === 0 &&
             studentsEscaped.length === 0 && (
               <div className="bg-green-100 border-2 border-green-300 rounded-lg p-3 text-right text-sm text-green-700">
-                ✓ جميع الطلاب حاضرون وبدون مشاكل
+                ✓ لم يتم تسجيل أي بيانات حتى الآن
               </div>
             )}
         </div>
