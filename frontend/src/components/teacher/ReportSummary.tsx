@@ -46,7 +46,7 @@ export default function ReportSummary({
   stats,
   studentReports,
 }: ReportSummaryProps) {
-  const [activeTab, setActiveTab] = useState("violations");
+  const [activeTab, setActiveTab] = useState("present");
   const [searchQuery, setSearchQuery] = useState("");
 
   const studentsPresent = studentReports.filter((r) => r.status === "present");

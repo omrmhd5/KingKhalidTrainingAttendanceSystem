@@ -17,6 +17,7 @@ import {
   ClassTimeSchedule,
 } from "@/lib/classTimeScheduleApi";
 import ReportSummary from "@/components/teacher/ReportSummary";
+import StatDetailModal from "@/components/classes/StatDetailModal";
 import { Trainee } from "@/lib/traineeApi";
 
 interface ClassReportTabProps {
@@ -32,11 +33,27 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
   const [selectedClass, setSelectedClass] = useState<string>("all");
   const [selectedSchedule, setSelectedSchedule] = useState<string>("all");
   const [selectedDate, setSelectedDate] = useState<string>(
-    new Date().toISOString().split("T")[0]
+    new Date().toISOString().split("T")[0],
   );
   const [selectedReportForSummary, setSelectedReportForSummary] =
     useState<ClassReport | null>(null);
   const [summaryOpen, setSummaryOpen] = useState(false);
+  const [statModalOpen, setStatModalOpen] = useState(false);
+  const [statModalData, setStatModalData] = useState<{
+    title: string;
+    students: Array<{
+      studentId: string;
+      student: Trainee;
+      className: string;
+      teacherName: string;
+      date: string;
+    }>;
+    color: "green" | "red" | "orange" | "blue";
+  }>({
+    title: "",
+    students: [],
+    color: "green",
+  });
 
   useEffect(() => {
     loadClasses();
@@ -111,26 +128,83 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
 
   // Transform ClassReport to ReportSummary format
   const transformReportForSummary = (report: ClassReport) => {
-    const studentReports = report.studentReports.map((sr) => ({
-      studentId:
-        typeof sr.studentId === "object" ? sr.studentId._id : sr.studentId,
-      student:
-        typeof sr.studentId === "object"
-          ? (sr.studentId as Trainee)
-          : ({} as Trainee),
-      status: (sr.status === "absent" || sr.status === "escape"
-        ? sr.status
-        : null) as "present" | "absent" | "escape" | null,
-      violations:
-        sr.status === "violation"
-          ? [
-              {
-                type: sr.violationType as 1 | 2 | 3 | 4,
-                description: sr.violationDescription,
-              },
-            ]
-          : [],
-    }));
+    // Create a map of all students and their data
+    const studentMap = new Map<string, any>();
+
+    // Add present students
+    (report.presentReports || []).forEach((sr) => {
+      const studentId =
+        typeof sr.studentId === "object" ? sr.studentId._id : sr.studentId;
+      studentMap.set(studentId, {
+        studentId,
+        student:
+          typeof sr.studentId === "object"
+            ? (sr.studentId as Trainee)
+            : ({} as Trainee),
+        status: "present" as const,
+        violations: [],
+      });
+    });
+
+    // Add absence students
+    (report.absenceReports || []).forEach((sr) => {
+      const studentId =
+        typeof sr.studentId === "object" ? sr.studentId._id : sr.studentId;
+      studentMap.set(studentId, {
+        studentId,
+        student:
+          typeof sr.studentId === "object"
+            ? (sr.studentId as Trainee)
+            : ({} as Trainee),
+        status: "absent" as const,
+        violations: [],
+      });
+    });
+
+    // Add escape students
+    (report.escapeReports || []).forEach((sr) => {
+      const studentId =
+        typeof sr.studentId === "object" ? sr.studentId._id : sr.studentId;
+      studentMap.set(studentId, {
+        studentId,
+        student:
+          typeof sr.studentId === "object"
+            ? (sr.studentId as Trainee)
+            : ({} as Trainee),
+        status: "escape" as const,
+        violations: [],
+      });
+    });
+
+    // Add violations
+    (report.violationReports || []).forEach((sr) => {
+      const studentId =
+        typeof sr.studentId === "object" ? sr.studentId._id : sr.studentId;
+      if (studentMap.has(studentId)) {
+        studentMap.get(studentId).violations.push({
+          type: sr.violationType as 1 | 2 | 3 | 4,
+          description: sr.violationDescription,
+        });
+      } else {
+        // If student only has violations and no status, create entry with violations
+        studentMap.set(studentId, {
+          studentId,
+          student:
+            typeof sr.studentId === "object"
+              ? (sr.studentId as Trainee)
+              : ({} as Trainee),
+          status: null,
+          violations: [
+            {
+              type: sr.violationType as 1 | 2 | 3 | 4,
+              description: sr.violationDescription,
+            },
+          ],
+        });
+      }
+    });
+
+    const studentReports = Array.from(studentMap.values());
 
     return {
       stats: {
@@ -146,6 +220,137 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
   const handleReportClick = (report: ClassReport) => {
     setSelectedReportForSummary(report);
     setSummaryOpen(true);
+  };
+
+  const handleStatClick = (
+    statType: "present" | "absent" | "escape" | "violations" | "total",
+  ) => {
+    const students: Array<{
+      studentId: string;
+      student: Trainee;
+      className: string;
+      teacherName: string;
+      date: string;
+    }> = [];
+
+    reports.forEach((report) => {
+      const className =
+        typeof report.classId === "object" ? report.classId.name : "—";
+      const teacherName =
+        typeof report.teacherId === "object" ? report.teacherId.username : "—";
+      const dateStr = report.date;
+
+      if (statType === "present" && report.presentReports) {
+        report.presentReports.forEach((sr) => {
+          const student =
+            typeof sr.studentId === "object" ? sr.studentId : ({} as Trainee);
+          const studentId =
+            typeof sr.studentId === "object" ? sr.studentId._id : sr.studentId;
+          students.push({
+            studentId,
+            student: student as Trainee,
+            className,
+            teacherName,
+            date: dateStr,
+          });
+        });
+      } else if (statType === "absent" && report.absenceReports) {
+        report.absenceReports.forEach((sr) => {
+          const student =
+            typeof sr.studentId === "object" ? sr.studentId : ({} as Trainee);
+          const studentId =
+            typeof sr.studentId === "object" ? sr.studentId._id : sr.studentId;
+          students.push({
+            studentId,
+            student: student as Trainee,
+            className,
+            teacherName,
+            date: dateStr,
+          });
+        });
+      } else if (statType === "escape" && report.escapeReports) {
+        report.escapeReports.forEach((sr) => {
+          const student =
+            typeof sr.studentId === "object" ? sr.studentId : ({} as Trainee);
+          const studentId =
+            typeof sr.studentId === "object" ? sr.studentId._id : sr.studentId;
+          students.push({
+            studentId,
+            student: student as Trainee,
+            className,
+            teacherName,
+            date: dateStr,
+          });
+        });
+      } else if (statType === "violations" && report.violationReports) {
+        report.violationReports.forEach((sr) => {
+          const student =
+            typeof sr.studentId === "object" ? sr.studentId : ({} as Trainee);
+          const studentId =
+            typeof sr.studentId === "object" ? sr.studentId._id : sr.studentId;
+          students.push({
+            studentId,
+            student: student as Trainee,
+            className,
+            teacherName,
+            date: dateStr,
+          });
+        });
+      } else if (statType === "total") {
+        // Include all students from all arrays
+        [
+          ...(report.presentReports || []),
+          ...(report.absenceReports || []),
+          ...(report.escapeReports || []),
+        ].forEach((sr) => {
+          const student =
+            typeof sr.studentId === "object" ? sr.studentId : ({} as Trainee);
+          const studentId =
+            typeof sr.studentId === "object" ? sr.studentId._id : sr.studentId;
+          students.push({
+            studentId,
+            student: student as Trainee,
+            className,
+            teacherName,
+            date: dateStr,
+          });
+        });
+      }
+    });
+
+    // Remove duplicates based on studentId within same report
+    const uniqueStudents: typeof students = [];
+    const seen = new Set<string>();
+    students.forEach((item) => {
+      const key = `${item.studentId}-${item.className}-${item.date}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        uniqueStudents.push(item);
+      }
+    });
+
+    let title = "";
+    let color: "green" | "red" | "orange" | "blue" = "green";
+
+    if (statType === "present") {
+      title = "الطلاب الحاضرون";
+      color = "green";
+    } else if (statType === "absent") {
+      title = "الطلاب الغائبون";
+      color = "red";
+    } else if (statType === "escape") {
+      title = "الطلاب الهاربون";
+      color = "orange";
+    } else if (statType === "violations") {
+      title = "الطلاب ذوو المخالفات";
+      color = "red";
+    } else if (statType === "total") {
+      title = "إجمالي الطلاب";
+      color = "blue";
+    }
+
+    setStatModalData({ title, students: uniqueStudents, color });
+    setStatModalOpen(true);
   };
 
   const renderReportCard = (report: ClassReport) => (
@@ -180,7 +385,9 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
       <div className="grid grid-cols-5 gap-2 text-xs">
         <div className="text-center bg-blue-200 p-2 rounded">
           <div className="font-bold text-blue-700">
-            {(report.stats?.present || 0) + (report.stats?.absence || 0) + (report.stats?.escapes || 0)}
+            {(report.stats?.present || 0) +
+              (report.stats?.absence || 0) +
+              (report.stats?.escapes || 0)}
           </div>
           <div className="text-muted-foreground">الإجمالي</div>
         </div>
@@ -233,20 +440,18 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
 
                   if (typeof a.schedule === "string") {
                     scheduleAStart =
-                      schedules.find((s) => s._id === a.schedule)
-                        ?.start_time || "";
+                      schedules.find((s) => s._id === a.schedule)?.start_time ||
+                      "";
                   } else {
-                    scheduleAStart =
-                      (a.schedule as any)?.start_time || "";
+                    scheduleAStart = (a.schedule as any)?.start_time || "";
                   }
 
                   if (typeof b.schedule === "string") {
                     scheduleBStart =
-                      schedules.find((s) => s._id === b.schedule)
-                        ?.start_time || "";
+                      schedules.find((s) => s._id === b.schedule)?.start_time ||
+                      "";
                   } else {
-                    scheduleBStart =
-                      (b.schedule as any)?.start_time || "";
+                    scheduleBStart = (b.schedule as any)?.start_time || "";
                   }
 
                   return scheduleAStart.localeCompare(scheduleBStart);
@@ -271,9 +476,7 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
             <SelectContent dir="rtl">
               <SelectItem value="all">الكل</SelectItem>
               {[...schedules]
-                .sort((a, b) =>
-                  a.start_time.localeCompare(b.start_time),
-                )
+                .sort((a, b) => a.start_time.localeCompare(b.start_time))
                 .map((schedule) => (
                   <SelectItem key={schedule._id} value={schedule._id}>
                     {schedule.name}
@@ -300,31 +503,48 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
       {/* Summary Stats */}
       {reports.length > 0 && (
         <div className="grid grid-cols-5 gap-2">
-          <div className="text-center space-y-1 bg-blue-100 border-2 border-blue-300 rounded-lg p-3">
+          <div
+            className="text-center space-y-1 bg-blue-100 border-2 border-blue-300 rounded-lg p-3 hover:bg-blue-200 cursor-pointer transition-colors"
+            onClick={() => handleStatClick("total")}>
             <p className="text-2xl font-bold text-blue-600">
-              {reports.reduce((sum, r) => sum + ((r.stats?.present || 0) + (r.stats?.absence || 0) + (r.stats?.escapes || 0)), 0)}
+              {reports.reduce(
+                (sum, r) =>
+                  sum +
+                  ((r.stats?.present || 0) +
+                    (r.stats?.absence || 0) +
+                    (r.stats?.escapes || 0)),
+                0,
+              )}
             </p>
             <p className="text-xs text-muted-foreground">الإجمالي</p>
           </div>
-          <div className="text-center space-y-1 bg-green-100 border-2 border-green-300 rounded-lg p-3">
+          <div
+            className="text-center space-y-1 bg-green-100 border-2 border-green-300 rounded-lg p-3 hover:bg-green-200 cursor-pointer transition-colors"
+            onClick={() => handleStatClick("present")}>
             <p className="text-2xl font-bold text-green-600">
               {reports.reduce((sum, r) => sum + (r.stats?.present || 0), 0)}
             </p>
             <p className="text-xs text-muted-foreground">حاضرون</p>
           </div>
-          <div className="text-center space-y-1 bg-red-100 border-2 border-red-300 rounded-lg p-3">
+          <div
+            className="text-center space-y-1 bg-red-100 border-2 border-red-300 rounded-lg p-3 hover:bg-red-200 cursor-pointer transition-colors"
+            onClick={() => handleStatClick("absent")}>
             <p className="text-2xl font-bold text-red-600">
               {reports.reduce((sum, r) => sum + (r.stats?.absence || 0), 0)}
             </p>
             <p className="text-xs text-muted-foreground">غياب</p>
           </div>
-          <div className="text-center space-y-1 bg-orange-100 border-2 border-orange-300 rounded-lg p-3">
+          <div
+            className="text-center space-y-1 bg-orange-100 border-2 border-orange-300 rounded-lg p-3 hover:bg-orange-200 cursor-pointer transition-colors"
+            onClick={() => handleStatClick("escape")}>
             <p className="text-2xl font-bold text-orange-600">
               {reports.reduce((sum, r) => sum + (r.stats?.escapes || 0), 0)}
             </p>
             <p className="text-xs text-muted-foreground">هروب</p>
           </div>
-          <div className="text-center space-y-1 bg-red-100 border-2 border-red-300 rounded-lg p-3">
+          <div
+            className="text-center space-y-1 bg-red-100 border-2 border-red-300 rounded-lg p-3 hover:bg-red-200 cursor-pointer transition-colors"
+            onClick={() => handleStatClick("violations")}>
             <p className="text-2xl font-bold text-red-600">
               {reports.reduce((sum, r) => sum + (r.stats?.violations || 0), 0)}
             </p>
@@ -363,6 +583,15 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
           }
         />
       )}
+
+      {/* Stat Detail Modal */}
+      <StatDetailModal
+        open={statModalOpen}
+        onOpenChange={setStatModalOpen}
+        title={statModalData.title}
+        students={statModalData.students}
+        color={statModalData.color}
+      />
     </div>
   );
 }
