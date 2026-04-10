@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const cookieParser = require("cookie-parser");
+const { join } = require("path");
 require("dotenv").config();
 const {
   authenticateToken,
@@ -14,13 +15,8 @@ const MONGODB_URI =
 
 const app = express();
 
-// CORS configuration - allow credentials with specific origin
-app.use(
-  cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
-    credentials: true, // Allow credentials (cookies, auth headers)
-  }),
-);
+// CORS configuration - allow all origins
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -73,6 +69,18 @@ app.use("/api/class-reports", authenticateToken, classReportRoutes);
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
 });
+
+// Serve frontend build in production
+if (process.env.NODE_ENV === "production") {
+  const frontendDistPath = join(__dirname, "../frontend/dist");
+
+  app.use(express.static(frontendDistPath));
+
+  // SPA fallback (must be AFTER /api routes)
+  app.get("*", (req, res) => {
+    res.sendFile(join(frontendDistPath, "index.html"));
+  });
+}
 
 // Connect to MongoDB
 
