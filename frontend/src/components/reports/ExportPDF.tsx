@@ -2,28 +2,7 @@ import { Button } from "@/components/ui/button";
 import { FileDown } from "lucide-react";
 import html2pdf from "html2pdf.js";
 import JsBarcode from "jsbarcode";
-
-const minutesToHours = (minutes: number): string => {
-  const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  return `${hours}:${mins.toString().padStart(2, "0")}`;
-};
-
-const extractTime = (isoString: string | undefined): string => {
-  if (!isoString) return "—";
-  // Convert to KSA timezone and extract HH:MM:SS with AM/PM
-  const date = new Date(isoString);
-  const ksaTime = new Date(
-    date.toLocaleString("en-US", { timeZone: "Asia/Riyadh" }),
-  );
-  let hours = ksaTime.getHours();
-  const minutes = String(ksaTime.getMinutes()).padStart(2, "0");
-  const seconds = String(ksaTime.getSeconds()).padStart(2, "0");
-  const ampm = hours >= 12 ? "م" : "ص";
-  hours = hours % 12;
-  hours = hours ? hours : 12;
-  return `${hours}:${minutes}:${seconds} ${ampm}`;
-};
+import { formatTime12HourKSA, minutesToTimeString } from "@/lib/timeUtils";
 
 interface AttendanceRecord {
   trainee_id?: {
@@ -67,7 +46,7 @@ interface Escape {
 
 interface ReportsExportPDFProps {
   data: AttendanceRecord[] | Absence[] | Escape[];
-  type: "hours" | "absences" | "escapes";
+  type: "hours" | "absences" | "escapes" | "lates";
 }
 
 export function ReportsExportPDF({ data, type }: ReportsExportPDFProps) {
@@ -95,6 +74,16 @@ export function ReportsExportPDF({ data, type }: ReportsExportPDFProps) {
         <th style="border: 1px solid #ddd; padding: 10px;">السجل المدني</th>
         <th style="border: 1px solid #ddd; padding: 10px;">الاسم</th>
         <th style="border: 1px solid #ddd; padding: 10px;">الشفت</th>
+        <th style="border: 1px solid #ddd; padding: 10px;">الباركود</th>
+      `;
+    } else if (type === "lates") {
+      title = "بيان التأخيرات";
+      headerCells = `
+        <th style="border: 1px solid #ddd; padding: 10px;">الرقم العسكري</th>
+        <th style="border: 1px solid #ddd; padding: 10px;">السجل المدني</th>
+        <th style="border: 1px solid #ddd; padding: 10px;">الاسم</th>
+        <th style="border: 1px solid #ddd; padding: 10px;">الشفت</th>
+        <th style="border: 1px solid #ddd; padding: 10px;">وقت الدخول</th>
         <th style="border: 1px solid #ddd; padding: 10px;">الباركود</th>
       `;
     } else {
@@ -143,19 +132,20 @@ export function ReportsExportPDF({ data, type }: ReportsExportPDFProps) {
 
       if (type === "hours") {
         const fullName = trainee?.full_name || d?.full_name || "—";
-        const shiftName =
-          d.shift_id?.name || d.trainee_assigned_shift_id?.name || "—";
-        const entryTime = extractTime(d.entry_time);
-        const exitTime = extractTime(d.exit_time);
+        const shiftName = d.trainee_assigned_shift_id?.name || "—";
+        const entryTime = d.entry_time
+          ? formatTime12HourKSA(d.entry_time)
+          : "—";
+        const exitTime = d.exit_time ? formatTime12HourKSA(d.exit_time) : "—";
 
         // Calculate hours from duration_minutes
         const scheduledMinutes = 4 * 60 + 45; // 4:45:00
         const actualMinutes = d.duration_minutes || 0;
         const missingMinutes = Math.max(0, scheduledMinutes - actualMinutes);
 
-        const scheduledHours = minutesToHours(scheduledMinutes);
-        const missingHours = minutesToHours(missingMinutes);
-        const actualHours = minutesToHours(actualMinutes);
+        const scheduledHours = minutesToTimeString(scheduledMinutes);
+        const missingHours = minutesToTimeString(missingMinutes);
+        const actualHours = minutesToTimeString(actualMinutes);
 
         rowCells = `
           <td style="border: 1px solid #ddd; padding: 10px;">${militaryId}</td>
@@ -184,6 +174,22 @@ export function ReportsExportPDF({ data, type }: ReportsExportPDFProps) {
             ${barcodeImage ? `<img src="${barcodeImage}" style="height: 60px; width: auto;" />` : "—"}
           </td>
         `;
+      } else if (type === "lates") {
+        const civilId = trainee?.civil_id || d?.civil_id || "—";
+        const fullName = trainee?.full_name || d?.full_name || "—";
+        const shiftName = d.shift_id?.name || "—";
+        const entryTime = d.entry_time ? formatTime12HourKSA(d.entry_time) : "—";
+
+        rowCells = `
+          <td style="border: 1px solid #ddd; padding: 10px;">${militaryId}</td>
+          <td style="border: 1px solid #ddd; padding: 10px;">${civilId}</td>
+          <td style="border: 1px solid #ddd; padding: 10px;">${fullName}</td>
+          <td style="border: 1px solid #ddd; padding: 10px;">${shiftName}</td>
+          <td style="border: 1px solid #ddd; padding: 10px;">${entryTime}</td>
+          <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">
+            ${barcodeImage ? `<img src="${barcodeImage}" style="height: 60px; width: auto;" />` : "—"}
+          </td>
+        `;
       }
 
       html += `
@@ -197,14 +203,20 @@ export function ReportsExportPDF({ data, type }: ReportsExportPDFProps) {
           </tbody>
         </table>
         <p style="margin-top: 20px; color: #666;">إجمالي: ${data.length} ${
-          type === "hours" ? "سجل" : type === "absences" ? "غياب" : "هروب"
+          type === "hours"
+            ? "سجل"
+            : type === "absences"
+              ? "غياب"
+              : type === "lates"
+                ? "تأخير"
+                : "هروب"
         }</p>
       </div>
     `;
 
     const options = {
       margin: 10,
-      filename: `بيان_${type === "hours" ? "ساعات" : type === "absences" ? "غيابات" : "هروب"}_${
+      filename: `بيان_${type === "hours" ? "ساعات" : type === "absences" ? "غيابات" : type === "lates" ? "تأخيرات" : "هروب"}_${
         new Date().toISOString().split("T")[0]
       }.pdf`,
       image: { type: "jpeg", quality: 0.98 },

@@ -7,6 +7,7 @@ import { format } from "date-fns";
 import { HoursTab } from "@/components/reports/HoursTab";
 import { AbsencesTab } from "@/components/reports/AbsencesTab";
 import { EscapesTab } from "@/components/reports/EscapesTab";
+import { LateTab } from "@/components/reports/LateTab";
 import { ReportsExportExcel } from "@/components/reports/ExportExcel";
 import { ReportsExportPDF } from "@/components/reports/ExportPDF";
 import {
@@ -14,6 +15,7 @@ import {
   AttendanceRecord,
   Absence,
   Escape,
+  Late,
 } from "@/lib/attendanceApi";
 
 export default function ReportsPage() {
@@ -22,9 +24,11 @@ export default function ReportsPage() {
   const [hoursCount, setHoursCount] = useState(0);
   const [absencesCount, setAbsencesCount] = useState(0);
   const [escapesCount, setEscapesCount] = useState(0);
+  const [latesCount, setLatesCount] = useState(0);
   const [hoursData, setHoursData] = useState<AttendanceRecord[]>([]);
   const [absencesList, setAbsencesList] = useState<Absence[]>([]);
   const [escapesList, setEscapesList] = useState<Escape[]>([]);
+  const [latesList, setLatesList] = useState<Late[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -56,11 +60,13 @@ export default function ReportsPage() {
     const fetchCounts = async () => {
       try {
         setIsLoading(true);
-        const [attendanceRes, absencesRes, escapesRes] = await Promise.all([
-          attendanceApi.getAttendanceByDate(date),
-          attendanceApi.getAbsences(date),
-          attendanceApi.getEscapes(date),
-        ]);
+        const [attendanceRes, absencesRes, escapesRes, latesRes] =
+          await Promise.all([
+            attendanceApi.getAttendanceByDate(date),
+            attendanceApi.getAbsences(date),
+            attendanceApi.getEscapes(date),
+            attendanceApi.getLates(date),
+          ]);
 
         const records = attendanceRes.records || [];
 
@@ -75,20 +81,27 @@ export default function ReportsPage() {
         // Count escapes from API
         const escapes = escapesRes.escapeCount || 0;
 
+        // Count lates from API
+        const lates = latesRes.lateCount || 0;
+
         setHoursCount(hours);
         setAbsencesCount(absences);
         setEscapesCount(escapes);
+        setLatesCount(lates);
         setHoursData(records);
         setAbsencesList(absencesRes.absences || []);
         setEscapesList(escapesRes.escapes || []);
+        setLatesList(latesRes.lates || []);
       } catch (error) {
         console.error("Failed to fetch counts:", error);
         setHoursCount(0);
         setAbsencesCount(1);
         setEscapesCount(0);
+        setLatesCount(0);
         setHoursData([]);
         setAbsencesList(mockAbsences);
         setEscapesList([]);
+        setLatesList([]);
       } finally {
         setIsLoading(false);
       }
@@ -137,6 +150,12 @@ export default function ReportsPage() {
               <ReportsExportPDF data={escapesList} type="escapes" />
             </>
           )}
+          {activeTab === "lates" && (
+            <>
+              <ReportsExportExcel data={latesList} type="lates" />
+              <ReportsExportPDF data={latesList} type="lates" />
+            </>
+          )}
         </div>
       </div>
 
@@ -144,6 +163,7 @@ export default function ReportsPage() {
         <TabsList>
           <TabsTrigger value="hours">الساعات ({hoursCount})</TabsTrigger>
           <TabsTrigger value="absences">الغيابات ({absencesCount})</TabsTrigger>
+          <TabsTrigger value="lates">التأخيرات ({latesCount})</TabsTrigger>
           <TabsTrigger value="escapes">الهروب ({escapesCount})</TabsTrigger>
         </TabsList>
 
@@ -157,6 +177,10 @@ export default function ReportsPage() {
             absences={absencesList}
             isLoading={isLoading}
           />
+        </TabsContent>
+
+        <TabsContent value="lates">
+          <LateTab date={date} lates={latesList} isLoading={isLoading} />
         </TabsContent>
 
         <TabsContent value="escapes">

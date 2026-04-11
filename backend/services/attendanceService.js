@@ -512,6 +512,49 @@ class AttendanceService {
       })),
     };
   }
+
+  async getLates(date) {
+    if (!date) {
+      throw {
+        code: "MISSING_FIELDS",
+        message: "التاريخ مطلوب",
+      };
+    }
+
+    const dateObj = new Date(date);
+    const startOfDay = new Date(
+      dateObj.getFullYear(),
+      dateObj.getMonth(),
+      dateObj.getDate(),
+    );
+    const endOfDay = new Date(startOfDay);
+    endOfDay.setDate(endOfDay.getDate() + 1);
+
+    // Get all attendance records with status "late"
+    const lates = await Attendance.find({
+      date: { $gte: startOfDay, $lt: endOfDay },
+      status: "late",
+      entry_time: { $exists: true, $ne: null },
+    })
+      .populate("trainee_id", "full_name military_id civil_id")
+      .populate("trainee_assigned_shift_id", "name")
+      .select("military_id entry_time trainee_id trainee_assigned_shift_id")
+      .lean()
+      .sort({ entry_time: 1 });
+
+    return {
+      date,
+      lateCount: lates.length,
+      lates: lates.map((l) => ({
+        _id: l._id,
+        military_id: l.military_id,
+        full_name: l.trainee_id?.full_name,
+        civil_id: l.trainee_id?.civil_id,
+        shift_id: l.trainee_assigned_shift_id,
+        entry_time: l.entry_time,
+      })),
+    };
+  }
 }
 
 module.exports = new AttendanceService();

@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { FileSpreadsheet } from "lucide-react";
 import ExcelJS from "exceljs";
 import JsBarcode from "jsbarcode";
+import { formatTime12HourKSA, minutesToTimeString } from "@/lib/timeUtils";
 
 interface AttendanceRecord {
   trainee_id?: {
@@ -45,7 +46,7 @@ interface Escape {
 
 interface ReportsExportExcelProps {
   data: AttendanceRecord[] | Absence[] | Escape[];
-  type: "hours" | "absences" | "escapes";
+  type: "hours" | "absences" | "escapes" | "lates";
 }
 
 const COLS = 8;
@@ -62,28 +63,6 @@ const thinBorder = (argb = "FFD0D0D0") => ({
   left: { style: "thin" as const, color: { argb } },
   right: { style: "thin" as const, color: { argb } },
 });
-
-const minutesToHours = (minutes: number): string => {
-  const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  return `${hours}:${mins.toString().padStart(2, "0")}`;
-};
-
-const extractTime = (isoString: string | undefined): string => {
-  if (!isoString) return "—";
-  // Convert to KSA timezone and extract HH:MM:SS with AM/PM
-  const date = new Date(isoString);
-  const ksaTime = new Date(
-    date.toLocaleString("en-US", { timeZone: "Asia/Riyadh" }),
-  );
-  let hours = ksaTime.getHours();
-  const minutes = String(ksaTime.getMinutes()).padStart(2, "0");
-  const seconds = String(ksaTime.getSeconds()).padStart(2, "0");
-  const ampm = hours >= 12 ? "م" : "ص";
-  hours = hours % 12;
-  hours = hours ? hours : 12;
-  return `${hours}:${minutes}:${seconds} ${ampm}`;
-};
 
 export function ReportsExportExcel({ data, type }: ReportsExportExcelProps) {
   const generateExcel = async () => {
@@ -110,6 +89,17 @@ export function ReportsExportExcel({ data, type }: ReportsExportExcelProps) {
       headers = [
         "",
         "الباركود",
+        "الشفت",
+        "الاسم",
+        "السجل المدني",
+        "الرقم العسكري",
+      ];
+    } else if (type === "lates") {
+      title = "بيان التأخيرات";
+      headers = [
+        "",
+        "الباركود",
+        "وقت الحضور",
         "الشفت",
         "الاسم",
         "السجل المدني",
@@ -183,19 +173,20 @@ export function ReportsExportExcel({ data, type }: ReportsExportExcelProps) {
         const trainee = d.trainee_id || d;
         militaryId = trainee?.military_id || d?.military_id || "—";
         const fullName = trainee?.full_name || d?.full_name || "—";
-        const shiftName =
-          d.shift_id?.name || d.trainee_assigned_shift_id?.name || "—";
-        const entryTime = extractTime(d.entry_time);
-        const exitTime = extractTime(d.exit_time);
+        const shiftName = d.trainee_assigned_shift_id?.name || "—";
+        const entryTime = d.entry_time
+          ? formatTime12HourKSA(d.entry_time)
+          : "—";
+        const exitTime = d.exit_time ? formatTime12HourKSA(d.exit_time) : "—";
 
         // Calculate hours from duration_minutes
         const scheduledMinutes = 4 * 60 + 45; // 4:45:00
         const actualMinutes = d.duration_minutes || 0;
         const missingMinutes = Math.max(0, scheduledMinutes - actualMinutes);
 
-        const scheduledHours = minutesToHours(scheduledMinutes);
-        const missingHours = minutesToHours(missingMinutes);
-        const actualHours = minutesToHours(actualMinutes);
+        const scheduledHours = minutesToTimeString(scheduledMinutes);
+        const missingHours = minutesToTimeString(missingMinutes);
+        const actualHours = minutesToTimeString(actualMinutes);
 
         rowValues = [
           "",
@@ -219,6 +210,25 @@ export function ReportsExportExcel({ data, type }: ReportsExportExcelProps) {
         rowValues = [
           "",
           "—", // Barcode placeholder
+          shiftName,
+          fullName,
+          civilId,
+          militaryId,
+        ];
+      } else if (type === "lates") {
+        const trainee = d.trainee_id || d;
+        militaryId = trainee?.military_id || d?.military_id || "—";
+        const civilId = trainee?.civil_id || d?.civil_id || "—";
+        const fullName = trainee?.full_name || d?.full_name || "—";
+        const shiftName = d.shift_id?.name || "—";
+        const entryTime = d.entry_time
+          ? formatTime12HourKSA(d.entry_time)
+          : "—";
+
+        rowValues = [
+          "",
+          "—", // Barcode placeholder
+          entryTime,
           shiftName,
           fullName,
           civilId,
@@ -276,7 +286,13 @@ export function ReportsExportExcel({ data, type }: ReportsExportExcelProps) {
     worksheet.mergeCells(totalRowIdx, 2, totalRowIdx, colCount);
     const totalCell = totalRow.getCell(2);
     totalCell.value = `الإجمالي: ${data.length} ${
-      type === "hours" ? "سجل" : type === "absences" ? "غياب" : "هروب"
+      type === "hours"
+        ? "سجل"
+        : type === "absences"
+          ? "غياب"
+          : type === "lates"
+            ? "تأخير"
+            : "هروب"
     }`;
     totalCell.font = { bold: true, size: 12, color: { argb: "FFF5F5F5" } };
     totalCell.fill = solid("FF3B82F6");
@@ -291,7 +307,7 @@ export function ReportsExportExcel({ data, type }: ReportsExportExcelProps) {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `بيان_${type === "hours" ? "ساعات" : type === "absences" ? "غيابات" : "هروب"}_${
+    a.download = `بيان_${type === "hours" ? "ساعات" : type === "absences" ? "غيابات" : type === "lates" ? "تأخيرات" : "هروب"}_${
       new Date().toISOString().split("T")[0]
     }.xlsx`;
     a.click();

@@ -84,6 +84,23 @@ export interface EscapesByDateResponse {
   escapes: Escape[];
 }
 
+export interface Late {
+  _id: string;
+  military_id: string;
+  full_name: string;
+  civil_id: string;
+  shift_id?: {
+    name: string;
+  };
+  entry_time: string;
+}
+
+export interface LatesByDateResponse {
+  date: string;
+  lateCount: number;
+  lates: Late[];
+}
+
 export const attendanceApi = {
   async recordEntry(militaryId: string, shiftId: string, date: string) {
     const response = await apiClient.post(`/attendance/entry`, {
@@ -132,6 +149,13 @@ export const attendanceApi = {
 
   async getEscapes(date: string): Promise<EscapesByDateResponse> {
     const response = await apiClient.get(`/attendance/escapes`, {
+      params: { date },
+    });
+    return response.data;
+  },
+
+  async getLates(date: string): Promise<LatesByDateResponse> {
+    const response = await apiClient.get(`/attendance/lates`, {
       params: { date },
     });
     return response.data;
