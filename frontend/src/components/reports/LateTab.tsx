@@ -83,7 +83,7 @@ export function LateTab({ date, lates = [], isLoading = false }: LateTabProps) {
   });
 
   return (
-    <Card dir="rtl" className="bg-orange-100 border-orange-900">
+    <Card dir="rtl" className="bg-purple-100 border-purple-900">
       <CardContent className="p-6">
         <HoursReportFilters
           search={search}
@@ -92,12 +92,12 @@ export function LateTab({ date, lates = [], isLoading = false }: LateTabProps) {
           onShiftChange={setFilterShift}
           shifts={shifts}
         />
-        <div className="mb-4 text-sm font-semibold text-orange-800">
+        <div className="mb-4 text-sm font-semibold text-purple-800">
           الإجمالي: <span className="text-lg">{filteredLates.length}</span>
         </div>
         <Table dir="rtl">
-          <TableHeader className="bg-orange-600">
-            <TableRow className="border-orange-600 hover:bg-orange-600">
+          <TableHeader className="bg-purple-600">
+            <TableRow className="border-purple-600 hover:bg-purple-600">
               <TableHead className="text-right text-white font-bold">
                 الرقم العسكري
               </TableHead>
@@ -139,14 +139,14 @@ export function LateTab({ date, lates = [], isLoading = false }: LateTabProps) {
               filteredLates?.map((late: LateRecord) => (
                 <TableRow
                   key={late._id}
-                  className="h-10 border-orange-300 hover:bg-orange-200">
-                  <TableCell className="font-medium text-right py-1 text-orange-900">
+                  className="h-10 border-purple-300 hover:bg-purple-200">
+                  <TableCell className="font-medium text-right py-1 text-purple-900">
                     {late.military_id}
                   </TableCell>
-                  <TableCell className="text-right py-1 text-orange-900">
+                  <TableCell className="text-right py-1 text-purple-900">
                     {late.civil_id}
                   </TableCell>
-                  <TableCell className="text-right py-1 text-orange-900">
+                  <TableCell className="text-right py-1 text-purple-900">
                     {late.full_name}
                   </TableCell>
                   <TableCell
@@ -155,17 +155,16 @@ export function LateTab({ date, lates = [], isLoading = false }: LateTabProps) {
                     )}`}>
                     {late.shift_id?.name || "—"}
                   </TableCell>
-                  <TableCell className="text-right py-1 text-orange-900 text-sm">
+                  <TableCell className="text-right py-1 text-purple-900 text-sm">
                     {formatTime12HourKSA(late.entry_time)}
                   </TableCell>
                   <TableCell className="text-center py-1">
-                    <div className="flex justify-center">
+                    <div className="flex justify-center scale-75 origin-center">
                       <Barcode
                         value={late.military_id}
-                        format="CODE128"
                         width={1.5}
-                        height={30}
-                        displayValue={false}
+                        height={40}
+                        displayValue={true}
                       />
                     </div>
                   </TableCell>
