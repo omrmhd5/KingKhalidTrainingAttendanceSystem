@@ -17,14 +17,29 @@ const app = express();
 
 // CORS configuration
 if (process.env.NODE_ENV === "production") {
-  // Production: open CORS (frontend served from same domain)
-  app.use(cors());
-} else {
-  // Development: allow specific origin with credentials
+  // Production: frontend and backend on same origin
   app.use(
     cors({
-      origin: process.env.FRONTEND_URL || "http://localhost:5173",
+      origin: true, // Reflects the request origin (same-origin requests pass through)
       credentials: true,
+    }),
+  );
+} else {
+  // Development: allow multiple localhost variants with credentials
+  app.use(
+    cors({
+      origin: [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost",
+        "http://127.0.0.1",
+        process.env.FRONTEND_URL,
+      ].filter(Boolean),
+      credentials: true,
+      methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+      allowedHeaders: ["Content-Type", "Authorization"],
     }),
   );
 }
@@ -95,7 +110,7 @@ if (process.env.NODE_ENV === "production") {
 
 // Connect to MongoDB
 
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on port ${PORT}`);
   mongoose
     .connect(MONGODB_URI)
