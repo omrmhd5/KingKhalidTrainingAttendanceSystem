@@ -135,9 +135,9 @@ exports.login = async (req, res) => {
     // Set token in httpOnly cookie
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // "none" requires secure: true for cross-domain
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      secure: false, // Must be false for HTTP local networks
+      sameSite: "lax", // Lax is perfect because the frontend and backend share the same IP
+      maxAge: 24 * 60 * 60 * 1000,
     });
 
     res.json({
@@ -154,8 +154,8 @@ exports.login = async (req, res) => {
 exports.logout = async (req, res) => {
   res.clearCookie("token", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    secure: false,
+    sameSite: "lax",
   });
   res.json({ message: "Logout successful" });
 };
