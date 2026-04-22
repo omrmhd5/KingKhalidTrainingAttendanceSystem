@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -18,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { ArrowDownToLine } from "lucide-react";
 import { formatTime12HourKSA } from "@/lib/timeUtils";
+import { shiftApi } from "@/lib/shiftApi";
 
 interface Shift {
   id: string;
@@ -102,16 +104,46 @@ export default function EntriesTable({
   selectedShiftFilter,
   onShiftFilterChange,
 }: EntriesTableProps) {
-  // Get unique shifts from entries
-  const uniqueShifts = Array.from(new Set(entries.map((e) => e.shift)))
-    .filter(Boolean)
-    .sort();
+  const [apiShifts, setApiShifts] = useState<
+    Array<{ _id: string; name: string }>
+  >([]);
+  const [loadingShifts, setLoadingShifts] = useState(false);
+
+  // Load shifts from API
+  useEffect(() => {
+    const loadShifts = async () => {
+      try {
+        setLoadingShifts(true);
+        const shifts = await shiftApi.getAllShifts();
+        setApiShifts(shifts);
+      } catch (error) {
+        console.error("Failed to load shifts:", error);
+      } finally {
+        setLoadingShifts(false);
+      }
+    };
+
+    loadShifts();
+  }, []);
+
+  // Restore filter from localStorage on mount
+  useEffect(() => {
+    const savedFilter = localStorage.getItem("entriesTableShiftFilter");
+    if (savedFilter) {
+      onShiftFilterChange(savedFilter);
+    }
+  }, []);
+
+  // Save filter to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem("entriesTableShiftFilter", selectedShiftFilter);
+  }, [selectedShiftFilter]);
 
   // Filter entries based on selected shift
   const filteredEntries =
     selectedShiftFilter === "all"
       ? entries
-      : entries.filter((e) => e.shift === selectedShiftFilter);
+      : entries.filter((e) => e.actualShift === selectedShiftFilter);
 
   // Count entries with actual data (non-empty militaryId)
   const entriesWithData = filteredEntries.filter(
@@ -144,9 +176,12 @@ export default function EntriesTable({
               <SelectItem value="all" className="text-sm">
                 الكل
               </SelectItem>
-              {uniqueShifts.map((shift) => (
-                <SelectItem key={shift} value={shift} className="text-sm">
-                  {shift}
+              {apiShifts.map((shift) => (
+                <SelectItem
+                  key={shift._id}
+                  value={shift.name}
+                  className="text-sm">
+                  {shift.name}
                 </SelectItem>
               ))}
             </SelectContent>
