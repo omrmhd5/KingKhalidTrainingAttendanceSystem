@@ -161,4 +161,14 @@ export const attendanceApi = {
     });
     return response.data;
   },
+  async deleteAttendance(id: string) {
+    const response = await apiClient.delete(`/attendance/${id}`);
+    return response.data;
+  },
+  async deleteMultipleAttendance(ids: string[]) {
+    const response = await apiClient.delete(`/attendance`, {
+      data: { ids },
+    });
+    return response.data;
+  },
 };

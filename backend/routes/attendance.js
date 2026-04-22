@@ -8,6 +8,8 @@ const {
   getAbsences,
   getEscapes,
   getLates,
+  deleteAttendance,
+  deleteMultipleAttendance,
 } = require("../controllers/attendanceController");
 
 // Record entry
@@ -30,5 +32,11 @@ router.get("/escapes", getEscapes);
 
 // Get lates for a specific date
 router.get("/lates", getLates);
+
+// Delete attendance record
+router.delete("/:id", deleteAttendance);
+
+// Delete multiple attendance records
+router.delete("/", deleteMultipleAttendance);
 
 module.exports = router;

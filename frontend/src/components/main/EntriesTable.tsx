@@ -10,6 +10,7 @@ import {
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -95,6 +96,9 @@ interface EntriesTableProps {
   onDateChange: (date: string) => void;
   selectedShiftFilter: string;
   onShiftFilterChange: (filter: string) => void;
+  selectedEntries: Set<string>;
+  onToggleEntry: (id: string) => void;
+  onToggleAll: () => void;
 }
 
 export default function EntriesTable({
@@ -103,6 +107,9 @@ export default function EntriesTable({
   onDateChange,
   selectedShiftFilter,
   onShiftFilterChange,
+  selectedEntries,
+  onToggleEntry,
+  onToggleAll,
 }: EntriesTableProps) {
   const [apiShifts, setApiShifts] = useState<
     Array<{ _id: string; name: string }>
@@ -195,6 +202,15 @@ export default function EntriesTable({
         <Table className="w-full">
           <TableHeader>
             <TableRow className="bg-blue-500 hover:bg-blue-500 border-b-2 border-blue-700">
+              <TableHead className="text-right text-white font-bold py-2 px-2 border-r-2 border-blue-700 whitespace-nowrap">
+                <Checkbox
+                  checked={
+                    selectedEntries.size === filteredEntries.length &&
+                    filteredEntries.length > 0
+                  }
+                  onCheckedChange={onToggleAll}
+                />
+              </TableHead>
               <TableHead className="text-center text-white font-bold py-2 px-2 border-r-2 border-blue-700 whitespace-nowrap">
                 تسجيل الدخول
               </TableHead>
@@ -229,6 +245,12 @@ export default function EntriesTable({
                 <TableRow
                   key={entry.id}
                   className="border-b-2 border-gray-300 bg-white hover:bg-gray-50">
+                  <TableCell className="text-left w-2">
+                    <Checkbox
+                      checked={selectedEntries.has(entry.id)}
+                      onCheckedChange={() => onToggleEntry(entry.id)}
+                    />
+                  </TableCell>
                   <TableCell
                     className={`text-center font-medium text-sm py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap ${getIdCellStyle(entry.hasViolation, entry.hasDisciplinary, index === 0)}`}>
                     {entry.civilId}

@@ -4,6 +4,10 @@ import BarcodeScanner from "@/components/main/BarcodeScanner";
 import EntriesTable, { type EntryRecord } from "@/components/main/EntriesTable";
 import ExitsTable, { type ExitRecord } from "@/components/main/ExitsTable";
 import AttendanceStatsDisplay from "@/components/main/AttendanceStatsDisplay";
+import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
+import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
 import { attendanceApi, type AttendanceRecord } from "@/lib/attendanceApi";
 import { shiftApi } from "@/lib/shiftApi";
 
@@ -26,6 +30,7 @@ interface ShiftAPIResponse {
 
 export default function MainPage() {
   const today = format(new Date(), "yyyy-MM-dd");
+  const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState<string>(today);
   const [selectedShiftFilter, setSelectedShiftFilter] = useState<string>("all");
   const [entries, setEntries] = useState<EntryRecord[]>([]);
@@ -34,6 +39,10 @@ export default function MainPage() {
   const [selectedShift, setSelectedShift] = useState<Shift | null>(null);
   const [loading, setLoading] = useState(false);
   const [shifts, setShifts] = useState<ShiftAPIResponse[]>([]);
+  const [selectedEntries, setSelectedEntries] = useState<Set<string>>(
+    new Set(),
+  );
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   // Helper function to get active shift based on current KSA time
   const getActiveShift =
@@ -278,6 +287,51 @@ export default function MainPage() {
     [selectedDate, scanning, getActiveShift],
   );
 
+  const toggleSelectEntry = (id: string) => {
+    const newSelected = new Set(selectedEntries);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedEntries(newSelected);
+  };
+
+  const toggleSelectAllEntries = () => {
+    if (selectedEntries.size === entries.length && entries.length > 0) {
+      setSelectedEntries(new Set());
+    } else {
+      setSelectedEntries(new Set(entries.map((e) => e.id)));
+    }
+  };
+
+  const handleBulkDeleteEntries = async () => {
+    if (selectedEntries.size === 0) return;
+    setDeleteOpen(true);
+  };
+
+  const confirmDeleteEntries = async () => {
+    try {
+      const selectedArray = Array.from(selectedEntries);
+      await attendanceApi.deleteMultipleAttendance(selectedArray);
+      setEntries(entries.filter((e) => !selectedEntries.has(e.id)));
+      setExits(exits.filter((e) => !selectedEntries.has(e.id)));
+      setSelectedEntries(new Set());
+      setDeleteOpen(false);
+      toast({
+        title: "تم الحذف",
+        description: `تم حذف ${selectedArray.length} سجل دخول`,
+      });
+    } catch (error) {
+      const errorMessage = (error as any)?.message || "فشل حذف السجلات المحددة";
+      toast({
+        title: "خطأ",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="flex min-h-[calc(100vh-3.5rem)] flex-col gap-3 bg-background p-4">
       {/* Attendance Stats - Full Width */}
@@ -294,6 +348,19 @@ export default function MainPage() {
         <BarcodeScanner onScan={handleScan} isScanning={scanning} />
       </div>
 
+      {/* Bulk Delete Button */}
+      {selectedEntries.size > 0 && (
+        <div className="mx-auto w-full max-w-4xl">
+          <Button
+            variant="destructive"
+            onClick={handleBulkDeleteEntries}
+            size="sm">
+            <Trash2 className="ml-2 h-4 w-4" />
+            حذف ({selectedEntries.size})
+          </Button>
+        </div>
+      )}
+
       {/* Tables container */}
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-2 w-full">
         {/* Entries Table */}
@@ -304,6 +371,9 @@ export default function MainPage() {
             onDateChange={setSelectedDate}
             selectedShiftFilter={selectedShiftFilter}
             onShiftFilterChange={setSelectedShiftFilter}
+            selectedEntries={selectedEntries}
+            onToggleEntry={toggleSelectEntry}
+            onToggleAll={toggleSelectAllEntries}
           />
         </div>
 
@@ -317,6 +387,14 @@ export default function MainPage() {
           />
         </div>
       </div>
+
+      <ConfirmDeleteModal
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        onConfirm={confirmDeleteEntries}
+        itemName={`${selectedEntries.size} سجل دخول`}
+        itemType="السجلات"
+      />
     </div>
   );
 }

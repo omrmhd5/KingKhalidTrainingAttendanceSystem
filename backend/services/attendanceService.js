@@ -571,6 +571,35 @@ class AttendanceService {
       })),
     };
   }
+
+  async deleteAttendance(id) {
+    if (!id) {
+      throw new Error("Attendance ID is required");
+    }
+
+    const attendance = await Attendance.findById(id);
+    if (!attendance) {
+      throw new Error("Attendance record not found");
+    }
+
+    await Attendance.findByIdAndDelete(id);
+    return {
+      message: "تم حذف السجل بنجاح",
+      deletedId: id,
+    };
+  }
+
+  async deleteMultipleAttendance(ids) {
+    if (!Array.isArray(ids) || ids.length === 0) {
+      throw new Error("Array of attendance IDs is required");
+    }
+
+    const result = await Attendance.deleteMany({ _id: { $in: ids } });
+    return {
+      message: `تم حذف ${result.deletedCount} سجل`,
+      deletedCount: result.deletedCount,
+    };
+  }
 }
 
 module.exports = new AttendanceService();
