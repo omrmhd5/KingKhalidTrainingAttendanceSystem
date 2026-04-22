@@ -7,6 +7,11 @@ const attendanceSchema = new mongoose.Schema(
       ref: "Trainee",
       required: true,
     },
+    civil_id: {
+      type: String,
+      required: true,
+      trim: true,
+    },
     military_id: {
       type: String,
       required: true,
@@ -54,6 +59,8 @@ const attendanceSchema = new mongoose.Schema(
 );
 
 // Indexes for performance optimization
+// Compound index for duplicate entry prevention and civil_id + date queries
+attendanceSchema.index({ civil_id: 1, date: 1 }, { unique: false });
 // Compound index for duplicate entry prevention and military_id + date queries
 attendanceSchema.index({ military_id: 1, date: 1 }, { unique: false });
 // Compound index for escape/exit queries (also serves date-only queries)

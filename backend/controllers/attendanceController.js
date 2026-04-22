@@ -2,9 +2,9 @@ const attendanceService = require("../services/attendanceService");
 
 exports.recordEntry = async (req, res) => {
   try {
-    const { military_id, shift_id, date } = req.body;
+    const { scannedId, shift_id, date } = req.body;
     const result = await attendanceService.recordEntry(
-      military_id,
+      scannedId,
       shift_id,
       date,
     );
@@ -27,8 +27,8 @@ exports.recordEntry = async (req, res) => {
 
 exports.recordExit = async (req, res) => {
   try {
-    const { military_id, date } = req.body;
-    const result = await attendanceService.recordExit(military_id, date);
+    const { scannedId, date } = req.body;
+    const result = await attendanceService.recordExit(scannedId, date);
     res.status(200).json({ ...result, message: "Exit recorded successfully" });
   } catch (error) {
     const statusCode =

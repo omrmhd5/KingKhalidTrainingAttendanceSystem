@@ -79,9 +79,15 @@ class TraineeService {
     } catch (error) {
       if (error.code === 11000) {
         const field = Object.keys(error.keyPattern)[0];
-        const fieldName =
-          field === "military_id" ? "الرقم العسكري" : "السجل المدني";
-        throw new Error(`${fieldName} مستخدم بالفعل`);
+        if (field === "military_id") {
+          throw new Error(
+            `المتدرب برقم عسكري ${data.military_id} مسجل بالفعل في النظام`,
+          );
+        } else if (field === "civil_id") {
+          throw new Error(
+            `المتدرب برقم مدني ${data.civil_id} مسجل بالفعل في النظام`,
+          );
+        }
       }
       throw error;
     }
@@ -177,9 +183,15 @@ class TraineeService {
     } catch (error) {
       if (error.code === 11000) {
         const field = Object.keys(error.keyPattern)[0];
-        const fieldName =
-          field === "military_id" ? "الرقم العسكري" : "السجل المدني";
-        throw new Error(`${fieldName} مستخدم بالفعل`);
+        if (field === "military_id") {
+          throw new Error(
+            `الرقم العسكري ${data.military_id} مستخدم بالفعل من قبل متدرب آخر`,
+          );
+        } else if (field === "civil_id") {
+          throw new Error(
+            `السجل المدني ${data.civil_id} مستخدم بالفعل من قبل متدرب آخر`,
+          );
+        }
       }
       throw error;
     }
@@ -274,7 +286,21 @@ class TraineeService {
           military_id: data.military_id.trim(),
         });
         if (existing) {
-          throw new Error("Military ID already exists");
+          throw new Error(
+            `المتدرب برقم عسكري ${data.military_id.trim()} مسجل بالفعل`,
+          );
+        }
+
+        // Check if civil ID already exists (if provided)
+        if (data.civil_id && data.civil_id.trim()) {
+          const civilIdExists = await Trainee.findOne({
+            civil_id: data.civil_id.trim(),
+          });
+          if (civilIdExists) {
+            throw new Error(
+              `المتدرب برقم مدني ${data.civil_id.trim()} مسجل بالفعل`,
+            );
+          }
         }
 
         // Create trainee object

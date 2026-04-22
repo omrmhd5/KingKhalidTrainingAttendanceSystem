@@ -19,6 +19,7 @@ export interface Shift {
 export interface AttendanceRecord {
   _id: string;
   trainee_id: Trainee;
+  civil_id: string;
   military_id: string;
   trainee_assigned_shift_id: Shift;
   shift_id: Shift;
@@ -102,18 +103,18 @@ export interface LatesByDateResponse {
 }
 
 export const attendanceApi = {
-  async recordEntry(militaryId: string, shiftId: string, date: string) {
+  async recordEntry(scannedId: string, shiftId: string, date: string) {
     const response = await apiClient.post(`/attendance/entry`, {
-      military_id: militaryId,
+      scannedId,
       shift_id: shiftId,
       date,
     });
     return response.data;
   },
 
-  async recordExit(militaryId: string, date: string) {
+  async recordExit(scannedId: string, date: string) {
     const response = await apiClient.post(`/attendance/exit`, {
-      military_id: militaryId,
+      scannedId,
       date,
     });
     return response.data;

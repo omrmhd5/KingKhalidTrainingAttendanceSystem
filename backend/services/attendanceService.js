@@ -3,11 +3,11 @@ const Trainee = require("../models/Trainee");
 const Shift = require("../models/Shift");
 
 class AttendanceService {
-  async recordEntry(militaryId, shiftId, date) {
-    if (!militaryId || !shiftId || !date) {
+  async recordEntry(scannedId, shiftId, date) {
+    if (!scannedId || !shiftId || !date) {
       throw {
         code: "MISSING_FIELDS",
-        message: "الرقم العسكري والشفت والتاريخ مطلوبة",
+        message: "الرقم المسح والشفت والتاريخ مطلوبة",
       };
     }
 
@@ -35,14 +35,21 @@ class AttendanceService {
       };
     }
 
-    // Find trainee
-    const trainee = await Trainee.findOne({
-      military_id: militaryId.trim(),
+    // Find trainee - first try civil_id, then military_id
+    let trainee = await Trainee.findOne({
+      civil_id: scannedId.trim(),
     });
+
+    if (!trainee) {
+      trainee = await Trainee.findOne({
+        military_id: scannedId.trim(),
+      });
+    }
+
     if (!trainee) {
       throw {
         code: "TRAINEE_NOT_FOUND",
-        message: `لم يتم العثور على متدرب برقم عسكري ${militaryId}`,
+        message: `لم يتم العثور على متدرب برقم مدني أو عسكري ${scannedId}`,
       };
     }
 
@@ -66,7 +73,7 @@ class AttendanceService {
     endOfDay.setDate(endOfDay.getDate() + 1);
 
     const existingEntry = await Attendance.findOne({
-      military_id: militaryId,
+      military_id: trainee.military_id,
       date: { $gte: startOfDay, $lt: endOfDay },
       entry_time: { $exists: true, $ne: null },
     });
@@ -93,6 +100,7 @@ class AttendanceService {
 
     const attendance = await Attendance.create({
       trainee_id: trainee._id,
+      civil_id: trainee.civil_id,
       military_id: trainee.military_id,
       trainee_assigned_shift_id: trainee.shift_id,
       shift_id: shiftId,
@@ -103,6 +111,7 @@ class AttendanceService {
 
     return {
       id: attendance._id,
+      civilId: attendance.civil_id,
       militaryId: attendance.military_id,
       shiftId: attendance.shift_id,
       date: attendance.date,
@@ -111,11 +120,11 @@ class AttendanceService {
     };
   }
 
-  async recordExit(militaryId, date) {
-    if (!militaryId || !date) {
+  async recordExit(scannedId, date) {
+    if (!scannedId || !date) {
       throw {
         code: "MISSING_FIELDS",
-        message: "الرقم العسكري والتاريخ مطلوبة",
+        message: "الرقم المسح والتاريخ مطلوبة",
       };
     }
 
@@ -143,14 +152,21 @@ class AttendanceService {
       };
     }
 
-    // Find trainee
-    const trainee = await Trainee.findOne({
-      military_id: militaryId.trim(),
+    // Find trainee - first try civil_id, then military_id
+    let trainee = await Trainee.findOne({
+      civil_id: scannedId.trim(),
     });
+
+    if (!trainee) {
+      trainee = await Trainee.findOne({
+        military_id: scannedId.trim(),
+      });
+    }
+
     if (!trainee) {
       throw {
         code: "TRAINEE_NOT_FOUND",
-        message: `لم يتم العثور على متدرب برقم عسكري ${militaryId}`,
+        message: `لم يتم العثور على متدرب برقم مدني أو عسكري ${scannedId}`,
       };
     }
 
@@ -165,7 +181,7 @@ class AttendanceService {
     endOfDay.setDate(endOfDay.getDate() + 1);
 
     const attendance = await Attendance.findOne({
-      military_id: militaryId,
+      military_id: trainee.military_id,
       date: { $gte: startOfDay, $lt: endOfDay },
       entry_time: { $exists: true, $ne: null },
     });

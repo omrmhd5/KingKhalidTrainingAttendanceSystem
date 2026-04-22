@@ -231,7 +231,7 @@ export default function EntriesTable({
                   className="border-b-2 border-gray-300 bg-white hover:bg-gray-50">
                   <TableCell
                     className={`text-center font-medium text-sm py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap ${getIdCellStyle(entry.hasViolation, entry.hasDisciplinary, index === 0)}`}>
-                    {entry.militaryId}
+                    {entry.civilId}
                   </TableCell>
                   <TableCell className="text-center font-medium py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">
                     {entry.name}

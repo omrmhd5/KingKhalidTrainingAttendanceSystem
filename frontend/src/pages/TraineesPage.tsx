@@ -149,8 +149,8 @@ export default function TraineesPage() {
         setEditing(null);
         setForm(emptyForm);
       } catch (error) {
-        const errorMessage =
-          (error as Error)?.message ||
+        let errorMessage =
+          (error as any)?.message ||
           (editing ? "فشل تحديث المتدرب" : "فشل إنشاء المتدرب");
         toast({
           title: "خطأ",

@@ -45,6 +45,23 @@ const getShiftCellColor = (shift: string): string => {
   }
 };
 
+const getIdCellStyle = (
+  hasViolation?: boolean,
+  hasDisciplinary?: boolean,
+  isFirst: boolean = false,
+): string => {
+  if (hasViolation) {
+    return "bg-red-500 border-red-500";
+  }
+  if (hasDisciplinary) {
+    return "bg-blue-400 border-blue-500";
+  }
+  if (isFirst) {
+    return "bg-yellow-200 border-yellow-500";
+  }
+  return "";
+};
+
 export interface ExitRecord {
   id: string;
   militaryId: string;
@@ -143,13 +160,13 @@ export default function ExitsTable({
                 </TableCell>
               </TableRow>
             ) : (
-              filteredExits.map((exit) => {
+              filteredExits.map((exit, index) => {
                 // Format duration from backend
                 const hours = Math.floor((exit.durationMinutes || 0) / 60);
                 const minutes = (exit.durationMinutes || 0) % 60;
                 const timeDiff = `${hours} س ${minutes} د`;
 
-                // Find corresponding entry to get shift info
+                // Find corresponding entry to get shift info and violation/disciplinary status
                 const correspondingEntry = entries.find(
                   (e) => e.militaryId === exit.militaryId,
                 );
@@ -159,8 +176,9 @@ export default function ExitsTable({
                   <TableRow
                     key={exit.id}
                     className="border-b-2 border-gray-300 bg-white hover:bg-gray-50">
-                    <TableCell className="text-center font-medium text-sm py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">
-                      {exit.militaryId}
+                    <TableCell
+                      className={`text-center font-medium text-sm py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap ${getIdCellStyle(correspondingEntry?.hasViolation, correspondingEntry?.hasDisciplinary, index === 0)}`}>
+                      {exit.civilId}
                     </TableCell>
                     <TableCell className="text-center font-medium py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">
                       {exit.name}

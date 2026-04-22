@@ -117,7 +117,7 @@ export default function MainPage() {
           .map((r: AttendanceRecord) => ({
             id: r._id,
             militaryId: r.military_id,
-            civilId: "",
+            civilId: r.civil_id || "",
             name:
               typeof r.trainee_id === "object"
                 ? r.trainee_id?.full_name || ""
@@ -159,7 +159,7 @@ export default function MainPage() {
           .map((r: AttendanceRecord) => ({
             id: r._id,
             militaryId: r.military_id,
-            civilId: "",
+            civilId: r.civil_id || "",
             name:
               typeof r.trainee_id === "object"
                 ? r.trainee_id?.full_name || ""
@@ -203,7 +203,7 @@ export default function MainPage() {
             .map((r: AttendanceRecord) => ({
               id: r._id,
               militaryId: r.military_id,
-              civilId: "",
+              civilId: r.civil_id || "",
               name:
                 typeof r.trainee_id === "object"
                   ? r.trainee_id?.full_name || ""
@@ -231,7 +231,7 @@ export default function MainPage() {
             .map((r: AttendanceRecord) => ({
               id: r._id,
               militaryId: r.military_id,
-              civilId: "",
+              civilId: r.civil_id || "",
               name:
                 typeof r.trainee_id === "object"
                   ? r.trainee_id?.full_name || ""
