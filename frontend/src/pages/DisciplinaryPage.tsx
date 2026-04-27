@@ -35,7 +35,7 @@ interface Disciplinary {
     military_id: string;
     civil_id: string;
     full_name: string;
-  };
+  } | null;
   createdAt: string;
 }
 
@@ -186,32 +186,36 @@ export default function DisciplinaryPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {disciplinary.map((request) => (
-                  <TableRow
-                    key={request._id}
-                    className="bg-blue-50 hover:bg-blue-100">
-                    <TableCell className="font-medium text-right">
-                      {request.trainee_id.military_id}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {request.trainee_id.civil_id}
-                    </TableCell>
-                    <TableCell className="font-medium text-right">
-                      {request.trainee_id.full_name}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {new Date(request.createdAt).toLocaleDateString("ar-SA")}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setDeleteConfirm(request._id)}>
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {disciplinary
+                  .filter((r) => r.trainee_id)
+                  .map((request) => (
+                    <TableRow
+                      key={request._id}
+                      className="bg-blue-50 hover:bg-blue-100">
+                      <TableCell className="font-medium text-right">
+                        {request.trainee_id?.military_id ?? "—"}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {request.trainee_id?.civil_id ?? "—"}
+                      </TableCell>
+                      <TableCell className="font-medium text-right">
+                        {request.trainee_id?.full_name ?? "—"}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {new Date(request.createdAt).toLocaleDateString(
+                          "ar-SA",
+                        )}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setDeleteConfirm(request._id)}>
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
               </TableBody>
             </Table>
           )}
