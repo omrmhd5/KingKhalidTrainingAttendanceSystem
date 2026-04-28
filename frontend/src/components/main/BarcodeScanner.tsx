@@ -57,7 +57,10 @@ export default function BarcodeScanner({
     }
 
     setBarcode("");
-    inputRef.current?.focus();
+    // Use requestAnimationFrame to ensure focus happens after all renders complete
+    requestAnimationFrame(() => {
+      inputRef.current?.focus();
+    });
   };
 
   return (
