@@ -35,7 +35,7 @@ interface Violation {
     military_id: string;
     civil_id: string;
     full_name: string;
-  };
+  } | null;
   description: string;
   createdAt: string;
 }
@@ -227,45 +227,47 @@ export default function ViolationsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {violations.map((violation) => (
-                  <TableRow
-                    key={violation._id}
-                    className="bg-orange-50 hover:bg-orange-100">
-                    <TableCell className="font-medium text-right">
-                      {violation.trainee_id.military_id}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {violation.trainee_id.civil_id}
-                    </TableCell>
-                    <TableCell className="font-medium text-right">
-                      {violation.trainee_id.full_name}
-                    </TableCell>
-                    <TableCell className="text-right max-w-sm truncate">
-                      {violation.description}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {new Date(violation.createdAt).toLocaleDateString(
-                        "ar-SA",
-                      )}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <div className="flex justify-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setEditingViolation(violation)}>
-                          <Edit2 className="h-4 w-4 text-blue-600" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setDeleteConfirm(violation._id)}>
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {violations
+                  .filter((v) => v.trainee_id)
+                  .map((violation) => (
+                    <TableRow
+                      key={violation._id}
+                      className="bg-orange-50 hover:bg-orange-100">
+                      <TableCell className="font-medium text-right">
+                        {violation.trainee_id?.military_id ?? "—"}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {violation.trainee_id?.civil_id ?? "—"}
+                      </TableCell>
+                      <TableCell className="font-medium text-right">
+                        {violation.trainee_id?.full_name ?? "—"}
+                      </TableCell>
+                      <TableCell className="text-right max-w-sm truncate">
+                        {violation.description}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {new Date(violation.createdAt).toLocaleDateString(
+                          "ar-SA",
+                        )}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <div className="flex justify-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setEditingViolation(violation)}>
+                            <Edit2 className="h-4 w-4 text-blue-600" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setDeleteConfirm(violation._id)}>
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
               </TableBody>
             </Table>
           )}
