@@ -11,6 +11,11 @@ const router = express.Router();
 router.get("/", requireAdminOrOperator, traineeController.getAllTrainees);
 router.get("/:id", requireAdminOrOperator, traineeController.getTrainee);
 router.post("/search", requireAdminOrOperator, traineeController.searchByIds);
+router.put(
+  "/bulk-shift",
+  requireAdminOrOperator,
+  traineeController.bulkUpdateShift,
+);
 
 // Write operations - admin only
 router.post("/bulk-import", requireAdmin, traineeController.bulkImportTrainees);

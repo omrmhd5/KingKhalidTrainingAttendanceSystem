@@ -67,6 +67,22 @@ exports.searchByIds = async (req, res) => {
   }
 };
 
+exports.bulkUpdateShift = async (req, res) => {
+  try {
+    const { ids, shiftId } = req.body;
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ error: "IDs array is required" });
+    }
+    if (!shiftId) {
+      return res.status(400).json({ error: "Shift ID is required" });
+    }
+    const result = await traineeService.bulkUpdateShift(ids, shiftId);
+    res.json(result);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
 exports.bulkImportTrainees = async (req, res) => {
   try {
     const { trainees } = req.body;

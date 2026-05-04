@@ -231,6 +231,53 @@ class TraineeService {
       .sort({ createdAt: 1 });
   }
 
+  async bulkUpdateShift(ids, shiftId) {
+    if (!Array.isArray(ids) || ids.length === 0) {
+      throw new Error("IDs array is required");
+    }
+    if (!shiftId) {
+      throw new Error("Shift ID is required");
+    }
+
+    const shift = await Shift.findById(shiftId);
+    if (!shift) {
+      throw new Error("Shift not found");
+    }
+
+    // Get trainees to find their old shifts
+    const trainees = await Trainee.find({ _id: { $in: ids } });
+    const oldShiftIds = [
+      ...new Set(trainees.map((t) => t.shift_id.toString())),
+    ];
+
+    // Update all trainees' shift
+    const result = await Trainee.updateMany(
+      { _id: { $in: ids } },
+      { $set: { shift_id: shiftId } },
+    );
+
+    // Update shift arrays: remove from old shifts, add to new shift
+    for (const oldShiftId of oldShiftIds) {
+      if (oldShiftId !== shiftId.toString()) {
+        await Shift.findByIdAndUpdate(oldShiftId, {
+          $pull: { trainees: { $in: ids } },
+        });
+        await shiftService.updateTraineesCount(oldShiftId);
+      }
+    }
+
+    // Add to new shift (avoid duplicates)
+    await Shift.findByIdAndUpdate(shiftId, {
+      $addToSet: { trainees: { $each: ids } },
+    });
+    await shiftService.updateTraineesCount(shiftId);
+
+    return {
+      updatedCount: result.modifiedCount,
+      shiftName: shift.name,
+    };
+  }
+
   async bulkImportTrainees(traineesData) {
     if (!Array.isArray(traineesData) || traineesData.length === 0) {
       throw new Error("Trainees data array is required");

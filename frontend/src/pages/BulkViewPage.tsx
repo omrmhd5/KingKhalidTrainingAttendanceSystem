@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { traineeApi } from "@/lib/traineeApi";
-import { Search } from "lucide-react";
+import { Search, ArrowLeftRight } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { TraineeSearchFilters } from "@/components/trainees/TraineeSearchFilters";
@@ -20,7 +20,11 @@ import { rankApi } from "@/lib/rankApi";
 import { specializationApi } from "@/lib/specializationApi";
 import { shiftApi } from "@/lib/shiftApi";
 import Barcode from "react-barcode";
-import { ExportPDF, ExportExcel } from "@/components/bulkview";
+import {
+  ExportPDF,
+  ExportExcel,
+  ChangeShiftModal,
+} from "@/components/bulkview";
 
 export default function BulkViewPage() {
   const { toast } = useToast();
@@ -40,6 +44,9 @@ export default function BulkViewPage() {
   const [ranks, setRanks] = useState<any[]>([]);
   const [specializations, setSpecializations] = useState<any[]>([]);
   const [shifts, setShifts] = useState<any[]>([]);
+  const [changeShiftOpen, setChangeShiftOpen] = useState(false);
+  const [targetShiftId, setTargetShiftId] = useState("");
+  const [isChangingShift, setIsChangingShift] = useState(false);
 
   // Save results to localStorage whenever they change
   useEffect(() => {
@@ -153,6 +160,49 @@ export default function BulkViewPage() {
     return matchesSearch && matchesRank && matchesSpecialty && matchesShift;
   });
 
+  const shiftBreakdown = filtered.reduce(
+    (acc: Record<string, { name: string; count: number }>, t: any) => {
+      const id = t.shift_id?._id ?? "unknown";
+      const name = t.shift_id?.name ?? "غير محدد";
+      if (!acc[id]) acc[id] = { name, count: 0 };
+      acc[id].count++;
+      return acc;
+    },
+    {},
+  );
+
+  const handleChangeShift = async () => {
+    if (!targetShiftId) return;
+    try {
+      setIsChangingShift(true);
+      const ids = filtered.map((t: any) => t._id);
+      const result = await traineeApi.bulkUpdateShift(ids, targetShiftId);
+      // Update local results to reflect new shift
+      const newShift = shifts.find((s) => s._id === targetShiftId);
+      setResults((prev) =>
+        prev.map((t) =>
+          ids.includes(t._id) ? { ...t, shift_id: newShift } : t,
+        ),
+      );
+      setChangeShiftOpen(false);
+      setTargetShiftId("");
+      toast({
+        title: "تم تغيير الشفت",
+        description: `تم تحديث ${result.updatedCount} متدرب إلى شفت ${result.shiftName}`,
+        duration: 2000,
+      });
+    } catch (error) {
+      toast({
+        title: "خطأ",
+        description: (error as Error)?.message || "فشل تغيير الشفت",
+        variant: "destructive",
+        duration: 2000,
+      });
+    } finally {
+      setIsChangingShift(false);
+    }
+  };
+
   return (
     <div className="space-y-6 animate-slide-in">
       <div>
@@ -231,6 +281,13 @@ export default function BulkViewPage() {
                 {filtered.length !== results.length && ` من ${results.length}`})
               </CardTitle>
               <div className="flex gap-2">
+                <Button
+                  className="bg-purple-600 hover:bg-purple-700 text-white"
+                  onClick={() => setChangeShiftOpen(true)}
+                  disabled={filtered.length === 0}>
+                  <ArrowLeftRight className="ml-2 h-4 w-4" />
+                  تغيير الشفت
+                </Button>
                 <ExportExcel data={filtered} />
                 <ExportPDF data={filtered} />
               </div>
@@ -307,6 +364,18 @@ export default function BulkViewPage() {
           </CardContent>
         </Card>
       )}
+
+      <ChangeShiftModal
+        open={changeShiftOpen}
+        onOpenChange={setChangeShiftOpen}
+        filteredCount={filtered.length}
+        shiftBreakdown={shiftBreakdown}
+        shifts={shifts}
+        targetShiftId={targetShiftId}
+        onTargetShiftChange={setTargetShiftId}
+        isLoading={isChangingShift}
+        onConfirm={handleChangeShift}
+      />
     </div>
   );
 }

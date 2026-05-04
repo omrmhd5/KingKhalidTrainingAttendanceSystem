@@ -79,4 +79,12 @@ export const traineeApi = {
     });
     return response.data;
   },
+
+  async bulkUpdateShift(ids: string[], shiftId: string) {
+    const response = await apiClient.put(`/trainees/bulk-shift`, {
+      ids,
+      shiftId,
+    });
+    return response.data;
+  },
 };
