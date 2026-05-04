@@ -4,6 +4,7 @@ export interface Trainee {
   _id: string;
   full_name: string;
   military_id: string;
+  civil_id: string;
   rank_id: string;
   hasViolation?: boolean;
   hasDisciplinary?: boolean;
@@ -58,6 +59,7 @@ export interface Absence {
     name: string;
   };
   shift_id?: {
+    _id: string;
     name: string;
   };
 }
@@ -74,6 +76,7 @@ export interface Escape {
   full_name: string;
   civil_id: string;
   shift_id?: {
+    _id: string;
     name: string;
   };
   entry_time: string;
@@ -91,6 +94,7 @@ export interface Late {
   full_name: string;
   civil_id: string;
   shift_id?: {
+    _id: string;
     name: string;
   };
   entry_time: string;

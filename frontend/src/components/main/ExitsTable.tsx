@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -87,6 +87,8 @@ export interface EntryRecord {
   name: string;
   arrivalTime: string;
   shift: string;
+  hasViolation?: boolean;
+  hasDisciplinary?: boolean;
 }
 
 export default function ExitsTable({
@@ -95,8 +97,6 @@ export default function ExitsTable({
   selectedShift,
   selectedShiftFilter,
 }: ExitsTableProps) {
-  const lastRowRef = useRef<HTMLTableRowElement>(null);
-
   // Filter exits based on selected shift
   const filteredExits =
     selectedShiftFilter === "all"
@@ -110,16 +110,6 @@ export default function ExitsTable({
 
   // Count exits with actual data (non-empty militaryId)
   const exitsWithData = filteredExits.filter((e) => e.militaryId.trim() !== "");
-
-  // Scroll to last row when exits change
-  useEffect(() => {
-    if (filteredExits.length > 0) {
-      lastRowRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
-    }
-  }, [filteredExits.length]);
 
   // Count attended trainees (unique entries with militaryId)
   const attendedCount = new Set(
@@ -188,10 +178,9 @@ export default function ExitsTable({
                 return (
                   <TableRow
                     key={exit.id}
-                    ref={index === filteredExits.length - 1 ? lastRowRef : null}
                     className="border-b-2 border-gray-300 bg-white hover:bg-gray-50">
                     <TableCell
-                      className={`text-center font-medium text-sm py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap ${getIdCellStyle(correspondingEntry?.hasViolation, correspondingEntry?.hasDisciplinary, index === 0)}`}>
+                      className={`text-center font-medium text-sm py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap ${getIdCellStyle(correspondingEntry?.hasViolation, correspondingEntry?.hasDisciplinary, index === filteredExits.length - 1)}`}>
                       {exit.civilId}
                     </TableCell>
                     <TableCell className="text-center font-medium py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">

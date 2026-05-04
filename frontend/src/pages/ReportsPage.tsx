@@ -44,18 +44,6 @@ export default function ReportsPage() {
     localStorage.setItem("reportsActiveTab", value);
   };
 
-  // Mock absences data
-  const mockAbsences: Absence[] = [
-    {
-      _id: "669b45e8ea21a33679db2f7ed",
-      military_id: "456",
-      full_name: "محمد علي",
-      shift_id: {
-        name: "الشفت الثانية",
-      },
-    },
-  ];
-
   useEffect(() => {
     const fetchCounts = async () => {
       try {
@@ -95,11 +83,11 @@ export default function ReportsPage() {
       } catch (error) {
         console.error("Failed to fetch counts:", error);
         setHoursCount(0);
-        setAbsencesCount(1);
+        setAbsencesCount(0);
         setEscapesCount(0);
         setLatesCount(0);
         setHoursData([]);
-        setAbsencesList(mockAbsences);
+        setAbsencesList([]);
         setEscapesList([]);
         setLatesList([]);
       } finally {

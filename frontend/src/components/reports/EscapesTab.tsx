@@ -26,6 +26,7 @@ interface EscapeRecord {
   full_name: string;
   civil_id: string;
   shift_id?: {
+    _id: string;
     name: string;
   };
   entry_time: string;

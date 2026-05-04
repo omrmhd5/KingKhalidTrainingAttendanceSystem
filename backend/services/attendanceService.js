@@ -252,7 +252,7 @@ class AttendanceService {
       .populate("shift_id", "name start_time end_time")
       .select("-notes")
       .lean()
-      .sort({ entry_time: 1, exit_time: 1 });
+      .sort({ entry_time: -1, exit_time: -1 });
 
     return {
       date,
@@ -475,7 +475,10 @@ class AttendanceService {
           military_id: 1,
           civil_id: 1,
           full_name: 1,
-          shift_id: { name: 1 },
+          shift_id: {
+            _id: "$shift_id._id",
+            name: "$shift_id.name",
+          },
         },
       },
     ]);

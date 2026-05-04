@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Shield, LogIn, Loader2 } from "lucide-react";
+import { LogIn, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function AuthPage() {
@@ -60,14 +60,14 @@ export default function AuthPage() {
     <div className="flex min-h-screen items-center justify-center bg-white p-4">
       <Card className="w-full max-w-md border-sidebar-border shadow-2xl bg-blue-50">
         <CardHeader className="text-center space-y-3 bg-blue-400 text-white rounded-t-lg">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-accent">
-            <Shield className="h-7 w-7 text-accent-foreground" />
+          <div className="mx-auto flex items-center justify-center">
+            <img src="/Logo.png" alt="Logo" className="h-20 w-20" />
           </div>
           <CardTitle className="text-2xl font-bold text-white">
-            مركز التدريب
+            مركز الملك خالد التدريبي
           </CardTitle>
           <CardDescription className="text-white text-sm">
-            نظام إدارة الحضور
+            نظام إدارة الحضور و الانصراف
           </CardDescription>
         </CardHeader>
         <CardContent>

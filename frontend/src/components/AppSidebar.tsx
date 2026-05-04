@@ -91,7 +91,7 @@ export function AppSidebar() {
     <Sidebar side="right">
       <SidebarHeader className="border-b border-sidebar-border p-4">
         <div className="flex items-center gap-2">
-          <Shield className="h-6 w-6 text-sidebar-primary" />
+          <img src="/Logo.png" alt="Logo" className="h-8 w-8" />
           <span className="text-sm font-bold text-sidebar-accent-foreground">
             برنامج الحضور و الانصراف
           </span>

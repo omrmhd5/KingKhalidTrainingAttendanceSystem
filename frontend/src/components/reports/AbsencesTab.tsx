@@ -25,6 +25,7 @@ interface AbsenceRecord {
   civil_id: string;
   full_name: string;
   shift_id?: {
+    _id: string;
     name: string;
   };
 }

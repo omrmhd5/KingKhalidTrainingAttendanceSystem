@@ -14,11 +14,13 @@ export default function KSADateTime() {
       const dayName = ksaTime.toLocaleDateString("ar-SA", {
         weekday: "long",
         timeZone: "Asia/Riyadh",
+        calendar: "gregory",
       });
 
       const monthName = ksaTime.toLocaleDateString("ar-SA", {
         month: "long",
         timeZone: "Asia/Riyadh",
+        calendar: "gregory",
       });
 
       // Get English numbers and 12-hour format

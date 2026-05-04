@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -115,7 +115,6 @@ export default function EntriesTable({
     Array<{ _id: string; name: string }>
   >([]);
   const [loadingShifts, setLoadingShifts] = useState(false);
-  const lastRowRef = useRef<HTMLTableRowElement>(null);
 
   // Load shifts from API
   useEffect(() => {
@@ -152,16 +151,6 @@ export default function EntriesTable({
     selectedShiftFilter === "all"
       ? entries
       : entries.filter((e) => e.actualShift === selectedShiftFilter);
-
-  // Scroll to last row when entries change
-  useEffect(() => {
-    if (filteredEntries.length > 0) {
-      lastRowRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
-    }
-  }, [filteredEntries.length]);
 
   // Count entries with actual data (non-empty militaryId)
   const entriesWithData = filteredEntries.filter(
@@ -255,7 +244,6 @@ export default function EntriesTable({
               filteredEntries.map((entry, index) => (
                 <TableRow
                   key={entry.id}
-                  ref={index === filteredEntries.length - 1 ? lastRowRef : null}
                   className="border-b-2 border-gray-300 bg-white hover:bg-gray-50">
                   <TableCell className="text-left w-2">
                     <Checkbox
@@ -264,7 +252,7 @@ export default function EntriesTable({
                     />
                   </TableCell>
                   <TableCell
-                    className={`text-center font-medium text-sm py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap ${getIdCellStyle(entry.hasViolation, entry.hasDisciplinary, index === 0)}`}>
+                    className={`text-center font-medium text-sm py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap ${getIdCellStyle(entry.hasViolation, entry.hasDisciplinary, index === filteredEntries.length - 1)}`}>
                     {entry.civilId}
                   </TableCell>
                   <TableCell className="text-center font-medium py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">
