@@ -34,6 +34,7 @@ interface AbsencesTabProps {
   date: string;
   absences?: AbsenceRecord[];
   isLoading?: boolean;
+  onFilteredDataChange?: (data: AbsenceRecord[]) => void;
 }
 
 const getShiftCellColor = (shift: string): string => {
@@ -54,6 +55,7 @@ export function AbsencesTab({
   date,
   absences = [],
   isLoading = false,
+  onFilteredDataChange,
 }: AbsencesTabProps) {
   const [search, setSearch] = useState("");
   const [filterShift, setFilterShift] = useState("all");
@@ -84,6 +86,13 @@ export function AbsencesTab({
 
     return matchesSearch && matchesShift;
   });
+
+  // Notify parent of filtered data changes
+  useEffect(() => {
+    if (onFilteredDataChange) {
+      onFilteredDataChange(filteredAbsences);
+    }
+  }, [filteredAbsences, onFilteredDataChange]);
 
   return (
     <Card dir="rtl" className="bg-red-100 border-red-900">

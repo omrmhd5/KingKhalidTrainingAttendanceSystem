@@ -42,7 +42,9 @@ export default function MainPage() {
   const [selectedEntries, setSelectedEntries] = useState<Set<string>>(
     new Set(),
   );
+  const [selectedExits, setSelectedExits] = useState<Set<string>>(new Set());
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [clearExitOpen, setClearExitOpen] = useState(false);
 
   // Helper function to get active shift based on current KSA time
   const getActiveShift =
@@ -114,83 +116,79 @@ export default function MainPage() {
   }, [getActiveShift]);
 
   // Fetch attendance records when date or shift changes
-  useEffect(() => {
-    const fetchAttendance = async () => {
-      try {
-        setLoading(true);
-        const response = await attendanceApi.getAttendanceByDate(selectedDate);
+  const fetchAttendanceData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await attendanceApi.getAttendanceByDate(selectedDate);
 
-        // Transform API data to component format
-        const transformedEntries: EntryRecord[] = response.records
-          .filter((r: AttendanceRecord) => r.entry_time)
-          .map((r: AttendanceRecord) => ({
-            id: r._id,
-            militaryId: r.military_id,
-            civilId: r.civil_id || "",
-            name:
-              typeof r.trainee_id === "object"
-                ? r.trainee_id?.full_name || ""
-                : "",
-            arrivalTime: r.entry_time || "",
-            shift:
-              typeof r.trainee_assigned_shift_id === "object"
-                ? r.trainee_assigned_shift_id?.name || ""
-                : "",
-            shiftStartTime:
-              typeof r.trainee_assigned_shift_id === "object"
-                ? r.trainee_assigned_shift_id?.start_time || ""
-                : "",
-            shiftEndTime:
-              typeof r.trainee_assigned_shift_id === "object"
-                ? r.trainee_assigned_shift_id?.end_time || ""
-                : "",
-            actualShift:
-              typeof r.shift_id === "object" ? r.shift_id?.name || "" : "",
-            actualShiftStartTime:
-              typeof r.shift_id === "object"
-                ? r.shift_id?.start_time
-                : undefined,
-            actualShiftEndTime:
-              typeof r.shift_id === "object" ? r.shift_id?.end_time : undefined,
-            status: r.status,
-            hasViolation:
-              typeof r.trainee_id === "object"
-                ? r.trainee_id?.hasViolation
-                : false,
-            hasDisciplinary:
-              typeof r.trainee_id === "object"
-                ? r.trainee_id?.hasDisciplinary
-                : false,
-          }));
+      const transformedEntries: EntryRecord[] = response.records
+        .filter((r: AttendanceRecord) => r.entry_time)
+        .map((r: AttendanceRecord) => ({
+          id: r._id,
+          militaryId: r.military_id,
+          civilId: r.civil_id || "",
+          name:
+            typeof r.trainee_id === "object"
+              ? r.trainee_id?.full_name || ""
+              : "",
+          arrivalTime: r.entry_time || "",
+          shift:
+            typeof r.trainee_assigned_shift_id === "object"
+              ? r.trainee_assigned_shift_id?.name || ""
+              : "",
+          shiftStartTime:
+            typeof r.trainee_assigned_shift_id === "object"
+              ? r.trainee_assigned_shift_id?.start_time || ""
+              : "",
+          shiftEndTime:
+            typeof r.trainee_assigned_shift_id === "object"
+              ? r.trainee_assigned_shift_id?.end_time || ""
+              : "",
+          actualShift:
+            typeof r.shift_id === "object" ? r.shift_id?.name || "" : "",
+          actualShiftStartTime:
+            typeof r.shift_id === "object" ? r.shift_id?.start_time : undefined,
+          actualShiftEndTime:
+            typeof r.shift_id === "object" ? r.shift_id?.end_time : undefined,
+          status: r.status,
+          hasViolation:
+            typeof r.trainee_id === "object"
+              ? r.trainee_id?.hasViolation
+              : false,
+          hasDisciplinary:
+            typeof r.trainee_id === "object"
+              ? r.trainee_id?.hasDisciplinary
+              : false,
+        }));
 
-        const transformedExits: ExitRecord[] = response.records
-          .filter((r: AttendanceRecord) => r.exit_time)
-          .map((r: AttendanceRecord) => ({
-            id: r._id,
-            militaryId: r.military_id,
-            civilId: r.civil_id || "",
-            name:
-              typeof r.trainee_id === "object"
-                ? r.trainee_id?.full_name || ""
-                : "",
-            exitTime: r.exit_time || "",
-            entryTime: r.entry_time || "",
-            durationMinutes: r.duration_minutes,
-          }));
+      const transformedExits: ExitRecord[] = response.records
+        .filter((r: AttendanceRecord) => r.exit_time)
+        .map((r: AttendanceRecord) => ({
+          id: r._id,
+          militaryId: r.military_id,
+          civilId: r.civil_id || "",
+          name:
+            typeof r.trainee_id === "object"
+              ? r.trainee_id?.full_name || ""
+              : "",
+          exitTime: r.exit_time || "",
+          entryTime: r.entry_time || "",
+          durationMinutes: r.duration_minutes,
+        }));
 
-        setEntries(transformedEntries);
-        setExits(transformedExits);
-      } catch (error) {
-        console.error("Failed to fetch attendance:", error);
-        setEntries([]);
-        setExits([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchAttendance();
+      setEntries(transformedEntries);
+      setExits(transformedExits);
+    } catch (error) {
+      console.error("Failed to fetch attendance:", error);
+    } finally {
+      setLoading(false);
+    }
   }, [selectedDate]);
+
+  // Fetch initial data on mount or when selectedDate changes
+  useEffect(() => {
+    fetchAttendanceData();
+  }, [selectedDate, fetchAttendanceData]);
 
   const handleScan = useCallback(
     async (barcode: string, mode: "IN" | "OUT") => {
@@ -310,6 +308,52 @@ export default function MainPage() {
     setDeleteOpen(true);
   };
 
+  const toggleSelectExit = (id: string) => {
+    const newSelected = new Set(selectedExits);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedExits(newSelected);
+  };
+
+  const toggleSelectAllExits = () => {
+    if (selectedExits.size === exits.length && exits.length > 0) {
+      setSelectedExits(new Set());
+    } else {
+      setSelectedExits(new Set(exits.map((e) => e.id)));
+    }
+  };
+
+  const handleRequestClearExits = () => {
+    if (selectedExits.size === 0) return;
+    setClearExitOpen(true);
+  };
+
+  const confirmClearExits = async () => {
+    try {
+      const selectedArray = Array.from(selectedExits);
+      await attendanceApi.clearExitData(selectedArray);
+      setSelectedExits(new Set());
+      setClearExitOpen(false);
+      // Refetch attendance data to sync with backend
+      await fetchAttendanceData();
+      toast({
+        title: "تم المسح",
+        description: `تم مسح بيانات الخروج لـ ${selectedArray.length} سجل`,
+      });
+    } catch (error) {
+      const errorMessage =
+        (error as any)?.message || "فشل مسح بيانات الخروج المحددة";
+      toast({
+        title: "خطأ",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    }
+  };
+
   const confirmDeleteEntries = async () => {
     try {
       const selectedArray = Array.from(selectedEntries);
@@ -384,6 +428,10 @@ export default function MainPage() {
             entries={entries}
             selectedShift={selectedShift}
             selectedShiftFilter={selectedShiftFilter}
+            selectedExits={selectedExits}
+            onToggleExit={toggleSelectExit}
+            onToggleAll={toggleSelectAllExits}
+            onClearExits={handleRequestClearExits}
           />
         </div>
       </div>
@@ -394,6 +442,14 @@ export default function MainPage() {
         onConfirm={confirmDeleteEntries}
         itemName={`${selectedEntries.size} سجل دخول`}
         itemType="السجلات"
+      />
+
+      <ConfirmDeleteModal
+        open={clearExitOpen}
+        onOpenChange={setClearExitOpen}
+        onConfirm={confirmClearExits}
+        itemName={`${selectedExits.size} سجل خروج`}
+        itemType="بيانات الخروج"
       />
     </div>
   );

@@ -9,7 +9,9 @@ import {
 } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowUpFromLine } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ArrowUpFromLine, Eraser } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { formatTime12HourKSA } from "@/lib/timeUtils";
 
 interface Shift {
@@ -78,6 +80,10 @@ interface ExitsTableProps {
   entries: EntryRecord[];
   selectedShift: Shift | null;
   selectedShiftFilter: string;
+  selectedExits: Set<string>;
+  onToggleExit: (id: string) => void;
+  onToggleAll: () => void;
+  onClearExits: () => void;
 }
 
 export interface EntryRecord {
@@ -96,6 +102,10 @@ export default function ExitsTable({
   entries,
   selectedShift,
   selectedShiftFilter,
+  selectedExits,
+  onToggleExit,
+  onToggleAll,
+  onClearExits,
 }: ExitsTableProps) {
   // Filter exits based on selected shift
   const filteredExits =
@@ -108,8 +118,15 @@ export default function ExitsTable({
           return correspondingEntry?.shift === selectedShiftFilter;
         });
 
+  // Sort exits by exit_time descending (most recent first)
+  const sortedExits = [...filteredExits].sort((a, b) => {
+    const timeA = a.exitTime ? new Date(a.exitTime).getTime() : 0;
+    const timeB = b.exitTime ? new Date(b.exitTime).getTime() : 0;
+    return timeB - timeA; // Descending - most recent first
+  });
+
   // Count exits with actual data (non-empty militaryId)
-  const exitsWithData = filteredExits.filter((e) => e.militaryId.trim() !== "");
+  const exitsWithData = sortedExits.filter((e) => e.militaryId.trim() !== "");
 
   // Count attended trainees (unique entries with militaryId)
   const attendedCount = new Set(
@@ -122,6 +139,15 @@ export default function ExitsTable({
         <div className="flex items-center gap-2">
           <ArrowUpFromLine className="h-5 w-5 text-warning" />
           <h3 className="text-lg font-semibold text-foreground">سجل الخروج</h3>
+          {selectedExits.size > 0 && (
+            <Button
+              size="sm"
+              onClick={onClearExits}
+              className="mr-2 bg-orange-600 hover:bg-orange-700 text-white">
+              <Eraser className="ml-1 h-4 w-4" />
+              مسح الخروج ({selectedExits.size})
+            </Button>
+          )}
         </div>
         <Badge
           className={`font-semibold px-4 py-2 text-base ${
@@ -136,6 +162,16 @@ export default function ExitsTable({
         <Table className="w-full">
           <TableHeader>
             <TableRow className="bg-green-500 hover:bg-green-500 border-b-2 border-green-700">
+              <TableHead className="text-center text-white font-bold py-2 px-2 border-r-2 border-green-700 w-10">
+                <Checkbox
+                  checked={
+                    sortedExits.length > 0 &&
+                    selectedExits.size === sortedExits.length
+                  }
+                  onCheckedChange={onToggleAll}
+                  className="border-white data-[state=checked]:bg-white data-[state=checked]:text-green-700"
+                />
+              </TableHead>
               <TableHead className="text-center text-white font-bold py-2 px-2 border-r-2 border-green-700 whitespace-nowrap">
                 تسجيل الخروج
               </TableHead>
@@ -154,16 +190,16 @@ export default function ExitsTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredExits.length === 0 ? (
+            {sortedExits.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={5}
+                  colSpan={6}
                   className="text-center py-8 text-muted-foreground border border-border">
                   لا توجد سجلات خروج
                 </TableCell>
               </TableRow>
             ) : (
-              filteredExits.map((exit, index) => {
+              sortedExits.map((exit, index) => {
                 // Format duration from backend
                 const hours = Math.floor((exit.durationMinutes || 0) / 60);
                 const minutes = (exit.durationMinutes || 0) % 60;
@@ -179,8 +215,14 @@ export default function ExitsTable({
                   <TableRow
                     key={exit.id}
                     className="border-b-2 border-gray-300 bg-white hover:bg-gray-50">
+                    <TableCell className="text-center py-2 px-2 border-r-2 border-gray-300 w-10">
+                      <Checkbox
+                        checked={selectedExits.has(exit.id)}
+                        onCheckedChange={() => onToggleExit(exit.id)}
+                      />
+                    </TableCell>
                     <TableCell
-                      className={`text-center font-medium text-sm py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap ${getIdCellStyle(correspondingEntry?.hasViolation, correspondingEntry?.hasDisciplinary, index === filteredExits.length - 1)}`}>
+                      className={`text-center font-medium text-sm py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap ${getIdCellStyle(correspondingEntry?.hasViolation, correspondingEntry?.hasDisciplinary, index === sortedExits.length - 1)}`}>
                       {exit.civilId}
                     </TableCell>
                     <TableCell className="text-center font-medium py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">

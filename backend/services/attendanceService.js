@@ -575,6 +575,21 @@ class AttendanceService {
     };
   }
 
+  async clearExitData(ids) {
+    if (!Array.isArray(ids) || ids.length === 0) {
+      throw new Error("Array of attendance IDs is required");
+    }
+
+    const result = await Attendance.updateMany(
+      { _id: { $in: ids } },
+      { $unset: { exit_time: "", duration_minutes: "" } },
+    );
+    return {
+      message: `تم مسح بيانات الخروج لـ ${result.modifiedCount} سجل`,
+      modifiedCount: result.modifiedCount,
+    };
+  }
+
   async deleteAttendance(id) {
     if (!id) {
       throw new Error("Attendance ID is required");

@@ -10,6 +10,7 @@ const {
   getLates,
   deleteAttendance,
   deleteMultipleAttendance,
+  clearExitData,
 } = require("../controllers/attendanceController");
 
 // Record entry
@@ -32,6 +33,9 @@ router.get("/escapes", getEscapes);
 
 // Get lates for a specific date
 router.get("/lates", getLates);
+
+// Clear exit data (exit_time + duration_minutes) from records
+router.patch("/clear-exit", clearExitData);
 
 // Delete attendance record
 router.delete("/:id", deleteAttendance);

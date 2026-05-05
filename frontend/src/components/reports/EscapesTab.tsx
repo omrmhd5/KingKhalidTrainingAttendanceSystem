@@ -36,6 +36,7 @@ interface EscapesTabProps {
   date: string;
   escapes?: EscapeRecord[];
   isLoading?: boolean;
+  onFilteredDataChange?: (data: EscapeRecord[]) => void;
 }
 
 const getShiftCellColor = (shift: string): string => {
@@ -56,6 +57,7 @@ export function EscapesTab({
   date,
   escapes = [],
   isLoading = false,
+  onFilteredDataChange,
 }: EscapesTabProps) {
   const [search, setSearch] = useState("");
   const [filterShift, setFilterShift] = useState("all");
@@ -86,6 +88,13 @@ export function EscapesTab({
 
     return matchesSearch && matchesShift;
   });
+
+  // Notify parent of filtered data changes
+  useEffect(() => {
+    if (onFilteredDataChange) {
+      onFilteredDataChange(filteredEscapes);
+    }
+  }, [filteredEscapes, onFilteredDataChange]);
 
   return (
     <Card dir="rtl" className="bg-orange-50 border-orange-900">

@@ -35,6 +35,7 @@ interface LateTabProps {
   date: string;
   lates?: LateRecord[];
   isLoading?: boolean;
+  onFilteredDataChange?: (data: LateRecord[]) => void;
 }
 
 const getShiftCellColor = (shift: string): string => {
@@ -51,7 +52,12 @@ const getShiftCellColor = (shift: string): string => {
   }
 };
 
-export function LateTab({ date, lates = [], isLoading = false }: LateTabProps) {
+export function LateTab({
+  date,
+  lates = [],
+  isLoading = false,
+  onFilteredDataChange,
+}: LateTabProps) {
   const [search, setSearch] = useState("");
   const [filterShift, setFilterShift] = useState("all");
   const [shifts, setShifts] = useState<Shift[]>([]);
@@ -81,6 +87,13 @@ export function LateTab({ date, lates = [], isLoading = false }: LateTabProps) {
 
     return matchesSearch && matchesShift;
   });
+
+  // Notify parent of filtered data changes
+  useEffect(() => {
+    if (onFilteredDataChange) {
+      onFilteredDataChange(filteredLates);
+    }
+  }, [filteredLates, onFilteredDataChange]);
 
   return (
     <Card dir="rtl" className="bg-purple-100 border-purple-900">

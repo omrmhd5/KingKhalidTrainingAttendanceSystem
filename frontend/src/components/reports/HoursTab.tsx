@@ -37,6 +37,7 @@ interface HourRow {
 
 interface HoursTabProps {
   date: string;
+  onFilteredDataChange?: (data: AttendanceRecord[]) => void;
 }
 
 const getShiftCellColor = (shift: string): string => {
@@ -53,7 +54,7 @@ const getShiftCellColor = (shift: string): string => {
   }
 };
 
-export function HoursTab({ date }: HoursTabProps) {
+export function HoursTab({ date, onFilteredDataChange }: HoursTabProps) {
   const [attendanceData, setAttendanceData] = useState<AttendanceRecord[]>([]);
   const [search, setSearch] = useState("");
   const [filterShift, setFilterShift] = useState("all");
@@ -99,6 +100,13 @@ export function HoursTab({ date }: HoursTabProps) {
 
     return matchesSearch && matchesShift;
   });
+
+  // Notify parent of filtered data changes
+  useEffect(() => {
+    if (onFilteredDataChange) {
+      onFilteredDataChange(filteredData);
+    }
+  }, [filteredData, onFilteredDataChange]);
 
   const hoursData = filteredData.map((record: AttendanceRecord) => {
     const scheduledMinutes = 4 * 60 + 45; // 4:45:00

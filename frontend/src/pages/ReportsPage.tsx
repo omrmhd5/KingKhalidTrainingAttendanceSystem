@@ -29,6 +29,14 @@ export default function ReportsPage() {
   const [absencesList, setAbsencesList] = useState<Absence[]>([]);
   const [escapesList, setEscapesList] = useState<Escape[]>([]);
   const [latesList, setLatesList] = useState<Late[]>([]);
+  const [filteredHoursData, setFilteredHoursData] = useState<
+    AttendanceRecord[]
+  >([]);
+  const [filteredAbsencesList, setFilteredAbsencesList] = useState<Absence[]>(
+    [],
+  );
+  const [filteredEscapesList, setFilteredEscapesList] = useState<Escape[]>([]);
+  const [filteredLatesList, setFilteredLatesList] = useState<Late[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -122,32 +130,36 @@ export default function ReportsPage() {
         <div className="flex gap-2">
           {activeTab === "hours" && (
             <>
-              <ReportsExportExcel data={hoursData} type="hours" />
-              <ReportsExportPDF data={hoursData} type="hours" />
+              <ReportsExportExcel data={filteredHoursData} type="hours" />
+              <ReportsExportPDF data={filteredHoursData} type="hours" />
             </>
           )}
           {activeTab === "absences" && (
             <>
-              <ReportsExportExcel data={absencesList} type="absences" />
-              <ReportsExportPDF data={absencesList} type="absences" />
+              <ReportsExportExcel data={filteredAbsencesList} type="absences" />
+              <ReportsExportPDF data={filteredAbsencesList} type="absences" />
             </>
           )}
           {activeTab === "escapes" && (
             <>
-              <ReportsExportExcel data={escapesList} type="escapes" />
-              <ReportsExportPDF data={escapesList} type="escapes" />
+              <ReportsExportExcel data={filteredEscapesList} type="escapes" />
+              <ReportsExportPDF data={filteredEscapesList} type="escapes" />
             </>
           )}
           {activeTab === "lates" && (
             <>
-              <ReportsExportExcel data={latesList} type="lates" />
-              <ReportsExportPDF data={latesList} type="lates" />
+              <ReportsExportExcel data={filteredLatesList} type="lates" />
+              <ReportsExportPDF data={filteredLatesList} type="lates" />
             </>
           )}
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={handleTabChange} dir="rtl">
+      <Tabs
+        value={activeTab}
+        onValueChange={handleTabChange}
+        dir="rtl"
+        className="w-full">
         <TabsList>
           <TabsTrigger value="hours">الساعات ({hoursCount})</TabsTrigger>
           <TabsTrigger value="absences">الغيابات ({absencesCount})</TabsTrigger>
@@ -156,7 +168,7 @@ export default function ReportsPage() {
         </TabsList>
 
         <TabsContent value="hours">
-          <HoursTab date={date} />
+          <HoursTab date={date} onFilteredDataChange={setFilteredHoursData} />
         </TabsContent>
 
         <TabsContent value="absences">
@@ -164,15 +176,26 @@ export default function ReportsPage() {
             date={date}
             absences={absencesList}
             isLoading={isLoading}
+            onFilteredDataChange={setFilteredAbsencesList}
           />
         </TabsContent>
 
         <TabsContent value="lates">
-          <LateTab date={date} lates={latesList} isLoading={isLoading} />
+          <LateTab
+            date={date}
+            lates={latesList}
+            isLoading={isLoading}
+            onFilteredDataChange={setFilteredLatesList}
+          />
         </TabsContent>
 
         <TabsContent value="escapes">
-          <EscapesTab date={date} escapes={escapesList} isLoading={isLoading} />
+          <EscapesTab
+            date={date}
+            escapes={escapesList}
+            isLoading={isLoading}
+            onFilteredDataChange={setFilteredEscapesList}
+          />
         </TabsContent>
       </Tabs>
     </div>

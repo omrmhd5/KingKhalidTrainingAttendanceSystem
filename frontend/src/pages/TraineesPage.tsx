@@ -300,9 +300,9 @@ export default function TraineesPage() {
             })}
           </div>
         </div>
-        {canWrite && (
-          <>
-            <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2">
+          {canWrite && (
+            <>
               <div className="flex gap-2">
                 {selectedTrainees.size > 0 && (
                   <Button
@@ -336,37 +336,37 @@ export default function TraineesPage() {
                   isLoading={saveMutation.isPending}
                 />
               </div>
-              {filtered.length > 0 && (
-                <div className="flex gap-2">
-                  <TraineesExportExcel data={filtered} />
-                  <TraineesExportPDF data={filtered} />
-                </div>
-              )}
+              <ConfirmDeleteModal
+                open={deleteOpen}
+                onOpenChange={setDeleteOpen}
+                onConfirm={confirmDelete}
+                itemName={deleteTargetName}
+                itemType="المتدرب"
+              />
+              <ConfirmDeleteModal
+                open={bulkDeleteOpen}
+                onOpenChange={setBulkDeleteOpen}
+                onConfirm={confirmBulkDelete}
+                itemName={`${selectedTrainees.size} متدربي`}
+                itemType="المتدربين"
+              />
+              <TraineeBulkImportModal
+                open={bulkImportOpen}
+                onOpenChange={setBulkImportOpen}
+                onImportSuccess={loadTrainees}
+                ranks={ranks}
+                specializations={specializations}
+                shifts={shifts}
+              />
+            </>
+          )}
+          {filtered.length > 0 && (
+            <div className="flex gap-2">
+              <TraineesExportExcel data={filtered} />
+              <TraineesExportPDF data={filtered} />
             </div>
-            <ConfirmDeleteModal
-              open={deleteOpen}
-              onOpenChange={setDeleteOpen}
-              onConfirm={confirmDelete}
-              itemName={deleteTargetName}
-              itemType="المتدرب"
-            />
-            <ConfirmDeleteModal
-              open={bulkDeleteOpen}
-              onOpenChange={setBulkDeleteOpen}
-              onConfirm={confirmBulkDelete}
-              itemName={`${selectedTrainees.size} متدربي`}
-              itemType="المتدربين"
-            />
-            <TraineeBulkImportModal
-              open={bulkImportOpen}
-              onOpenChange={setBulkImportOpen}
-              onImportSuccess={loadTrainees}
-              ranks={ranks}
-              specializations={specializations}
-              shifts={shifts}
-            />
-          </>
-        )}
+          )}
+        </div>
       </div>
 
       <Card>

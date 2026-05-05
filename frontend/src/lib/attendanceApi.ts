@@ -175,4 +175,8 @@ export const attendanceApi = {
     });
     return response.data;
   },
+  async clearExitData(ids: string[]) {
+    const response = await apiClient.patch(`/attendance/clear-exit`, { ids });
+    return response.data;
+  },
 };

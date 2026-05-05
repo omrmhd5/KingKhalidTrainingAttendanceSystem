@@ -116,6 +116,19 @@ exports.getLates = async (req, res) => {
   }
 };
 
+exports.clearExitData = async (req, res) => {
+  try {
+    const { ids } = req.body;
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ message: "IDs array is required" });
+    }
+    const result = await attendanceService.clearExitData(ids);
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
 exports.deleteAttendance = async (req, res) => {
   try {
     const { id } = req.params;
