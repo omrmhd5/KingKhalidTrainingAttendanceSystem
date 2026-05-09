@@ -136,20 +136,8 @@ export default function MainPage() {
             typeof r.trainee_assigned_shift_id === "object"
               ? r.trainee_assigned_shift_id?.name || ""
               : "",
-          shiftStartTime:
-            typeof r.trainee_assigned_shift_id === "object"
-              ? r.trainee_assigned_shift_id?.start_time || ""
-              : "",
-          shiftEndTime:
-            typeof r.trainee_assigned_shift_id === "object"
-              ? r.trainee_assigned_shift_id?.end_time || ""
-              : "",
           actualShift:
             typeof r.shift_id === "object" ? r.shift_id?.name || "" : "",
-          actualShiftStartTime:
-            typeof r.shift_id === "object" ? r.shift_id?.start_time : undefined,
-          actualShiftEndTime:
-            typeof r.shift_id === "object" ? r.shift_id?.end_time : undefined,
           status: r.status,
           hasViolation:
             typeof r.trainee_id === "object"
@@ -248,24 +236,8 @@ export default function MainPage() {
                 typeof r.trainee_assigned_shift_id === "object"
                   ? r.trainee_assigned_shift_id?.name || ""
                   : "",
-              shiftStartTime:
-                typeof r.trainee_assigned_shift_id === "object"
-                  ? r.trainee_assigned_shift_id?.start_time || ""
-                  : "",
-              shiftEndTime:
-                typeof r.trainee_assigned_shift_id === "object"
-                  ? r.trainee_assigned_shift_id?.end_time || ""
-                  : "",
               actualShift:
                 typeof r.shift_id === "object" ? r.shift_id?.name || "" : "",
-              actualShiftStartTime:
-                typeof r.shift_id === "object"
-                  ? r.shift_id?.start_time
-                  : undefined,
-              actualShiftEndTime:
-                typeof r.shift_id === "object"
-                  ? r.shift_id?.end_time
-                  : undefined,
               status: r.status,
               hasViolation:
                 typeof r.trainee_id === "object"

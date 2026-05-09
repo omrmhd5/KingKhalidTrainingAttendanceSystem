@@ -55,6 +55,22 @@ export default function TodaysSummaryPage() {
   }
   const sortedActualShifts = Array.from(allActualShifts).sort();
 
+  // Calculate column totals
+  const columnTotals: Record<string, number> = {};
+  let grandTotal = 0;
+  if (stats?.shiftSummary) {
+    sortedActualShifts.forEach((actualShift) => {
+      const total = Object.values(stats.shiftSummary).reduce(
+        (sum, shiftCounts) => {
+          return sum + (shiftCounts[actualShift] || 0);
+        },
+        0,
+      );
+      columnTotals[actualShift] = total;
+      grandTotal += total;
+    });
+  }
+
   return (
     <div className="space-y-6 animate-slide-in">
       <div className="flex items-center justify-between">
@@ -92,13 +108,13 @@ export default function TodaysSummaryPage() {
               <TableHeader>
                 <TableRow className="bg-blue-100">
                   <TableHead className="text-right text-blue-900 font-bold">
-                    الشفت المخصص
+                    الشفت المخصص للطالب
                   </TableHead>
                   {sortedActualShifts.map((shift) => (
                     <TableHead
                       key={shift}
                       className="text-center text-blue-900 font-bold">
-                      {shift}
+                      الشفت الذي حضر فيه: {shift}
                     </TableHead>
                   ))}
                   <TableHead className="text-center text-blue-900 font-bold">
@@ -108,32 +124,49 @@ export default function TodaysSummaryPage() {
               </TableHeader>
               <TableBody>
                 {stats && Object.entries(stats.shiftSummary).length > 0 ? (
-                  Object.entries(stats.shiftSummary).map(
-                    ([assignedShift, shiftCounts]) => {
-                      const total = Object.values(shiftCounts).reduce(
-                        (sum, count) => sum + count,
-                        0,
-                      );
+                  <>
+                    {Object.entries(stats.shiftSummary).map(
+                      ([assignedShift, shiftCounts]) => {
+                        const total = Object.values(shiftCounts).reduce(
+                          (sum, count) => sum + count,
+                          0,
+                        );
 
-                      return (
-                        <TableRow key={assignedShift} className="border-b">
-                          <TableCell className="font-medium text-right text-blue-900">
-                            {assignedShift}
-                          </TableCell>
-                          {sortedActualShifts.map((actualShift) => (
-                            <TableCell
-                              key={actualShift}
-                              className="text-center text-blue-800">
-                              {shiftCounts[actualShift] || 0}
+                        return (
+                          <TableRow key={assignedShift} className="border-b">
+                            <TableCell className="font-medium text-right text-blue-900">
+                              {assignedShift}
                             </TableCell>
-                          ))}
-                          <TableCell className="text-center font-bold text-blue-900 bg-blue-50">
-                            {total}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    },
-                  )
+                            {sortedActualShifts.map((actualShift) => (
+                              <TableCell
+                                key={actualShift}
+                                className="text-center text-blue-800">
+                                {shiftCounts[actualShift] || 0}
+                              </TableCell>
+                            ))}
+                            <TableCell className="text-center font-bold text-blue-900 bg-blue-50">
+                              {total}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      },
+                    )}
+                    <TableRow className="bg-blue-100 border-t-2 border-blue-300">
+                      <TableCell className="font-bold text-right text-blue-900">
+                        الإجمالي
+                      </TableCell>
+                      {sortedActualShifts.map((actualShift) => (
+                        <TableCell
+                          key={actualShift}
+                          className="text-center font-bold text-blue-900">
+                          {columnTotals[actualShift]}
+                        </TableCell>
+                      ))}
+                      <TableCell className="text-center font-bold text-blue-900 bg-blue-200">
+                        {grandTotal}
+                      </TableCell>
+                    </TableRow>
+                  </>
                 ) : (
                   <TableRow>
                     <TableCell

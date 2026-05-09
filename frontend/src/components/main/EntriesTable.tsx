@@ -22,27 +22,6 @@ import { ArrowDownToLine } from "lucide-react";
 import { formatTime12HourKSA } from "@/lib/timeUtils";
 import { shiftApi } from "@/lib/shiftApi";
 
-interface Shift {
-  id: string;
-  name: string;
-  start_time: string;
-  end_time: string;
-  grace_minutes: number;
-}
-
-const formatShiftTime = (startTime: string, endTime: string): string => {
-  const formatTime = (timeStr: string): string => {
-    const [hours, minutes] = timeStr.split(":");
-    let h = parseInt(hours);
-    const isAM = h < 12;
-    h = h % 12 || 12;
-    const period = isAM ? "ص" : "م";
-    return `${h}:${minutes} ${period}`;
-  };
-
-  return `${formatTime(startTime)} - ${formatTime(endTime)}`;
-};
-
 const getIdCellStyle = (
   hasViolation?: boolean,
   hasDisciplinary?: boolean,
@@ -80,11 +59,7 @@ export interface EntryRecord {
   name: string;
   arrivalTime: string;
   shift: string;
-  shiftStartTime: string;
-  shiftEndTime: string;
   actualShift: string;
-  actualShiftStartTime?: string;
-  actualShiftEndTime?: string;
   status: "on-time" | "late" | "absent" | "pending";
   hasViolation?: boolean;
   hasDisciplinary?: boolean;
@@ -226,9 +201,6 @@ export default function EntriesTable({
               <TableHead className="text-center text-white font-bold py-2 px-2 border-r-2 border-blue-700 whitespace-nowrap">
                 الشفت
               </TableHead>
-              <TableHead className="text-center text-white font-bold py-2 px-2 border-r-2 border-blue-700 whitespace-nowrap">
-                ساعات الشفت
-              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -252,10 +224,10 @@ export default function EntriesTable({
                     />
                   </TableCell>
                   <TableCell
-                    className={`text-center font-medium text-sm py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap ${getIdCellStyle(entry.hasViolation, entry.hasDisciplinary, index === filteredEntries.length - 1)}`}>
+                    className={`text-center font-black text-2xl py-4 px-2 border-r-2 border-gray-300 whitespace-nowrap ${getIdCellStyle(entry.hasViolation, entry.hasDisciplinary, index === filteredEntries.length - 1)}`}>
                     {entry.civilId}
                   </TableCell>
-                  <TableCell className="text-center font-medium py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">
+                  <TableCell className="text-center font-black text-2xl py-4 px-2 border-r-2 border-gray-300 whitespace-nowrap">
                     {entry.name}
                   </TableCell>
                   <TableCell className="text-center py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">
@@ -279,16 +251,8 @@ export default function EntriesTable({
                     )}
                   </TableCell>
                   <TableCell
-                    className={`text-center font-medium py-2 px-2 border-2 whitespace-nowrap ${getShiftCellColor(entry.shift)}`}>
+                    className={`text-center font-black text-2xl py-4 px-2 border-2 whitespace-nowrap ${getShiftCellColor(entry.shift)}`}>
                     {entry.shift ? entry.shift : ""}
-                  </TableCell>
-                  <TableCell className="text-center font-medium py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">
-                    {entry.shiftStartTime && entry.shiftEndTime
-                      ? formatShiftTime(
-                          entry.shiftStartTime,
-                          entry.shiftEndTime,
-                        )
-                      : ""}
                   </TableCell>
                 </TableRow>
               ))

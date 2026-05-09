@@ -222,10 +222,10 @@ export default function ExitsTable({
                       />
                     </TableCell>
                     <TableCell
-                      className={`text-center font-medium text-sm py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap ${getIdCellStyle(correspondingEntry?.hasViolation, correspondingEntry?.hasDisciplinary, index === sortedExits.length - 1)}`}>
+                      className={`text-center font-black text-2xl py-4 px-2 border-r-2 border-gray-300 whitespace-nowrap ${getIdCellStyle(correspondingEntry?.hasViolation, correspondingEntry?.hasDisciplinary, index === sortedExits.length - 1)}`}>
                       {exit.civilId}
                     </TableCell>
-                    <TableCell className="text-center font-medium py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">
+                    <TableCell className="text-center font-black text-2xl py-4 px-2 border-r-2 border-gray-300 whitespace-nowrap">
                       {exit.name}
                     </TableCell>
                     <TableCell className="text-center py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">
@@ -235,7 +235,7 @@ export default function ExitsTable({
                       {exit.exitTime && exit.entryTime ? timeDiff : ""}
                     </TableCell>
                     <TableCell
-                      className={`text-center font-medium py-2 px-2 border-2 whitespace-nowrap ${getShiftCellColor(shiftForColor)}`}>
+                      className={`text-center font-black text-2xl py-4 px-2 border-2 whitespace-nowrap ${getShiftCellColor(shiftForColor)}`}>
                       {shiftForColor || "N/A"}
                     </TableCell>
                   </TableRow>
