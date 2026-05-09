@@ -12,6 +12,8 @@ import { Input } from "@/components/ui/input";
 import { CheckCircle } from "lucide-react";
 import { Trainee } from "@/lib/traineeApi";
 import { useState } from "react";
+import { ExportExcel } from "./ExportExcel";
+import { ExportPDF } from "./ExportPDF";
 
 interface ReportSummaryProps {
   open: boolean;
@@ -38,6 +40,70 @@ const violationLabels: Record<1 | 2 | 3 | 4, string> = {
   2: "استخدام الجوال",
   3: "عدم احترام المسؤول",
   4: "مخالفة الأنظمة والتعليمات",
+};
+
+// Transform report data to export format
+const transformDataForExport = (
+  data: Array<{
+    studentId: string;
+    student: Trainee;
+    status: "present" | "absent" | "escape" | null;
+    violations: Array<{
+      type: 1 | 2 | 3 | 4;
+      description?: string;
+    }>;
+  }>,
+  activeTab: string,
+): Array<{
+  studentId: string;
+  student: Trainee;
+  className: string;
+  teacherName: string;
+  date: string;
+  violationType?: string;
+  violationDescription?: string;
+}> => {
+  const transformed: Array<{
+    studentId: string;
+    student: Trainee;
+    className: string;
+    teacherName: string;
+    date: string;
+    violationType?: string;
+    violationDescription?: string;
+  }> = [];
+
+  data.forEach((report) => {
+    if (activeTab === "violations") {
+      // For violations tab, create an entry per violation
+      if (report.violations.length > 0) {
+        report.violations.forEach((violation) => {
+          transformed.push({
+            studentId: report.studentId,
+            student: report.student,
+            className: "",
+            teacherName: "",
+            date: "",
+            violationType: String(violation.type),
+            violationDescription: violation.description,
+          });
+        });
+      }
+    } else {
+      // For other tabs, create one entry per student
+      transformed.push({
+        studentId: report.studentId,
+        student: report.student,
+        className: "",
+        teacherName: "",
+        date: "",
+        violationType: undefined,
+        violationDescription: undefined,
+      });
+    }
+  });
+
+  return transformed;
 };
 
 export default function ReportSummary({
@@ -166,7 +232,7 @@ export default function ReportSummary({
                               {report.student.full_name}
                             </span>
                             <span className="text-xs text-muted-foreground">
-                              {report.student.military_id}
+                              {report.student.civil_id}
                             </span>
                           </div>
                         </div>
@@ -192,7 +258,7 @@ export default function ReportSummary({
                               {report.student.full_name}
                             </span>
                             <span className="text-xs text-muted-foreground">
-                              {report.student.military_id}
+                              {report.student.civil_id}
                             </span>
                           </div>
                         </div>
@@ -218,7 +284,7 @@ export default function ReportSummary({
                               {report.student.full_name}
                             </span>
                             <span className="text-xs text-muted-foreground">
-                              {report.student.military_id}
+                              {report.student.civil_id}
                             </span>
                           </div>
                         </div>
@@ -243,7 +309,7 @@ export default function ReportSummary({
                               {report.student.full_name}
                             </span>
                             <span className="text-xs text-muted-foreground">
-                              {report.student.military_id}
+                              {report.student.civil_id}
                             </span>
                           </div>
                           <div className="flex flex-wrap gap-1">
@@ -280,7 +346,55 @@ export default function ReportSummary({
             )}
         </div>
 
-        <DialogFooter className="pt-4 gap-2">
+        <DialogFooter className="pt-4 gap-2 flex-row-reverse">
+          {activeTab === "present" && filteredPresent.length > 0 && (
+            <>
+              <ExportExcel
+                data={transformDataForExport(filteredPresent, "present")}
+                title="تقرير الطلاب الحاضرين"
+              />
+              <ExportPDF
+                data={transformDataForExport(filteredPresent, "present")}
+                title="تقرير الطلاب الحاضرين"
+              />
+            </>
+          )}
+          {activeTab === "violations" && filteredViolations.length > 0 && (
+            <>
+              <ExportExcel
+                data={transformDataForExport(filteredViolations, "violations")}
+                title="تقرير المخالفات"
+              />
+              <ExportPDF
+                data={transformDataForExport(filteredViolations, "violations")}
+                title="تقرير المخالفات"
+              />
+            </>
+          )}
+          {activeTab === "absent" && filteredAbsent.length > 0 && (
+            <>
+              <ExportExcel
+                data={transformDataForExport(filteredAbsent, "absent")}
+                title="تقرير الطلاب الغائبين"
+              />
+              <ExportPDF
+                data={transformDataForExport(filteredAbsent, "absent")}
+                title="تقرير الطلاب الغائبين"
+              />
+            </>
+          )}
+          {activeTab === "escape" && filteredEscaped.length > 0 && (
+            <>
+              <ExportExcel
+                data={transformDataForExport(filteredEscaped, "escape")}
+                title="تقرير الطلاب الهاربين"
+              />
+              <ExportPDF
+                data={transformDataForExport(filteredEscaped, "escape")}
+                title="تقرير الطلاب الهاربين"
+              />
+            </>
+          )}
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             إغلاق
           </Button>

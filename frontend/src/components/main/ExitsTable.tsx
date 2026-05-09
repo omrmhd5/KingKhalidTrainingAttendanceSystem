@@ -228,10 +228,10 @@ export default function ExitsTable({
                     <TableCell className="text-center font-black text-2xl py-4 px-2 border-r-2 border-gray-300 whitespace-nowrap">
                       {exit.name}
                     </TableCell>
-                    <TableCell className="text-center py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">
+                    <TableCell className="text-center font-black text-2xl py-4 px-2 border-r-2 border-gray-300 whitespace-nowrap">
                       {exit.exitTime ? formatTime12HourKSA(exit.exitTime) : ""}
                     </TableCell>
-                    <TableCell className="text-center font-medium py-2 px-2 border-r-2 border-gray-300 whitespace-nowrap">
+                    <TableCell className="text-center font-black text-2xl py-4 px-2 border-r-2 border-gray-300 whitespace-nowrap">
                       {exit.exitTime && exit.entryTime ? timeDiff : ""}
                     </TableCell>
                     <TableCell

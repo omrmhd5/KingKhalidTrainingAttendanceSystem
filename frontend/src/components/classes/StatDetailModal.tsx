@@ -142,7 +142,7 @@ export default function StatDetailModal({
             </div>
           ) : (
             <div className="text-center py-8 text-muted-foreground">
-              لا توجد طلاب
+              لا يوجد طلاب
             </div>
           )}
 
