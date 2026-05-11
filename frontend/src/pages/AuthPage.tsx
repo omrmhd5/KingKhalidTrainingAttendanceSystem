@@ -67,7 +67,7 @@ export default function AuthPage() {
             مركز الملك خالد التدريبي
           </CardTitle>
           <CardDescription className="text-white text-sm">
-            نظام إدارة الحضور و الانصراف
+            نظام إدارة الحضور و الانصراف و الفصول الدراسية
           </CardDescription>
         </CardHeader>
         <CardContent>

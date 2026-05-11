@@ -93,7 +93,7 @@ export function AppSidebar() {
         <div className="flex items-center gap-2">
           <img src="/Logo.png" alt="Logo" className="h-8 w-8" />
           <span className="text-sm font-bold text-sidebar-accent-foreground">
-            برنامج الحضور و الانصراف
+            برنامج الحضور و الانصراف و الفصول الدراسية
           </span>
         </div>
       </SidebarHeader>
