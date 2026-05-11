@@ -31,7 +31,6 @@ import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
 import { ClassStudentsModal } from "./ClassStudentsModal";
 import { AddStudentsModal } from "./AssignStudentsModal";
 import { classApi, Class, Teacher } from "@/lib/classApi";
-import { userApi, User } from "@/lib/userApi";
 import {
   classTimeScheduleApi,
   ClassTimeSchedule,
@@ -46,7 +45,6 @@ export function ClassesManagementTab({
 }: ClassesManagementTabProps) {
   const { toast } = useToast();
   const [classes, setClasses] = useState<Class[]>([]);
-  const [teachers, setTeachers] = useState<User[]>([]);
   const [schedules, setSchedules] = useState<ClassTimeSchedule[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -60,14 +58,11 @@ export function ClassesManagementTab({
   const [deleteTargetName, setDeleteTargetName] = useState("");
   const [formData, setFormData] = useState({
     name: "",
-    teacherId: "",
     scheduleId: "",
   });
 
-  // Mock data for now
   useEffect(() => {
     loadClasses();
-    loadTeachers();
     loadSchedules();
   }, []);
 
@@ -87,15 +82,6 @@ export function ClassesManagementTab({
     }
   };
 
-  const loadTeachers = async () => {
-    try {
-      const data = await userApi.getAllUsers({ role: "teacher" });
-      setTeachers(data);
-    } catch (error) {
-      console.error("Failed to load teachers:", error);
-    }
-  };
-
   const loadSchedules = async () => {
     try {
       const data = await classTimeScheduleApi.getAllSchedules();
@@ -106,19 +92,14 @@ export function ClassesManagementTab({
   };
 
   const handleOpenAdd = () => {
-    setFormData({ name: "", teacherId: "", scheduleId: "" });
+    setFormData({ name: "", scheduleId: "" });
     setIsAddOpen(true);
   };
 
   const handleOpenEdit = (classItem: Class) => {
     setSelectedClass(classItem);
-    const teacherId =
-      typeof classItem.assignedTeacherId === "string"
-        ? classItem.assignedTeacherId
-        : (classItem.assignedTeacherId as Teacher | undefined)?._id;
     setFormData({
       name: classItem.name,
-      teacherId: teacherId || "",
       scheduleId:
         typeof classItem.schedule === "string"
           ? classItem.schedule
@@ -156,7 +137,6 @@ export function ClassesManagementTab({
       setSubmitting(true);
       const response = await classApi.createClass({
         name: formData.name,
-        assignedTeacherId: formData.teacherId || undefined,
         schedule: formData.scheduleId,
       });
       setClasses([...classes, response.class]);
@@ -201,7 +181,6 @@ export function ClassesManagementTab({
       setSubmitting(true);
       const response = await classApi.updateClass(selectedClass!._id, {
         name: formData.name,
-        assignedTeacherId: formData.teacherId || undefined,
         schedule: formData.scheduleId,
       });
       setClasses(
@@ -326,9 +305,7 @@ export function ClassesManagementTab({
                       </TableCell>
                       <TableCell className="text-right">
                         {typeof classItem.assignedTeacherId === "string"
-                          ? teachers.find(
-                              (t) => t._id === classItem.assignedTeacherId,
-                            )?.username || "—"
+                          ? "—"
                           : (classItem.assignedTeacherId as Teacher | undefined)
                               ?.username || "—"}
                       </TableCell>
@@ -487,29 +464,6 @@ export function ClassesManagementTab({
                     }
                     dir="rtl"
                   />
-                </div>
-                <div>
-                  <Label
-                    htmlFor="edit-teacher"
-                    className="text-right block mb-2">
-                    المعلم
-                  </Label>
-                  <Select
-                    value={formData.teacherId}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, teacherId: value })
-                    }>
-                    <SelectTrigger id="edit-teacher" dir="rtl">
-                      <SelectValue placeholder="اختر معلم" />
-                    </SelectTrigger>
-                    <SelectContent dir="rtl">
-                      {teachers.map((teacher) => (
-                        <SelectItem key={teacher._id} value={teacher._id}>
-                          {teacher.username}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
                 </div>
                 <div>
                   <Label

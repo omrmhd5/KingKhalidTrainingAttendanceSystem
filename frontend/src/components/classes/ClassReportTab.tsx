@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Loader2 } from "lucide-react";
+import { Loader2, ChevronDown } from "lucide-react";
 import { classReportApi, ClassReport } from "@/lib/classReportApi";
 import { classApi, Class } from "@/lib/classApi";
 import {
@@ -54,6 +54,7 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
     students: [],
     color: "green",
   });
+  const [expandMissingClasses, setExpandMissingClasses] = useState(false);
 
   useEffect(() => {
     loadClasses();
@@ -503,6 +504,146 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
           />
         </div>
       </div>
+
+      {/* Class Coverage Summary */}
+      {!loading &&
+        (() => {
+          // Determine the relevant class pool (filtered or all)
+          const relevantClasses =
+            selectedClass !== "all"
+              ? classes.filter((c) => c._id === selectedClass)
+              : classes;
+
+          // Get class IDs that submitted reports
+          const reportedClassIds = new Set(
+            reports
+              .filter((r) => r.classId != null)
+              .map((r) =>
+                typeof r.classId === "object"
+                  ? (r.classId as { _id: string })._id
+                  : (r.classId as string),
+              ),
+          );
+
+          const sentCount = relevantClasses.filter((c) =>
+            reportedClassIds.has(c._id),
+          ).length;
+
+          const missingClasses = relevantClasses.filter(
+            (c) => !reportedClassIds.has(c._id),
+          );
+
+          return (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3" dir="rtl">
+              {/* Total classes */}
+              <Card className="border-2 border-blue-200 bg-blue-50">
+                <CardHeader className="pb-1 pt-2 px-3">
+                  <CardTitle className="text-xs font-medium text-blue-700">
+                    إجمالي الفصول
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pb-2 px-3">
+                  <p className="text-xl font-bold text-blue-700">
+                    {relevantClasses.length}
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Sent reports */}
+              <Card className="border-2 border-green-200 bg-green-50">
+                <CardHeader className="pb-1 pt-2 px-3">
+                  <CardTitle className="text-xs font-medium text-green-700">
+                    أرسلوا التقارير
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pb-2 px-3">
+                  <p className="text-xl font-bold text-green-700">
+                    {sentCount}
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Did not send */}
+              <Card className="border-2 border-red-200 bg-red-50">
+                <CardHeader className="pb-1 pt-2 px-3">
+                  <CardTitle className="text-xs font-medium text-red-700">
+                    لم يرسلوا التقارير
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pb-2 px-3">
+                  <p className="text-xl font-bold text-red-700">
+                    {missingClasses.length}
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Missing classes list */}
+              {missingClasses.length > 0 && (
+                <div className="md:col-span-3">
+                  <Card className="border-2 border-red-200">
+                    <CardHeader
+                      className="pb-2 cursor-pointer hover:bg-red-100 transition-colors"
+                      onClick={() =>
+                        setExpandMissingClasses(!expandMissingClasses)
+                      }>
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-sm font-medium text-red-700">
+                          الفصول التي لم ترسل تقارير ({missingClasses.length})
+                        </CardTitle>
+                        <ChevronDown
+                          className={`h-5 w-5 text-red-700 transition-transform ${expandMissingClasses ? "rotate-180" : ""}`}
+                        />
+                      </div>
+                    </CardHeader>
+                    {expandMissingClasses && (
+                      <CardContent className="p-0">
+                        <table className="w-full text-sm" dir="rtl">
+                          <thead className="bg-red-100">
+                            <tr>
+                              <th className="text-right text-red-700 font-bold py-2 px-4 border-b border-red-200">
+                                اسم الفصل
+                              </th>
+                              <th className="text-right text-red-700 font-bold py-2 px-4 border-b border-red-200">
+                                المعلم المسؤول
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {missingClasses.map((cls, i) => {
+                              const teacher =
+                                cls.assignedTeacherId &&
+                                typeof cls.assignedTeacherId === "object"
+                                  ? (
+                                      cls.assignedTeacherId as {
+                                        username: string;
+                                      }
+                                    ).username
+                                  : "—";
+                              return (
+                                <tr
+                                  key={cls._id}
+                                  className={
+                                    i % 2 === 0 ? "bg-white" : "bg-red-50"
+                                  }>
+                                  <td className="py-2 px-4 border-b border-red-100 font-medium">
+                                    {cls.name}
+                                  </td>
+                                  <td className="py-2 px-4 border-b border-red-100 text-muted-foreground">
+                                    {teacher}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </CardContent>
+                    )}
+                  </Card>
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
       {/* Summary Stats */}
       {reports.length > 0 && (
