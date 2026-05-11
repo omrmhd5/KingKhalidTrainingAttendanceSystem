@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Class } from "@/lib/classApi";
 import { BookOpen } from "lucide-react";
+import { convertToKSADate } from "@/lib/utils";
 
 interface TeacherClassCardProps {
   classData: Class;
@@ -37,7 +38,7 @@ export default function TeacherClassCard({
           <Input
             type="date"
             value={selectedDate}
-            onChange={(e) => onDateChange(e.target.value)}
+            onChange={(e) => onDateChange(convertToKSADate(e.target.value))}
             className="w-40 text-right"
           />
         </div>

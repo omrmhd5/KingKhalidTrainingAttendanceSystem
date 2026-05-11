@@ -3,8 +3,8 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { format } from "date-fns";
 import { HoursTab } from "@/components/reports/HoursTab";
+import { getTodayDateKSA, convertToKSADate } from "@/lib/utils";
 import { AbsencesTab } from "@/components/reports/AbsencesTab";
 import { EscapesTab } from "@/components/reports/EscapesTab";
 import { LateTab } from "@/components/reports/LateTab";
@@ -19,7 +19,7 @@ import {
 } from "@/lib/attendanceApi";
 
 export default function ReportsPage() {
-  const [date, setDate] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [date, setDate] = useState(getTodayDateKSA());
   const [activeTab, setActiveTab] = useState("hours");
   const [hoursCount, setHoursCount] = useState(0);
   const [absencesCount, setAbsencesCount] = useState(0);
@@ -123,7 +123,7 @@ export default function ReportsPage() {
           <Input
             type="date"
             value={date}
-            onChange={(e) => setDate(e.target.value)}
+            onChange={(e) => setDate(convertToKSADate(e.target.value))}
             className="w-44 justify-end"
           />
         </div>

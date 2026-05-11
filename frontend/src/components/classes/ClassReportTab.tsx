@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getTodayDateKSA, convertToKSADate } from "@/lib/utils";
 import {
   Select,
   SelectContent,
@@ -32,9 +33,7 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
   const [schedules, setSchedules] = useState<ClassTimeSchedule[]>([]);
   const [selectedClass, setSelectedClass] = useState<string>("all");
   const [selectedSchedule, setSelectedSchedule] = useState<string>("all");
-  const [selectedDate, setSelectedDate] = useState<string>(
-    new Date().toISOString().split("T")[0],
-  );
+  const [selectedDate, setSelectedDate] = useState<string>(getTodayDateKSA());
   const [selectedReportForSummary, setSelectedReportForSummary] =
     useState<ClassReport | null>(null);
   const [summaryOpen, setSummaryOpen] = useState(false);
@@ -498,7 +497,7 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
           <Input
             type="date"
             value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
+            onChange={(e) => setSelectedDate(convertToKSADate(e.target.value))}
             dir="rtl"
             className="flex-row-reverse"
           />

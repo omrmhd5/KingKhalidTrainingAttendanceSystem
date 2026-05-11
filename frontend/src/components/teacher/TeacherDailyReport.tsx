@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +8,7 @@ import { Trainee } from "@/lib/traineeApi";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { classReportApi } from "@/lib/classReportApi";
+import { getTodayDateKSA, convertToKSADate } from "@/lib/utils";
 import StudentReportRow from "@/components/teacher/StudentReportRow";
 import QuickClearModal from "@/components/teacher/QuickClearModal";
 import ReportSummary from "@/components/teacher/ReportSummary";
@@ -41,7 +41,7 @@ export default function TeacherDailyReport({
 }: TeacherDailyReportProps) {
   const { toast } = useToast();
   const { user } = useAuth();
-  const today = format(new Date(), "yyyy-MM-dd");
+  const today = getTodayDateKSA();
 
   const [studentReports, setStudentReports] = useState<StudentReport[]>([]);
   const [quickClearOpen, setQuickClearOpen] = useState(false);
@@ -429,7 +429,9 @@ export default function TeacherDailyReport({
         <TeacherClassCard
           classData={classData}
           selectedDate={selectedDate}
-          onDateChange={setSelectedDate}
+          onDateChange={(date: string) =>
+            setSelectedDate(convertToKSADate(date))
+          }
           attendanceMap={new Map()}
           reportStats={stats}
         />

@@ -10,8 +10,8 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
-import { format } from "date-fns";
 import { attendanceApi } from "@/lib/attendanceApi";
+import { getTodayDateKSA, convertToKSADate } from "@/lib/utils";
 
 interface DashboardStats {
   date: string;
@@ -23,7 +23,7 @@ interface DashboardStats {
 }
 
 export default function TodaysSummaryPage() {
-  const [date, setDate] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [date, setDate] = useState(getTodayDateKSA());
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -88,7 +88,7 @@ export default function TodaysSummaryPage() {
             id="date"
             type="date"
             value={date}
-            onChange={(e) => setDate(e.target.value)}
+            onChange={(e) => setDate(convertToKSADate(e.target.value))}
             className="w-44"
           />
         </div>
