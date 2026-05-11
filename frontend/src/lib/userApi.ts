@@ -102,4 +102,16 @@ export const userApi = {
     );
     return response.data;
   },
+
+  async changePassword(
+    currentPassword: string,
+    newPassword: string,
+    confirmNewPassword: string,
+  ) {
+    const response = await apiClient.patch<{ message: string }>(
+      "/users/me/password",
+      { currentPassword, newPassword, confirmNewPassword },
+    );
+    return response.data;
+  },
 };

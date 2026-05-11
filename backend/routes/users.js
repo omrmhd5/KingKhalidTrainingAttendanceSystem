@@ -13,6 +13,7 @@ router.post("/logout", userController.logout);
 
 // Protected routes (require authentication)
 router.get("/me", authenticateToken, userController.getCurrentUser);
+router.patch("/me/password", authenticateToken, userController.changePassword);
 
 // Admin routes (require admin role)
 router.get(

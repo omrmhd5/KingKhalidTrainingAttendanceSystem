@@ -252,6 +252,31 @@ class UserService {
     };
   }
 
+  async changePassword(id, currentPassword, newPassword, confirmNewPassword) {
+    const user = await User.findById(id).select("+password");
+
+    if (!user) {
+      throw new Error("المستخدم غير موجود");
+    }
+
+    // Verify current password
+    const isMatch = await user.comparePassword(currentPassword);
+    if (!isMatch) {
+      throw new Error("كلمة المرور الحالية غير صحيحة");
+    }
+
+    if (!newPassword || newPassword.length < 6) {
+      throw new Error("يجب أن تكون كلمة المرور الجديدة بطول 6 أحرف على الأقل");
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      throw new Error("كلمات المرور الجديدة غير متطابقة");
+    }
+
+    user.password = newPassword; // Will be hashed by pre-save hook
+    await user.save();
+  }
+
   async verifyToken(token) {
     try {
       return jwt.verify(token, JWT_SECRET);

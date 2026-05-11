@@ -119,6 +119,25 @@ exports.toggleUserStatus = async (req, res) => {
   }
 };
 
+// Change own password
+exports.changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword, confirmNewPassword } = req.body;
+    if (!currentPassword || !newPassword || !confirmNewPassword) {
+      return res.status(400).json({ message: "جميع حقول كلمة المرور مطلوبة" });
+    }
+    await userService.changePassword(
+      req.user.userId,
+      currentPassword,
+      newPassword,
+      confirmNewPassword,
+    );
+    res.json({ message: "تم تغيير كلمة المرور بنجاح" });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
 // Login user
 exports.login = async (req, res) => {
   try {
