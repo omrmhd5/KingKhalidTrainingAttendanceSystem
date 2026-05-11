@@ -11,6 +11,7 @@ interface Trainee {
 interface DisciplinaryRequest {
   _id: string;
   createdAt: string;
+  reason?: string;
   trainee_id?: Trainee;
 }
 
@@ -18,7 +19,7 @@ interface ExportExcelProps {
   data: DisciplinaryRequest[];
 }
 
-const COLS = 4;
+const COLS = 5;
 
 const solid = (argb: string) => ({
   type: "pattern" as const,
@@ -42,6 +43,7 @@ export function ExportExcel({ data }: ExportExcelProps) {
       { width: 3 },
       { width: 18 },
       { width: 28 },
+      { width: 30 },
       { width: 18 },
       { width: 18 },
     ];
@@ -83,6 +85,7 @@ export function ExportExcel({ data }: ExportExcelProps) {
       "",
       "تاريخ الطلب",
       "الاسم",
+      "سبب الاستدعاء",
       "السجل المدني",
       "الرقم العسكري",
     ];
@@ -105,6 +108,7 @@ export function ExportExcel({ data }: ExportExcelProps) {
         "",
         createdDate,
         d.trainee_id?.full_name || "—",
+        d.reason || "—",
         d.trainee_id?.civil_id || "—",
         d.trainee_id?.military_id || "—",
       ];

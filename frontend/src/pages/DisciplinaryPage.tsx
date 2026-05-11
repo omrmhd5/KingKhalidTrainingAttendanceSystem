@@ -19,7 +19,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Trash2, AlertCircle } from "lucide-react";
+import { Trash2, AlertCircle, Edit2 } from "lucide-react";
 import {
   DisciplinaryFormModal,
   DisciplinaryFormData,
@@ -36,6 +36,7 @@ interface Disciplinary {
     civil_id: string;
     full_name: string;
   } | null;
+  reason: string;
   createdAt: string;
 }
 
@@ -46,6 +47,8 @@ export default function DisciplinaryPage() {
   const [isLoadingDisciplinary, setIsLoadingDisciplinary] = useState(true);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [editingDisciplinary, setEditingDisciplinary] =
+    useState<Disciplinary | null>(null);
 
   // Fetch disciplinary requests on mount
   useEffect(() => {
@@ -72,19 +75,37 @@ export default function DisciplinaryPage() {
   const handleAddDisciplinary = async (data: DisciplinaryFormData) => {
     try {
       setIsLoading(true);
-      // Create disciplinary request using the API
-      const newDisciplinary = await disciplinaryApi.createDisciplinary(
-        data.trainee_id,
-      );
 
-      // Add to local state
-      setDisciplinary([newDisciplinary, ...disciplinary]);
-
-      toast({
-        title: "تم إضافة الطلب",
-        description: `تم تسجيل طلب جديد لـ ${data.full_name}`,
-        duration: 1500,
-      });
+      if (editingDisciplinary) {
+        // Update reason only
+        const updatedDisciplinary = await disciplinaryApi.updateDisciplinary(
+          editingDisciplinary._id,
+          data.reason,
+        );
+        setDisciplinary(
+          disciplinary.map((d) =>
+            d._id === editingDisciplinary._id ? updatedDisciplinary : d,
+          ),
+        );
+        toast({
+          title: "تم التحديث",
+          description: "تم تحديث سبب الاستدعاء بنجاح",
+          duration: 1500,
+        });
+        setEditingDisciplinary(null);
+      } else {
+        // Create disciplinary request using the API
+        const newDisciplinary = await disciplinaryApi.createDisciplinary(
+          data.trainee_id,
+          data.reason,
+        );
+        setDisciplinary([newDisciplinary, ...disciplinary]);
+        toast({
+          title: "تم إضافة الطلب",
+          description: `تم تسجيل طلب جديد لـ ${data.full_name}`,
+          duration: 1500,
+        });
+      }
     } catch (error) {
       toast({
         title: "خطأ",
@@ -151,6 +172,10 @@ export default function DisciplinaryPage() {
               <DisciplinaryFormModal
                 onSubmit={handleAddDisciplinary}
                 isLoading={isLoading}
+                editingDisciplinary={editingDisciplinary}
+                onEditModeChange={(editing) => {
+                  if (!editing) setEditingDisciplinary(null);
+                }}
               />
             </div>
           </div>
@@ -178,6 +203,9 @@ export default function DisciplinaryPage() {
                     الاسم
                   </TableHead>
                   <TableHead className="text-right text-blue-700 font-bold">
+                    سبب الاستدعاء
+                  </TableHead>
+                  <TableHead className="text-right text-blue-700 font-bold">
                     تاريخ التسجيل
                   </TableHead>
                   <TableHead className="text-center text-blue-700 font-bold">
@@ -202,17 +230,28 @@ export default function DisciplinaryPage() {
                         {request.trainee_id?.full_name ?? "—"}
                       </TableCell>
                       <TableCell className="text-right">
+                        {request.reason ?? "—"}
+                      </TableCell>
+                      <TableCell className="text-right">
                         {new Date(request.createdAt).toLocaleDateString(
                           "ar-SA",
                         )}
                       </TableCell>
                       <TableCell className="text-center">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setDeleteConfirm(request._id)}>
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
+                        <div className="flex justify-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setEditingDisciplinary(request)}>
+                            <Edit2 className="h-4 w-4 text-blue-600" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setDeleteConfirm(request._id)}>
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}

@@ -2,9 +2,10 @@ const Disciplinary = require("../models/Disciplinary");
 const Trainee = require("../models/Trainee");
 
 class DisciplinaryService {
-  async createDisciplinary(trainee_id) {
+  async createDisciplinary(trainee_id, reason) {
     const disciplinary = new Disciplinary({
       trainee_id,
+      reason,
     });
 
     const savedDisciplinary = await disciplinary.save();
@@ -33,6 +34,14 @@ class DisciplinaryService {
     return await Disciplinary.find()
       .populate("trainee_id")
       .sort({ createdAt: -1 });
+  }
+
+  async updateDisciplinary(disciplinaryId, reason) {
+    return await Disciplinary.findByIdAndUpdate(
+      disciplinaryId,
+      { reason },
+      { new: true },
+    ).populate("trainee_id");
   }
 
   async deleteDisciplinary(disciplinaryId) {

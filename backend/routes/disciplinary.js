@@ -15,6 +15,9 @@ router.get(
   disciplinaryController.getDisciplinaryByTraineeId,
 );
 
+// Update a specific disciplinary request
+router.put("/:id", disciplinaryController.updateDisciplinary);
+
 // Delete a specific disciplinary request
 router.delete("/:id", disciplinaryController.deleteDisciplinary);
 

@@ -2,9 +2,10 @@ import { apiClient } from "./api";
 
 const disciplinaryApi = {
   // Create a new disciplinary request
-  createDisciplinary: async (trainee_id: string) => {
+  createDisciplinary: async (trainee_id: string, reason: string) => {
     const response = await apiClient.post(`/disciplinary`, {
       trainee_id,
+      reason,
     });
     return response.data;
   },
@@ -18,6 +19,14 @@ const disciplinaryApi = {
   // Get disciplinary requests by trainee ID
   getDisciplinaryByTraineeId: async (trainee_id: string) => {
     const response = await apiClient.get(`/disciplinary/trainee/${trainee_id}`);
+    return response.data;
+  },
+
+  // Update a disciplinary request
+  updateDisciplinary: async (disciplinaryId: string, reason: string) => {
+    const response = await apiClient.put(`/disciplinary/${disciplinaryId}`, {
+      reason,
+    });
     return response.data;
   },
 

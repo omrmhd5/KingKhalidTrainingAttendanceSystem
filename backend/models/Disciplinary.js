@@ -7,6 +7,12 @@ const disciplinarySchema = new mongoose.Schema(
       ref: "Trainee",
       required: true,
     },
+    reason: {
+      type: String,
+      required: false,
+      trim: true,
+      default: null,
+    },
   },
   { timestamps: true },
 );

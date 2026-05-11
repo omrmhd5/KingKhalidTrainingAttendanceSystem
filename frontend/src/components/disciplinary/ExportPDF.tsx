@@ -11,6 +11,7 @@ interface Trainee {
 interface DisciplinaryRequest {
   _id: string;
   createdAt: string;
+  reason?: string;
   trainee_id?: Trainee;
 }
 
@@ -22,28 +23,31 @@ export function ExportPDF({ data }: ExportPDFProps) {
   const generatePDF = () => {
     let html = `
       <div style="direction: rtl; text-align: right; font-family: Arial, sans-serif;">
-        <h2>بيان الطلبات التأديبية</h2>
-        <p>التاريخ: ${new Date().toLocaleDateString("ar-SA")}</p>
-        <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+        <h1 style="text-align: center; margin-bottom: 5px; color: #1E3A8A;">بيان الطلبات التأديبية</h1>
+        <p style="text-align: center; color: #6B7280; margin-bottom: 20px;">التاريخ: ${new Date().toLocaleDateString("ar-SA")}</p>
+        <table style="width: 100%; border-collapse: collapse; margin-top: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
           <thead>
-            <tr style="background-color: #3B82F6; color: white;">
-              <th style="border: 1px solid #ddd; padding: 10px;">تاريخ الطلب</th>
-              <th style="border: 1px solid #ddd; padding: 10px;">الاسم</th>
-              <th style="border: 1px solid #ddd; padding: 10px;">السجل المدني</th>
-              <th style="border: 1px solid #ddd; padding: 10px;">الرقم العسكري</th>
+            <tr style="background-color: #3B82F6; color: white; font-weight: bold;">
+              <th style="border: 1px solid #2563EB; padding: 12px; text-align: center;">الرقم العسكري</th>
+              <th style="border: 1px solid #2563EB; padding: 12px; text-align: center;">السجل المدني</th>
+              <th style="border: 1px solid #2563EB; padding: 12px; text-align: center;">سبب الاستدعاء</th>
+              <th style="border: 1px solid #2563EB; padding: 12px; text-align: center;">الاسم</th>
+              <th style="border: 1px solid #2563EB; padding: 12px; text-align: center;">تاريخ الطلب</th>
             </tr>
           </thead>
           <tbody>
     `;
 
-    data.forEach((d: DisciplinaryRequest) => {
+    data.forEach((d: DisciplinaryRequest, index: number) => {
       const createdDate = new Date(d.createdAt).toLocaleDateString("ar-SA");
+      const bgColor = index % 2 === 0 ? "#FFFFFF" : "#F3F4F6";
       html += `
-        <tr>
-          <td style="border: 1px solid #ddd; padding: 10px;">${createdDate}</td>
-          <td style="border: 1px solid #ddd; padding: 10px;">${d.trainee_id?.full_name || "—"}</td>
-          <td style="border: 1px solid #ddd; padding: 10px;">${d.trainee_id?.civil_id || "—"}</td>
-          <td style="border: 1px solid #ddd; padding: 10px;">${d.trainee_id?.military_id || "—"}</td>
+        <tr style="background-color: ${bgColor};">
+          <td style="border: 1px solid #E5E7EB; padding: 10px; text-align: center;">${d.trainee_id?.military_id || "—"}</td>
+          <td style="border: 1px solid #E5E7EB; padding: 10px; text-align: center;">${d.trainee_id?.civil_id || "—"}</td>
+          <td style="border: 1px solid #E5E7EB; padding: 10px; text-align: center;">${d.reason || "—"}</td>
+          <td style="border: 1px solid #E5E7EB; padding: 10px; text-align: center;">${d.trainee_id?.full_name || "—"}</td>
+          <td style="border: 1px solid #E5E7EB; padding: 10px; text-align: center;">${createdDate}</td>
         </tr>
       `;
     });
@@ -51,7 +55,9 @@ export function ExportPDF({ data }: ExportPDFProps) {
     html += `
           </tbody>
         </table>
-        <p style="margin-top: 20px; color: #666;">إجمالي: ${data.length} طلب</p>
+        <div style="margin-top: 20px; text-align: center; padding: 10px; background-color: #3B82F6; color: white; border-radius: 4px; font-weight: bold;">
+          الإجمالي: ${data.length} طلب
+        </div>
       </div>
     `;
 
