@@ -11,6 +11,7 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trash2 } from "lucide-react";
 import { attendanceApi, type AttendanceRecord } from "@/lib/attendanceApi";
 import { shiftApi } from "@/lib/shiftApi";
+import { getTodayDateKSA, convertToKSADate } from "@/lib/utils";
 
 interface Shift {
   id: string;
@@ -30,9 +31,9 @@ interface ShiftAPIResponse {
 }
 
 export default function MainPage() {
-  const today = format(new Date(), "yyyy-MM-dd");
+  const todayKSA = getTodayDateKSA();
   const { toast } = useToast();
-  const [selectedDate, setSelectedDate] = useState<string>(today);
+  const [selectedDate, setSelectedDate] = useState<string>(todayKSA);
   const [selectedShiftFilter, setSelectedShiftFilter] = useState<string>("all");
   const [entries, setEntries] = useState<EntryRecord[]>([]);
   const [exits, setExits] = useState<ExitRecord[]>([]);
@@ -390,7 +391,9 @@ export default function MainPage() {
         <EntriesTable
           entries={entries}
           selectedDate={selectedDate}
-          onDateChange={setSelectedDate}
+          onDateChange={(date: string) =>
+            setSelectedDate(convertToKSADate(date))
+          }
           selectedShiftFilter={selectedShiftFilter}
           onShiftFilterChange={setSelectedShiftFilter}
           selectedEntries={selectedEntries}
