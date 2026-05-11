@@ -7,6 +7,7 @@ import AttendanceStatsDisplay from "@/components/main/AttendanceStatsDisplay";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trash2 } from "lucide-react";
 import { attendanceApi, type AttendanceRecord } from "@/lib/attendanceApi";
 import { shiftApi } from "@/lib/shiftApi";
@@ -350,8 +351,21 @@ export default function MainPage() {
 
   return (
     <div className="flex min-h-[calc(100vh-3.5rem)] flex-col gap-3 bg-background p-4">
-      {/* Attendance Stats - Full Width */}
-      <div className="mx-auto w-full max-w-4xl">
+      {/* Header with Logo and Title */}
+      <Card className="border-0 shadow-none bg-transparent">
+        <CardHeader className="text-center space-y-2 rounded-lg p-0">
+          <div className="mx-auto flex items-center justify-center">
+            <img src="/Logo.png" alt="Logo" className="h-16 w-16" />
+          </div>
+          <CardTitle className="text-xl font-bold text-foreground">
+            نظام إدارة الحضور و الانصراف و الفصول الدراسية
+          </CardTitle>
+        </CardHeader>
+      </Card>
+
+      {/* Top row: Scanner + Stats - full column width, matching height */}
+      <div className="grid grid-cols-2 gap-3 items-stretch">
+        <BarcodeScanner onScan={handleScan} isScanning={scanning} />
         <AttendanceStatsDisplay
           entries={entries}
           shifts={shifts}
@@ -359,53 +373,40 @@ export default function MainPage() {
         />
       </div>
 
-      {/* Barcode Scanner */}
-      <div className="mx-auto w-full max-w-4xl">
-        <BarcodeScanner onScan={handleScan} isScanning={scanning} />
-      </div>
-
       {/* Bulk Delete Button */}
       {selectedEntries.size > 0 && (
-        <div className="mx-auto w-full max-w-4xl">
-          <Button
-            variant="destructive"
-            onClick={handleBulkDeleteEntries}
-            size="sm">
-            <Trash2 className="ml-2 h-4 w-4" />
-            حذف ({selectedEntries.size})
-          </Button>
-        </div>
+        <Button
+          variant="destructive"
+          onClick={handleBulkDeleteEntries}
+          size="sm"
+          className="w-fit">
+          <Trash2 className="ml-2 h-4 w-4" />
+          حذف ({selectedEntries.size})
+        </Button>
       )}
 
-      {/* Tables container */}
-      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-2 w-full">
-        {/* Entries Table */}
-        <div>
-          <EntriesTable
-            entries={entries}
-            selectedDate={selectedDate}
-            onDateChange={setSelectedDate}
-            selectedShiftFilter={selectedShiftFilter}
-            onShiftFilterChange={setSelectedShiftFilter}
-            selectedEntries={selectedEntries}
-            onToggleEntry={toggleSelectEntry}
-            onToggleAll={toggleSelectAllEntries}
-          />
-        </div>
-
-        {/* Exits Table */}
-        <div>
-          <ExitsTable
-            exits={exits}
-            entries={entries}
-            selectedShift={selectedShift}
-            selectedShiftFilter={selectedShiftFilter}
-            selectedExits={selectedExits}
-            onToggleExit={toggleSelectExit}
-            onToggleAll={toggleSelectAllExits}
-            onClearExits={handleRequestClearExits}
-          />
-        </div>
+      {/* Tables row */}
+      <div className="grid grid-cols-2 gap-3 w-full">
+        <EntriesTable
+          entries={entries}
+          selectedDate={selectedDate}
+          onDateChange={setSelectedDate}
+          selectedShiftFilter={selectedShiftFilter}
+          onShiftFilterChange={setSelectedShiftFilter}
+          selectedEntries={selectedEntries}
+          onToggleEntry={toggleSelectEntry}
+          onToggleAll={toggleSelectAllEntries}
+        />
+        <ExitsTable
+          exits={exits}
+          entries={entries}
+          selectedShift={selectedShift}
+          selectedShiftFilter={selectedShiftFilter}
+          selectedExits={selectedExits}
+          onToggleExit={toggleSelectExit}
+          onToggleAll={toggleSelectAllExits}
+          onClearExits={handleRequestClearExits}
+        />
       </div>
 
       <ConfirmDeleteModal

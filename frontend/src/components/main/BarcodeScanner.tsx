@@ -64,72 +64,69 @@ export default function BarcodeScanner({
   };
 
   return (
-    <div className="mb-4 w-full">
-      <div className="mb-3 flex justify-center gap-2">
-        <Button
-          size="sm"
-          variant={mode === "IN" ? "default" : "outline"}
-          onClick={() => setMode("IN")}
-          className={
-            mode === "IN"
-              ? "bg-success hover:bg-success/90 text-xs h-9"
-              : "text-xs h-9"
-          }>
-          <ArrowDownToLine className="ml-2 h-3 w-3" />
-          دخول
-        </Button>
-        <Button
-          size="sm"
-          variant={mode === "OUT" ? "default" : "outline"}
-          onClick={() => setMode("OUT")}
-          className={
-            mode === "OUT"
-              ? "bg-warning hover:bg-warning/90 text-xs h-9"
-              : "text-xs h-9"
-          }>
-          <ArrowUpFromLine className="ml-2 h-3 w-3" />
-          خروج
-        </Button>
-      </div>
-      <Card className="border border-border bg-card">
+    <div className="w-full h-full">
+      <Card className="border border-border bg-card h-full">
         <CardContent className="p-3">
-          <div className="mb-3 flex items-center justify-center gap-2">
-            <ScanBarcode className="h-5 w-5 text-primary" />
-            <h2 className="text-base font-bold text-foreground">مسح الرمز</h2>
+          <div className="mb-2 flex items-center justify-center gap-2">
+            <ScanBarcode className="h-4 w-4 text-primary" />
+            <h2 className="text-sm font-bold text-foreground">مسح الرمز</h2>
           </div>
-          <form onSubmit={handleSubmit} className="space-y-2">
-            <Input
-              ref={inputRef}
-              value={barcode}
-              onChange={(e) => setBarcode(e.target.value)}
-              placeholder="امسح الرمز..."
-              className="h-11 text-center text-lg font-mono bg-background border-border text-foreground"
-              autoFocus
-              autoComplete="off"
-              disabled={isScanning}
-            />
+          <div className="flex gap-2 items-start">
+            {/* Input + submit */}
+            <form onSubmit={handleSubmit} className="flex-1 space-y-2">
+              <Input
+                ref={inputRef}
+                value={barcode}
+                onChange={(e) => setBarcode(e.target.value)}
+                placeholder="امسح الرمز..."
+                className="h-9 text-center text-base font-mono bg-background border-border text-foreground"
+                autoFocus
+                autoComplete="off"
+                disabled={isScanning}
+              />
 
-            {/* Error Message */}
-            {error && (
-              <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded p-2 text-center">
-                {error}
-              </div>
-            )}
+              {/* Error Message */}
+              {error && (
+                <div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded p-1.5 text-center">
+                  {error}
+                </div>
+              )}
 
-            {/* Success Message */}
-            {success && (
-              <div className="text-sm text-green-600 bg-green-50 border border-green-200 rounded p-2 text-center">
-                {success}
-              </div>
-            )}
-
-            <Button
-              type="submit"
-              disabled={isScanning || !barcode.trim()}
-              className="w-full h-9 text-xs font-bold bg-primary hover:bg-primary/90">
-              تأكيد
-            </Button>
-          </form>
+              {/* Success Message */}
+              {success && (
+                <div className="text-xs text-green-600 bg-green-50 border border-green-200 rounded p-1.5 text-center">
+                  {success}
+                </div>
+              )}
+            </form>
+            {/* Mode buttons - stacked vertically */}
+            <div className="flex flex-col gap-2 pt-0.5 shrink-0">
+              <Button
+                size="sm"
+                variant={mode === "IN" ? "default" : "outline"}
+                onClick={() => setMode("IN")}
+                className={
+                  mode === "IN"
+                    ? "bg-success hover:bg-success/90 text-xs h-9 w-full"
+                    : "text-xs h-9 w-full"
+                }>
+                <ArrowDownToLine className="ml-1 h-3 w-3" />
+                دخول
+              </Button>
+              <Button
+                size="sm"
+                variant={mode === "OUT" ? "default" : "outline"}
+                onClick={() => setMode("OUT")}
+                className={
+                  mode === "OUT"
+                    ? "bg-warning hover:bg-warning/90 text-xs h-9 w-full"
+                    : "text-xs h-9 w-full"
+                }>
+                <ArrowUpFromLine className="ml-1 h-3 w-3" />
+                خروج
+              </Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>

@@ -224,34 +224,34 @@ export default function EntriesTable({
                     />
                   </TableCell>
                   <TableCell
-                    className={`text-center font-black text-2xl py-4 px-2 border-r-2 border-gray-300 whitespace-nowrap ${getIdCellStyle(entry.hasViolation, entry.hasDisciplinary, index === filteredEntries.length - 1)}`}>
+                    className={`text-center font-semibold text-base py-3 px-2 border-r-2 border-gray-300 whitespace-nowrap ${getIdCellStyle(entry.hasViolation, entry.hasDisciplinary, index === filteredEntries.length - 1)}`}>
                     {entry.civilId}
                   </TableCell>
-                  <TableCell className="text-center font-black text-2xl py-4 px-2 border-r-2 border-gray-300 whitespace-nowrap">
+                  <TableCell className="text-center font-semibold text-base py-3 px-2 border-r-2 border-gray-300 whitespace-nowrap">
                     {entry.name}
                   </TableCell>
-                  <TableCell className="text-center font-black text-2xl py-4 px-2 border-r-2 border-gray-300 whitespace-nowrap">
+                  <TableCell className="text-center font-semibold text-base py-3 px-2 border-r-2 border-gray-300 whitespace-nowrap">
                     {entry.arrivalTime
                       ? formatTime12HourKSA(entry.arrivalTime)
                       : ""}
                   </TableCell>
-                  <TableCell className="text-center font-black text-2xl py-4 px-2 border-r-2 border-gray-300 whitespace-nowrap">
+                  <TableCell className="text-center font-semibold text-base py-3 px-2 border-r-2 border-gray-300 whitespace-nowrap">
                     {entry.status === "on-time" ? (
-                      <Badge className="bg-green-100 text-green-700 border-green-300 text-lg font-bold px-4 py-2">
+                      <Badge className="bg-green-100 text-green-700 border-green-300 text-sm font-semibold px-3 py-1">
                         في الموعد
                       </Badge>
                     ) : entry.status === "late" ? (
-                      <Badge className="bg-red-100 text-red-700 border-red-300 text-lg font-bold px-4 py-2">
+                      <Badge className="bg-red-100 text-red-700 border-red-300 text-sm font-semibold px-3 py-1">
                         متأخر
                       </Badge>
                     ) : (
-                      <Badge className="bg-gray-100 text-gray-700 border-gray-300 text-lg font-bold px-4 py-2">
+                      <Badge className="bg-gray-100 text-gray-700 border-gray-300 text-sm font-semibold px-3 py-1">
                         {entry.status}
                       </Badge>
                     )}
                   </TableCell>
                   <TableCell
-                    className={`text-center font-black text-2xl py-4 px-2 border-2 whitespace-nowrap ${getShiftCellColor(entry.shift)}`}>
+                    className={`text-center font-semibold text-base py-3 px-2 border-2 whitespace-nowrap ${getShiftCellColor(entry.shift)}`}>
                     {entry.shift ? entry.shift : ""}
                   </TableCell>
                 </TableRow>

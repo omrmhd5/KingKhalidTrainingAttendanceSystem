@@ -104,7 +104,7 @@ export default function AttendanceStatsDisplay({
   );
 
   return (
-    <Card className="border border-border bg-card p-4">
+    <Card className="border border-border bg-card p-4 h-full">
       <div className="flex items-center gap-2 mb-3">
         <TrendingUp className="h-5 w-5 text-primary" />
         <h3 className="text-sm font-semibold text-foreground flex-1">
