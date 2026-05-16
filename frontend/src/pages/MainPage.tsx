@@ -7,6 +7,7 @@ import KSADateTime from "@/components/KSADateTime";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Trash2 } from "lucide-react";
 import { attendanceApi, type AttendanceRecord } from "@/lib/attendanceApi";
 import { shiftApi } from "@/lib/shiftApi";
@@ -30,6 +31,37 @@ interface ShiftAPIResponse {
   grace_minutes: number;
   trainees_count?: number;
 }
+
+const getShiftColor = (
+  shift: string,
+): { bg: string; border: string; text: string } => {
+  switch (shift) {
+    case "A":
+      return {
+        bg: "bg-green-50",
+        border: "border-green-200",
+        text: "text-green-700",
+      };
+    case "B":
+      return {
+        bg: "bg-blue-50",
+        border: "border-blue-200",
+        text: "text-blue-700",
+      };
+    case "C":
+      return {
+        bg: "bg-yellow-50",
+        border: "border-yellow-200",
+        text: "text-yellow-700",
+      };
+    default:
+      return {
+        bg: "bg-gray-50",
+        border: "border-gray-200",
+        text: "text-gray-700",
+      };
+  }
+};
 
 export default function MainPage() {
   const todayKSA = getTodayDateKSA();
@@ -402,6 +434,30 @@ export default function MainPage() {
 
       {/* KSA Date & Time */}
       <KSADateTime />
+
+      {/* Current Shift Display */}
+      {selectedShift ? (
+        (() => {
+          const colors = getShiftColor(selectedShift.name);
+          return (
+            <div className="flex justify-center">
+              <Badge
+                variant="outline"
+                className={`${colors.bg} ${colors.text} border ${colors.border}`}>
+                الشفت الحالي: {selectedShift.name}
+              </Badge>
+            </div>
+          );
+        })()
+      ) : (
+        <div className="flex justify-center">
+          <Badge
+            variant="outline"
+            className="bg-gray-50 text-gray-700 border-gray-200">
+            لا يوجد شفت نشط
+          </Badge>
+        </div>
+      )}
 
       {/* Stats Bar: entry/exit counts + IN/OUT buttons + violations/absences */}
       <MainStatsBar
