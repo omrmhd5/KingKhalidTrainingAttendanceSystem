@@ -36,7 +36,7 @@ const thinBorder = (argb = "FFD0D0D0") => ({
 export function ExportExcel({ data }: ExportExcelProps) {
   const generateExcel = async () => {
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("الطلبات التأديبية");
+    const worksheet = workbook.addWorksheet("طلبات الانضباط");
 
     // Column widths
     worksheet.columns = [
@@ -51,7 +51,7 @@ export function ExportExcel({ data }: ExportExcelProps) {
     // ── Row 1: Title ──────────────────────────────────────────────────────
     const titleRow = worksheet.addRow([
       "",
-      "بيان الطلبات التأديبية",
+      "طلبات الانضباط",
       ...Array(COLS - 1).fill(""),
     ]);
     titleRow.height = 40;

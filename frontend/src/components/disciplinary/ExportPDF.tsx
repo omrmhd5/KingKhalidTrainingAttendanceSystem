@@ -23,7 +23,7 @@ export function ExportPDF({ data }: ExportPDFProps) {
   const generatePDF = () => {
     let html = `
       <div style="direction: rtl; text-align: right; font-family: Arial, sans-serif;">
-        <h1 style="text-align: center; margin-bottom: 5px; color: #1E3A8A;">بيان الطلبات التأديبية</h1>
+        <h1 style="text-align: center; margin-bottom: 5px; color: #1E3A8A;">بيان طلبات الانضباط</h1>
         <p style="text-align: center; color: #6B7280; margin-bottom: 20px;">التاريخ: ${new Date().toLocaleDateString("ar-SA")}</p>
         <table style="width: 100%; border-collapse: collapse; margin-top: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
           <thead>

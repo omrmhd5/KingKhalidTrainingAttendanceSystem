@@ -346,7 +346,7 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
       title = "الطلاب الهاربون";
       color = "orange";
     } else if (statType === "violations") {
-      title = "الطلاب ذوو المخالفات";
+      title = "الطلاب المخالفين";
       color = "red";
     } else if (statType === "total") {
       title = "إجمالي الطلاب";
