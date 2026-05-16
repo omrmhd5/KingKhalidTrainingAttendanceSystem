@@ -3,6 +3,7 @@ import { FileSpreadsheet } from "lucide-react";
 import ExcelJS from "exceljs";
 import JsBarcode from "jsbarcode";
 import { formatTime12HourKSA, minutesToTimeString } from "@/lib/timeUtils";
+import { getGregorianDateArabic, getTodayDateKSA } from "@/lib/utils";
 
 interface AttendanceRecord {
   trainee_id?: {
@@ -137,7 +138,7 @@ export function ReportsExportExcel({ data, type }: ReportsExportExcelProps) {
     titleCell.border = thinBorder("FF3B82F6");
 
     // ── Row 2: Date subtitle ──────────────────────────────────────────────
-    const date = new Date().toLocaleDateString("ar-SA");
+    const date = getGregorianDateArabic(new Date());
     const subRow = worksheet.addRow(headers.map(() => ""));
     subRow.height = 24;
     worksheet.mergeCells(2, 2, 2, colCount);
@@ -307,9 +308,7 @@ export function ReportsExportExcel({ data, type }: ReportsExportExcelProps) {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `بيان_${type === "hours" ? "ساعات" : type === "absences" ? "غيابات" : type === "lates" ? "تأخيرات" : "هروب"}_${
-      new Date().toISOString().split("T")[0]
-    }.xlsx`;
+    a.download = `بيان_${type === "hours" ? "ساعات" : type === "absences" ? "غيابات" : type === "lates" ? "تأخيرات" : "هروب"}_${getTodayDateKSA()}.xlsx`;
     a.click();
     window.URL.revokeObjectURL(url);
   };

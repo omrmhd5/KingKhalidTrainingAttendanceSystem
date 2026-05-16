@@ -3,6 +3,7 @@ import { FileDown } from "lucide-react";
 import html2pdf from "html2pdf.js";
 import JsBarcode from "jsbarcode";
 import { formatTime12HourKSA, minutesToTimeString } from "@/lib/timeUtils";
+import { getGregorianDateArabic, getTodayDateKSA } from "@/lib/utils";
 
 interface AttendanceRecord {
   trainee_id?: {
@@ -57,50 +58,50 @@ export function ReportsExportPDF({ data, type }: ReportsExportPDFProps) {
     if (type === "hours") {
       title = "بيان الساعات اليومية";
       headerCells = `
-        <th style="border: 1px solid #ddd; padding: 10px;">الرقم العسكري</th>
-        <th style="border: 1px solid #ddd; padding: 10px;">الاسم</th>
-        <th style="border: 1px solid #ddd; padding: 10px;">الشفت</th>
-        <th style="border: 1px solid #ddd; padding: 10px;">الحضور</th>
-        <th style="border: 1px solid #ddd; padding: 10px;">الخروج</th>
-        <th style="border: 1px solid #ddd; padding: 10px;">الساعات المجدولة</th>
-        <th style="border: 1px solid #ddd; padding: 10px;">الساعات المفقودة</th>
-        <th style="border: 1px solid #ddd; padding: 10px;">الساعات الفعلية</th>
-        <th style="border: 1px solid #ddd; padding: 10px;">الباركود</th>
+        <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">الرقم العسكري</th>
+        <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">الاسم</th>
+        <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">الشفت</th>
+        <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">الحضور</th>
+        <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">الخروج</th>
+        <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">الساعات المجدولة</th>
+        <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">الساعات المفقودة</th>
+        <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">الساعات الفعلية</th>
+        <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">الباركود</th>
       `;
     } else if (type === "absences") {
       title = "بيان الغيابات";
       headerCells = `
-        <th style="border: 1px solid #ddd; padding: 10px;">الرقم العسكري</th>
-        <th style="border: 1px solid #ddd; padding: 10px;">السجل المدني</th>
-        <th style="border: 1px solid #ddd; padding: 10px;">الاسم</th>
-        <th style="border: 1px solid #ddd; padding: 10px;">الشفت</th>
-        <th style="border: 1px solid #ddd; padding: 10px;">الباركود</th>
+        <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">الرقم العسكري</th>
+        <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">السجل المدني</th>
+        <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">الاسم</th>
+        <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">الشفت</th>
+        <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">الباركود</th>
       `;
     } else if (type === "lates") {
       title = "بيان التأخيرات";
       headerCells = `
-        <th style="border: 1px solid #ddd; padding: 10px;">الرقم العسكري</th>
-        <th style="border: 1px solid #ddd; padding: 10px;">السجل المدني</th>
-        <th style="border: 1px solid #ddd; padding: 10px;">الاسم</th>
-        <th style="border: 1px solid #ddd; padding: 10px;">الشفت</th>
-        <th style="border: 1px solid #ddd; padding: 10px;">وقت الدخول</th>
-        <th style="border: 1px solid #ddd; padding: 10px;">الباركود</th>
+        <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">الرقم العسكري</th>
+        <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">السجل المدني</th>
+        <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">الاسم</th>
+        <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">الشفت</th>
+        <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">وقت الدخول</th>
+        <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">الباركود</th>
       `;
     } else {
       title = "بيان الهروب";
       headerCells = `
-        <th style="border: 1px solid #ddd; padding: 10px;">الرقم العسكري</th>
-        <th style="border: 1px solid #ddd; padding: 10px;">السجل المدني</th>
-        <th style="border: 1px solid #ddd; padding: 10px;">الاسم</th>
-        <th style="border: 1px solid #ddd; padding: 10px;">الشفت</th>
-        <th style="border: 1px solid #ddd; padding: 10px;">الباركود</th>
+        <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">الرقم العسكري</th>
+        <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">السجل المدني</th>
+        <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">الاسم</th>
+        <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">الشفت</th>
+        <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">الباركود</th>
       `;
     }
 
     let html = `
       <div style="direction: rtl; text-align: right; font-family: Arial, sans-serif;">
         <h2>${title}</h2>
-        <p>التاريخ: ${new Date().toLocaleDateString("ar-SA")}</p>
+        <p>التاريخ: ${getGregorianDateArabic(new Date())}</p>
         <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
           <thead>
             <tr style="background-color: #1E3A8A; color: white;">
@@ -148,14 +149,14 @@ export function ReportsExportPDF({ data, type }: ReportsExportPDFProps) {
         const actualHours = minutesToTimeString(actualMinutes);
 
         rowCells = `
-          <td style="border: 1px solid #ddd; padding: 10px;">${militaryId}</td>
-          <td style="border: 1px solid #ddd; padding: 10px;">${fullName}</td>
-          <td style="border: 1px solid #ddd; padding: 10px;">${shiftName}</td>
-          <td style="border: 1px solid #ddd; padding: 10px;">${entryTime}</td>
-          <td style="border: 1px solid #ddd; padding: 10px;">${exitTime}</td>
-          <td style="border: 1px solid #ddd; padding: 10px;">${scheduledHours}</td>
-          <td style="border: 1px solid #ddd; padding: 10px;">${missingHours}</td>
-          <td style="border: 1px solid #ddd; padding: 10px;">${actualHours}</td>
+          <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${militaryId}</td>
+          <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${fullName}</td>
+          <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${shiftName}</td>
+          <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${entryTime}</td>
+          <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${exitTime}</td>
+          <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${scheduledHours}</td>
+          <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${missingHours}</td>
+          <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${actualHours}</td>
           <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">
             ${barcodeImage ? `<img src="${barcodeImage}" style="height: 60px; width: auto;" />` : "—"}
           </td>
@@ -166,10 +167,10 @@ export function ReportsExportPDF({ data, type }: ReportsExportPDFProps) {
         const shiftName = d.shift_id?.name || "—";
 
         rowCells = `
-          <td style="border: 1px solid #ddd; padding: 10px;">${militaryId}</td>
-          <td style="border: 1px solid #ddd; padding: 10px;">${civilId}</td>
-          <td style="border: 1px solid #ddd; padding: 10px;">${fullName}</td>
-          <td style="border: 1px solid #ddd; padding: 10px;">${shiftName}</td>
+          <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${militaryId}</td>
+          <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${civilId}</td>
+          <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${fullName}</td>
+          <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${shiftName}</td>
           <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">
             ${barcodeImage ? `<img src="${barcodeImage}" style="height: 60px; width: auto;" />` : "—"}
           </td>
@@ -178,14 +179,16 @@ export function ReportsExportPDF({ data, type }: ReportsExportPDFProps) {
         const civilId = trainee?.civil_id || d?.civil_id || "—";
         const fullName = trainee?.full_name || d?.full_name || "—";
         const shiftName = d.shift_id?.name || "—";
-        const entryTime = d.entry_time ? formatTime12HourKSA(d.entry_time) : "—";
+        const entryTime = d.entry_time
+          ? formatTime12HourKSA(d.entry_time)
+          : "—";
 
         rowCells = `
-          <td style="border: 1px solid #ddd; padding: 10px;">${militaryId}</td>
-          <td style="border: 1px solid #ddd; padding: 10px;">${civilId}</td>
-          <td style="border: 1px solid #ddd; padding: 10px;">${fullName}</td>
-          <td style="border: 1px solid #ddd; padding: 10px;">${shiftName}</td>
-          <td style="border: 1px solid #ddd; padding: 10px;">${entryTime}</td>
+          <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${militaryId}</td>
+          <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${civilId}</td>
+          <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${fullName}</td>
+          <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${shiftName}</td>
+          <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${entryTime}</td>
           <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">
             ${barcodeImage ? `<img src="${barcodeImage}" style="height: 60px; width: auto;" />` : "—"}
           </td>
@@ -216,9 +219,7 @@ export function ReportsExportPDF({ data, type }: ReportsExportPDFProps) {
 
     const options = {
       margin: 10,
-      filename: `بيان_${type === "hours" ? "ساعات" : type === "absences" ? "غيابات" : type === "lates" ? "تأخيرات" : "هروب"}_${
-        new Date().toISOString().split("T")[0]
-      }.pdf`,
+      filename: `بيان_${type === "hours" ? "ساعات" : type === "absences" ? "غيابات" : type === "lates" ? "تأخيرات" : "هروب"}_${getTodayDateKSA()}.pdf`,
       image: { type: "jpeg", quality: 0.98 },
       html2canvas: { scale: 2 },
       jsPDF: { orientation: "landscape" },

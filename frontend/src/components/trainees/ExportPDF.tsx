@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { FileDown } from "lucide-react";
 import html2pdf from "html2pdf.js";
 import JsBarcode from "jsbarcode";
+import { getGregorianDateArabic, getTodayDateKSA } from "@/lib/utils";
 
 interface Rank {
   _id: string;
@@ -38,17 +39,17 @@ export function TraineesExportPDF({ data }: TraineesExportPDFProps) {
     let html = `
       <div style="direction: rtl; text-align: right; font-family: Arial, sans-serif;">
         <h2>بيان المتدربين</h2>
-        <p>التاريخ: ${new Date().toLocaleDateString("ar-SA")}</p>
+        <p>التاريخ: ${getGregorianDateArabic(new Date())}</p>
         <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
           <thead>
             <tr style="background-color: #1E3A8A; color: white;">
-              <th style="border: 1px solid #ddd; padding: 10px;">الرقم العسكري</th>
-              <th style="border: 1px solid #ddd; padding: 10px;">السجل المدني</th>
-              <th style="border: 1px solid #ddd; padding: 10px;">الاسم</th>
-              <th style="border: 1px solid #ddd; padding: 10px;">الرتبة</th>
-              <th style="border: 1px solid #ddd; padding: 10px;">التخصص</th>
-              <th style="border: 1px solid #ddd; padding: 10px;">الشفت</th>
-              <th style="border: 1px solid #ddd; padding: 10px;">الباركود</th>
+              <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">الرقم العسكري</th>
+              <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">السجل المدني</th>
+              <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">الاسم</th>
+              <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">الرتبة</th>
+              <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">التخصص</th>
+              <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">الشفت</th>
+              <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">الباركود</th>
             </tr>
           </thead>
           <tbody>
@@ -72,12 +73,12 @@ export function TraineesExportPDF({ data }: TraineesExportPDFProps) {
 
         html += `
           <tr>
-            <td style="border: 1px solid #ddd; padding: 10px;">${t.military_id}</td>
-            <td style="border: 1px solid #ddd; padding: 10px;">${t.civil_id}</td>
-            <td style="border: 1px solid #ddd; padding: 10px;">${t.full_name}</td>
-            <td style="border: 1px solid #ddd; padding: 10px;">${rankName}</td>
-            <td style="border: 1px solid #ddd; padding: 10px;">${specialtyName}</td>
-            <td style="border: 1px solid #ddd; padding: 10px;">${shiftName}</td>
+            <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${t.military_id}</td>
+            <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${t.civil_id}</td>
+            <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${t.full_name}</td>
+            <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${rankName}</td>
+            <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${specialtyName}</td>
+            <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${shiftName}</td>
             <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">
               <img src="${barcodeImage}" style="height: 60px; width: auto;" />
             </td>
@@ -91,12 +92,12 @@ export function TraineesExportPDF({ data }: TraineesExportPDFProps) {
 
         html += `
           <tr>
-            <td style="border: 1px solid #ddd; padding: 10px;">${t.military_id}</td>
-            <td style="border: 1px solid #ddd; padding: 10px;">${t.civil_id}</td>
-            <td style="border: 1px solid #ddd; padding: 10px;">${t.full_name}</td>
-            <td style="border: 1px solid #ddd; padding: 10px;">${rankName}</td>
-            <td style="border: 1px solid #ddd; padding: 10px;">${specialtyName}</td>
-            <td style="border: 1px solid #ddd; padding: 10px;">${shiftName}</td>
+            <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${t.military_id}</td>
+            <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${t.civil_id}</td>
+            <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${t.full_name}</td>
+            <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${rankName}</td>
+            <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${specialtyName}</td>
+            <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">${shiftName}</td>
             <td style="border: 1px solid #ddd; padding: 10px; text-align: center;">—</td>
           </tr>
         `;
@@ -112,7 +113,7 @@ export function TraineesExportPDF({ data }: TraineesExportPDFProps) {
 
     const options = {
       margin: 10,
-      filename: `بيان_متدربين_${new Date().toISOString().split("T")[0]}.pdf`,
+      filename: `بيان_متدربين_${getTodayDateKSA()}.pdf`,
       image: { type: "jpeg", quality: 0.98 },
       html2canvas: { scale: 2 },
       jsPDF: { orientation: "landscape" },

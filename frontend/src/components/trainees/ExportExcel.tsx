@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { FileSpreadsheet } from "lucide-react";
 import ExcelJS from "exceljs";
 import JsBarcode from "jsbarcode";
+import { getGregorianDateArabic, getTodayDateKSA } from "@/lib/utils";
 
 interface Rank {
   _id: string;
@@ -76,7 +77,7 @@ export function TraineesExportExcel({ data }: TraineesExportExcelProps) {
     titleCell.border = thinBorder("FF3B82F6");
 
     // ── Row 2: Date subtitle ──────────────────────────────────────────────
-    const date = new Date().toLocaleDateString("ar-SA");
+    const date = getGregorianDateArabic(new Date());
     const subRow = worksheet.addRow(Array(COLS + 1).fill(""));
     subRow.height = 24;
     worksheet.mergeCells(2, 2, 2, 2 + COLS - 1);
@@ -191,7 +192,7 @@ export function TraineesExportExcel({ data }: TraineesExportExcelProps) {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `بيان_متدربين_${new Date().toISOString().split("T")[0]}.xlsx`;
+    a.download = `بيان_متدربين_${getTodayDateKSA()}.xlsx`;
     a.click();
     window.URL.revokeObjectURL(url);
   };

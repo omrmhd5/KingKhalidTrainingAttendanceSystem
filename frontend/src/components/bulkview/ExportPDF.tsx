@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { FileDown } from "lucide-react";
 import html2pdf from "html2pdf.js";
+import { getGregorianDateArabic, getTodayDateKSA } from "@/lib/utils";
 import JsBarcode from "jsbarcode";
 
 interface ExportPDFProps {
@@ -13,17 +14,17 @@ export function ExportPDF({ data }: ExportPDFProps) {
     let html = `
       <div style="direction: rtl; text-align: right; font-family: Arial, sans-serif;">
         <h2>بيان المتدربين</h2>
-        <p>التاريخ: ${new Date().toLocaleDateString("ar-SA")}</p>
+        <p>التاريخ: ${getGregorianDateArabic(new Date())}</p>
         <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
           <thead>
             <tr style="background-color: #1E3A8A; color: white;">
-              <th style="border: 1px solid #ddd; padding: 10px;">الرقم العسكري</th>
-              <th style="border: 1px solid #ddd; padding: 10px;">السجل المدني</th>
-              <th style="border: 1px solid #ddd; padding: 10px;">الاسم</th>
-              <th style="border: 1px solid #ddd; padding: 10px;">الرتبة</th>
-              <th style="border: 1px solid #ddd; padding: 10px;">التخصص</th>
-              <th style="border: 1px solid #ddd; padding: 10px;">الشفت</th>
-              <th style="border: 1px solid #ddd; padding: 10px;">الباركود</th>
+              <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">الرقم العسكري</th>
+              <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">السجل المدني</th>
+              <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">الاسم</th>
+              <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">الرتبة</th>
+              <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">التخصص</th>
+              <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">الشفت</th>
+              <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">الباركود</th>
             </tr>
           </thead>
           <tbody>
@@ -79,7 +80,7 @@ export function ExportPDF({ data }: ExportPDFProps) {
 
     const options = {
       margin: 10,
-      filename: `بيان_متدربين_${new Date().toISOString().split("T")[0]}.pdf`,
+      filename: `بيان_متدربين_${getTodayDateKSA()}.pdf`,
       image: { type: "jpeg", quality: 0.98 },
       html2canvas: { scale: 2 },
       jsPDF: { orientation: "landscape" },

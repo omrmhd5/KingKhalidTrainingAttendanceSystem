@@ -23,26 +23,20 @@ export function getTodayDateKSA(): string {
 }
 
 /**
- * Convert a date string (yyyy-MM-dd) to KSA timezone for API calls
- * Ensures consistent date handling across different browser locales
+ * Pass through a date string (yyyy-MM-dd) from an HTML date input.
+ * HTML <input type="date"> always returns yyyy-MM-dd in the Gregorian calendar
+ * per spec (when lang="en" is set), so no conversion is needed.
  */
 export function convertToKSADate(dateString: string): string {
-  // Parse the date in local browser timezone
-  const [year, month, day] = dateString.split("-");
-  const localDate = new Date(
-    parseInt(year),
-    parseInt(month) - 1,
-    parseInt(day),
-  );
+  return dateString;
+}
 
-  // Convert to KSA timezone
-  const ksaDate = new Date(
-    localDate.toLocaleString("en-US", { timeZone: "Asia/Riyadh" }),
-  );
-
-  const ksaYear = ksaDate.getFullYear();
-  const ksaMonth = String(ksaDate.getMonth() + 1).padStart(2, "0");
-  const ksaDay = String(ksaDate.getDate()).padStart(2, "0");
-
-  return `${ksaYear}-${ksaMonth}-${ksaDay}`;
+/**
+ * Format a date as Arabic text in Gregorian calendar (never Hijri).
+ * Forces gregorian calendar even on systems with Hijri calendar set.
+ * E.g., "17 مايو 2026" instead of Hijri equivalent
+ */
+export function getGregorianDateArabic(date: Date | string): string {
+  const dateObj = date instanceof Date ? date : new Date(date);
+  return dateObj.toLocaleDateString("ar-SA", { calendar: "gregory" });
 }

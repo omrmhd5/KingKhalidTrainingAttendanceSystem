@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { FileSpreadsheet } from "lucide-react";
 import ExcelJS from "exceljs";
+import { getGregorianDateArabic, getTodayDateKSA } from "@/lib/utils";
 
 interface Trainee {
   full_name?: string;
@@ -63,7 +64,7 @@ export function ExportExcel({ data }: ExportExcelProps) {
     titleCell.border = thinBorder("FFDC2626");
 
     // ── Row 2: Date subtitle ──────────────────────────────────────────────
-    const date = new Date().toLocaleDateString("ar-SA");
+    const date = getGregorianDateArabic(new Date());
     const subRow = worksheet.addRow([
       "",
       `التاريخ: ${date}`,
@@ -103,7 +104,7 @@ export function ExportExcel({ data }: ExportExcelProps) {
     // ── Data rows ─────────────────────────────────────────────────────────
     data.forEach((v: Violation, i: number) => {
       const isEven = i % 2 === 0;
-      const createdDate = new Date(v.createdAt).toLocaleDateString("ar-SA");
+      const createdDate = getGregorianDateArabic(v.createdAt);
       const rowValues = [
         "",
         createdDate,
@@ -153,7 +154,7 @@ export function ExportExcel({ data }: ExportExcelProps) {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `بيان_مخالفات_${new Date().toISOString().split("T")[0]}.xlsx`;
+    a.download = `بيان_مخالفات_${getTodayDateKSA()}.xlsx`;
     a.click();
     window.URL.revokeObjectURL(url);
   };

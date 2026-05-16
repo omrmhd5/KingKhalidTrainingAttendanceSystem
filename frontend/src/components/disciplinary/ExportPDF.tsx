@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { FileDown } from "lucide-react";
 import html2pdf from "html2pdf.js";
+import { getGregorianDateArabic, getTodayDateKSA } from "@/lib/utils";
 
 interface Trainee {
   full_name?: string;
@@ -24,7 +25,7 @@ export function ExportPDF({ data }: ExportPDFProps) {
     let html = `
       <div style="direction: rtl; text-align: right; font-family: Arial, sans-serif;">
         <h1 style="text-align: center; margin-bottom: 5px; color: #1E3A8A;">بيان طلبات الانضباط</h1>
-        <p style="text-align: center; color: #6B7280; margin-bottom: 20px;">التاريخ: ${new Date().toLocaleDateString("ar-SA")}</p>
+        <p style="text-align: center; color: #6B7280; margin-bottom: 20px;">التاريخ: ${getGregorianDateArabic(new Date())}</p>
         <table style="width: 100%; border-collapse: collapse; margin-top: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
           <thead>
             <tr style="background-color: #3B82F6; color: white; font-weight: bold;">
@@ -39,7 +40,7 @@ export function ExportPDF({ data }: ExportPDFProps) {
     `;
 
     data.forEach((d: DisciplinaryRequest, index: number) => {
-      const createdDate = new Date(d.createdAt).toLocaleDateString("ar-SA");
+      const createdDate = getGregorianDateArabic(d.createdAt);
       const bgColor = index % 2 === 0 ? "#FFFFFF" : "#F3F4F6";
       html += `
         <tr style="background-color: ${bgColor};">
@@ -63,7 +64,7 @@ export function ExportPDF({ data }: ExportPDFProps) {
 
     const options = {
       margin: 10,
-      filename: `بيان_طلبات_تأديبية_${new Date().toISOString().split("T")[0]}.pdf`,
+      filename: `بيان_طلبات_الانضباط_${getTodayDateKSA()}.pdf`,
       image: { type: "jpeg" as const, quality: 0.98 },
       html2canvas: { scale: 2 },
       jsPDF: { orientation: "landscape" },
