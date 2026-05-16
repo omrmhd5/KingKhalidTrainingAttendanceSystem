@@ -122,6 +122,7 @@ export default function ReportsPage() {
           <Label className="text-sm">التاريخ</Label>
           <Input
             type="date"
+            lang="en"
             value={date}
             onChange={(e) => setDate(convertToKSADate(e.target.value))}
             className="w-44 justify-end"

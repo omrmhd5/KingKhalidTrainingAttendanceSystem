@@ -144,6 +144,7 @@ export default function EntriesTable({
           </div>
           <Input
             type="date"
+            lang="en"
             value={selectedDate}
             onChange={(e) => onDateChange(e.target.value)}
             className="w-36 h-9 text-sm bg-background border-border text-foreground justify-start"

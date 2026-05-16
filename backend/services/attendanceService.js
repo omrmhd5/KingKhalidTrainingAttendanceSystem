@@ -2,6 +2,47 @@ const Attendance = require("../models/Attendance");
 const Trainee = require("../models/Trainee");
 const Shift = require("../models/Shift");
 
+/**
+ * Parse a "yyyy-MM-dd" string to midnight in the server's LOCAL timezone.
+ * Avoids the ISO-string-as-UTC pitfall: new Date("2026-05-16") parses as UTC
+ * midnight, and .getDate() then returns the server-local date which can be
+ * off by one on non-UTC servers.
+ */
+function parseDateToLocalMidnight(dateString) {
+  const [year, month, day] = dateString.split("-").map(Number);
+  return new Date(year, month - 1, day, 0, 0, 0, 0);
+}
+
+/**
+ * Get today's midnight and current moment in server-local time,
+ * adjusted to KSA timezone (Asia/Riyadh), using Intl.DateTimeFormat
+ * to avoid the new Date(localeString) anti-pattern.
+ */
+function getKSANow() {
+  const now = new Date();
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Riyadh",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  }).formatToParts(now);
+  const get = (type) => parseInt(parts.find((p) => p.type === type).value);
+  const year = get("year"),
+    month = get("month"),
+    day = get("day");
+  const hour = get("hour"),
+    minute = get("minute"),
+    second = get("second");
+  return {
+    today: new Date(year, month - 1, day, 0, 0, 0, 0),
+    now: new Date(year, month - 1, day, hour, minute, second, 0),
+  };
+}
+
 class AttendanceService {
   async recordEntry(scannedId, shiftId, date) {
     if (!scannedId || !shiftId || !date) {
@@ -13,20 +54,8 @@ class AttendanceService {
 
     // Validate that the provided date is today (KSA timezone)
     const now = new Date();
-    const ksaNow = new Date(
-      now.toLocaleString("en-US", { timeZone: "Asia/Riyadh" }),
-    );
-    const providedDate = new Date(date);
-    const ksaToday = new Date(
-      ksaNow.getFullYear(),
-      ksaNow.getMonth(),
-      ksaNow.getDate(),
-    );
-    const providedDateOnly = new Date(
-      providedDate.getFullYear(),
-      providedDate.getMonth(),
-      providedDate.getDate(),
-    );
+    const { today: ksaToday, now: ksaNow } = getKSANow();
+    const providedDateOnly = parseDateToLocalMidnight(date);
 
     if (providedDateOnly.getTime() !== ksaToday.getTime()) {
       throw {
@@ -63,12 +92,7 @@ class AttendanceService {
     }
 
     // Check if entry already exists for this date
-    const dateObj = new Date(date);
-    const startOfDay = new Date(
-      dateObj.getFullYear(),
-      dateObj.getMonth(),
-      dateObj.getDate(),
-    );
+    const startOfDay = parseDateToLocalMidnight(date);
     const endOfDay = new Date(startOfDay);
     endOfDay.setDate(endOfDay.getDate() + 1);
 
@@ -88,7 +112,7 @@ class AttendanceService {
     // Parse shift effective start time (format: "HH:mm")
     // effective_start_time already includes grace period calculation
     const [shiftHours, shiftMinutes] = shift.effective_start_time.split(":");
-    const effectiveStartTime = new Date(dateObj);
+    const effectiveStartTime = new Date(startOfDay);
     effectiveStartTime.setHours(
       parseInt(shiftHours),
       parseInt(shiftMinutes),
@@ -130,20 +154,8 @@ class AttendanceService {
 
     // Validate that the provided date is today (KSA timezone)
     const now = new Date();
-    const ksaNow = new Date(
-      now.toLocaleString("en-US", { timeZone: "Asia/Riyadh" }),
-    );
-    const providedDate = new Date(date);
-    const ksaToday = new Date(
-      ksaNow.getFullYear(),
-      ksaNow.getMonth(),
-      ksaNow.getDate(),
-    );
-    const providedDateOnly = new Date(
-      providedDate.getFullYear(),
-      providedDate.getMonth(),
-      providedDate.getDate(),
-    );
+    const { today: ksaToday } = getKSANow();
+    const providedDateOnly = parseDateToLocalMidnight(date);
 
     if (providedDateOnly.getTime() !== ksaToday.getTime()) {
       throw {
@@ -171,12 +183,7 @@ class AttendanceService {
     }
 
     // Find attendance record for this date
-    const dateObj = new Date(date);
-    const startOfDay = new Date(
-      dateObj.getFullYear(),
-      dateObj.getMonth(),
-      dateObj.getDate(),
-    );
+    const startOfDay = parseDateToLocalMidnight(date);
     const endOfDay = new Date(startOfDay);
     endOfDay.setDate(endOfDay.getDate() + 1);
 
@@ -229,12 +236,7 @@ class AttendanceService {
       };
     }
 
-    const dateObj = new Date(date);
-    const startOfDay = new Date(
-      dateObj.getFullYear(),
-      dateObj.getMonth(),
-      dateObj.getDate(),
-    );
+    const startOfDay = parseDateToLocalMidnight(date);
     const endOfDay = new Date(startOfDay);
     endOfDay.setDate(endOfDay.getDate() + 1);
 
@@ -269,12 +271,7 @@ class AttendanceService {
       };
     }
 
-    const dateObj = new Date(date);
-    const startOfDay = new Date(
-      dateObj.getFullYear(),
-      dateObj.getMonth(),
-      dateObj.getDate(),
-    );
+    const startOfDay = parseDateToLocalMidnight(date);
     const endOfDay = new Date(startOfDay);
     endOfDay.setDate(endOfDay.getDate() + 1);
 
@@ -424,12 +421,7 @@ class AttendanceService {
       };
     }
 
-    const dateObj = new Date(date);
-    const startOfDay = new Date(
-      dateObj.getFullYear(),
-      dateObj.getMonth(),
-      dateObj.getDate(),
-    );
+    const startOfDay = parseDateToLocalMidnight(date);
     const endOfDay = new Date(startOfDay);
     endOfDay.setDate(endOfDay.getDate() + 1);
 
@@ -497,12 +489,7 @@ class AttendanceService {
       };
     }
 
-    const dateObj = new Date(date);
-    const startOfDay = new Date(
-      dateObj.getFullYear(),
-      dateObj.getMonth(),
-      dateObj.getDate(),
-    );
+    const startOfDay = parseDateToLocalMidnight(date);
     const endOfDay = new Date(startOfDay);
     endOfDay.setDate(endOfDay.getDate() + 1);
 
@@ -540,12 +527,7 @@ class AttendanceService {
       };
     }
 
-    const dateObj = new Date(date);
-    const startOfDay = new Date(
-      dateObj.getFullYear(),
-      dateObj.getMonth(),
-      dateObj.getDate(),
-    );
+    const startOfDay = parseDateToLocalMidnight(date);
     const endOfDay = new Date(startOfDay);
     endOfDay.setDate(endOfDay.getDate() + 1);
 

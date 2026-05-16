@@ -1,7 +1,11 @@
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getTodayDateKSA, convertToKSADate } from "@/lib/utils";
+import {
+  getTodayDateKSA,
+  convertToKSADate,
+  getGregorianDateArabic,
+} from "@/lib/utils";
 import {
   Select,
   SelectContent,
@@ -123,7 +127,7 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("ar-SA");
+    return getGregorianDateArabic(dateString);
   };
 
   // Transform ClassReport to ReportSummary format
@@ -496,6 +500,7 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
           </label>
           <Input
             type="date"
+            lang="en"
             value={selectedDate}
             onChange={(e) => setSelectedDate(convertToKSADate(e.target.value))}
             dir="rtl"

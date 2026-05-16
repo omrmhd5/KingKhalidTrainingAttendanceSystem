@@ -37,6 +37,7 @@ export default function TeacherClassCard({
           </label>
           <Input
             type="date"
+            lang="en"
             value={selectedDate}
             onChange={(e) => onDateChange(convertToKSADate(e.target.value))}
             className="w-40 text-right"

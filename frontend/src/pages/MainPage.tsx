@@ -12,6 +12,7 @@ import { attendanceApi, type AttendanceRecord } from "@/lib/attendanceApi";
 import { shiftApi } from "@/lib/shiftApi";
 import { violationApi } from "@/lib/violationApi";
 import { getTodayDateKSA, convertToKSADate } from "@/lib/utils";
+import AttendanceStatsDisplay from "@/components/main/AttendanceStatsDisplay";
 
 interface Shift {
   id: string;

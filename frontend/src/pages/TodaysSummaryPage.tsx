@@ -87,6 +87,7 @@ export default function TodaysSummaryPage() {
           <Input
             id="date"
             type="date"
+            lang="en"
             value={date}
             onChange={(e) => setDate(convertToKSADate(e.target.value))}
             className="w-44"

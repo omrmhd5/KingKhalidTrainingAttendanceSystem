@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { getGregorianDateArabic } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
@@ -282,7 +283,7 @@ export function ClassDashboardTab({ canWrite = true }: ClassDashboardTabProps) {
                           {report.teacherName}
                         </TableCell>
                         <TableCell className="text-right">
-                          {new Date(report.date).toLocaleDateString("ar-SA")}
+                          {getGregorianDateArabic(report.date)}
                         </TableCell>
                         <TableCell className="text-right text-sm text-muted-foreground">
                           {report.notes || "—"}

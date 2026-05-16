@@ -6,13 +6,19 @@
 export const formatTime12HourKSA = (dateTimeString: string | Date): string => {
   try {
     const date = new Date(dateTimeString);
-    // Convert to KSA timezone
-    const ksaTime = new Date(
-      date.toLocaleString("en-US", { timeZone: "Asia/Riyadh" }),
-    );
-    const hours = ksaTime.getHours();
-    const minutes = ksaTime.getMinutes();
-    const seconds = ksaTime.getSeconds();
+    // Convert to KSA timezone using Intl.DateTimeFormat (spec-compliant, no locale-string parsing)
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: "Asia/Riyadh",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    }).formatToParts(date);
+    const get = (type: string) =>
+      parseInt(parts.find((p) => p.type === type)?.value ?? "0");
+    const hours = get("hour");
+    const minutes = get("minute");
+    const seconds = get("second");
 
     const period = hours >= 12 ? "م" : "ص";
     const h = hours % 12 || 12;

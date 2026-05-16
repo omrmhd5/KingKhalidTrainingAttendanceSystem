@@ -11,13 +11,17 @@ export function cn(...inputs: ClassValue[]) {
  */
 export function getTodayDateKSA(): string {
   const now = new Date();
-  const ksaDate = new Date(
-    now.toLocaleString("en-US", { timeZone: "Asia/Riyadh" }),
-  );
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Riyadh",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(now);
 
-  const year = ksaDate.getFullYear();
-  const month = String(ksaDate.getMonth() + 1).padStart(2, "0");
-  const day = String(ksaDate.getDate()).padStart(2, "0");
+  const get = (type: string) => parts.find((p) => p.type === type)?.value || "";
+  const year = get("year");
+  const month = get("month");
+  const day = get("day");
 
   return `${year}-${month}-${day}`;
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { getGregorianDateArabic } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -234,9 +235,7 @@ export default function DisciplinaryPage() {
                           {request.reason ?? "—"}
                         </TableCell>
                         <TableCell className="text-center py-2 px-4 border border-gray-300">
-                          {new Date(request.createdAt).toLocaleDateString(
-                            "ar-SA",
-                          )}
+                          {getGregorianDateArabic(request.createdAt)}
                         </TableCell>
                         <TableCell className="text-center py-2 px-4 border border-gray-300">
                           <div className="flex justify-center gap-2">
