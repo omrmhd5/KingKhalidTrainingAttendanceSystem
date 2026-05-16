@@ -1,16 +1,16 @@
 import { useState, useCallback, useEffect } from "react";
-import { format } from "date-fns";
-import BarcodeScanner from "@/components/main/BarcodeScanner";
 import EntriesTable, { type EntryRecord } from "@/components/main/EntriesTable";
 import ExitsTable, { type ExitRecord } from "@/components/main/ExitsTable";
-import AttendanceStatsDisplay from "@/components/main/AttendanceStatsDisplay";
+import MainStatsBar from "@/components/main/MainStatsBar";
+import ScanInput from "@/components/main/ScanInput";
+import KSADateTime from "@/components/KSADateTime";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trash2 } from "lucide-react";
 import { attendanceApi, type AttendanceRecord } from "@/lib/attendanceApi";
 import { shiftApi } from "@/lib/shiftApi";
+import { violationApi } from "@/lib/violationApi";
 import { getTodayDateKSA, convertToKSADate } from "@/lib/utils";
 
 interface Shift {
@@ -47,6 +47,9 @@ export default function MainPage() {
   const [selectedExits, setSelectedExits] = useState<Set<string>>(new Set());
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [clearExitOpen, setClearExitOpen] = useState(false);
+  const [scanMode, setScanMode] = useState<"IN" | "OUT">("IN");
+  const [absencesCount, setAbsencesCount] = useState(0);
+  const [violationsCount, setViolationsCount] = useState(0);
 
   // Helper function to get active shift based on current KSA time
   const getActiveShift =
@@ -179,6 +182,37 @@ export default function MainPage() {
   useEffect(() => {
     fetchAttendanceData();
   }, [selectedDate, fetchAttendanceData]);
+
+  // Fetch absences count when date or entries change
+  useEffect(() => {
+    const fetchAbsencesCount = async () => {
+      try {
+        const res = await attendanceApi.getAbsences(selectedDate);
+        setAbsencesCount(res.absenceCount ?? 0);
+      } catch {
+        setAbsencesCount(0);
+      }
+    };
+    fetchAbsencesCount();
+  }, [selectedDate, entries]);
+
+  // Fetch violations count on mount
+  useEffect(() => {
+    const fetchViolationsCount = async () => {
+      try {
+        const violations = await violationApi.getAllViolations();
+        const unique = new Set(
+          violations.map((v: any) =>
+            typeof v.trainee_id === "object" ? v.trainee_id?._id : v.trainee_id,
+          ),
+        );
+        setViolationsCount(unique.size);
+      } catch {
+        setViolationsCount(0);
+      }
+    };
+    fetchViolationsCount();
+  }, []);
 
   const handleScan = useCallback(
     async (barcode: string, mode: "IN" | "OUT") => {
@@ -350,29 +384,37 @@ export default function MainPage() {
     }
   };
 
+  const entryCount = entries.filter((e) => e.militaryId.trim() !== "").length;
+  const exitCount = exits.filter((e) => e.militaryId.trim() !== "").length;
+
   return (
     <div className="flex min-h-[calc(100vh-3.5rem)] flex-col gap-3 bg-background p-4">
-      {/* Header with Logo and Title */}
-      <Card className="border-0 shadow-none bg-transparent">
-        <CardHeader className="text-center space-y-2 rounded-lg p-0">
-          <div className="mx-auto flex items-center justify-center">
-            <img src="/Logo.png" alt="Logo" className="h-16 w-16" />
-          </div>
-          <CardTitle className="text-xl font-bold text-foreground">
-            نظام إدارة الحضور و الانصراف و الفصول الدراسية
-          </CardTitle>
-        </CardHeader>
-      </Card>
-
-      {/* Top row: Scanner + Stats - full column width, matching height */}
-      <div className="grid grid-cols-2 gap-3 items-stretch">
-        <BarcodeScanner onScan={handleScan} isScanning={scanning} />
-        <AttendanceStatsDisplay
-          entries={entries}
-          shifts={shifts}
-          currentShift={selectedShift}
-        />
+      {/* Header */}
+      <div className="text-center space-y-1">
+        <div className="mx-auto flex items-center justify-center">
+          <img src="/Logo.png" alt="Logo" className="h-48 w-56" />
+        </div>
+        <h1 className="text-xl font-bold text-foreground">
+          نظام إدارة الحضور و الانصراف و الفصول الدراسية
+        </h1>
       </div>
+
+      {/* KSA Date & Time */}
+      <KSADateTime />
+
+      {/* Stats Bar: entry/exit counts + IN/OUT buttons + violations/absences */}
+      <MainStatsBar
+        entryCount={entryCount}
+        exitCount={exitCount}
+        violationsCount={violationsCount}
+        absencesCount={absencesCount}
+        mode={scanMode}
+        onModeChange={setScanMode}
+        isScanning={scanning}
+      />
+
+      {/* Barcode scan input */}
+      <ScanInput onScan={handleScan} isScanning={scanning} mode={scanMode} />
 
       {/* Bulk Delete Button */}
       {selectedEntries.size > 0 && (

@@ -169,9 +169,6 @@ export default function EntriesTable({
             </SelectContent>
           </Select>
         </div>
-        <Badge className="bg-success/20 text-success border-success font-semibold px-4 py-2 text-base">
-          {entriesWithData.length} دخول
-        </Badge>
       </div>
       <div className="w-full">
         <Table className="w-full">

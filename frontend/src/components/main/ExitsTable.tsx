@@ -149,14 +149,6 @@ export default function ExitsTable({
             </Button>
           )}
         </div>
-        <Badge
-          className={`font-semibold px-4 py-2 text-base ${
-            exitsWithData.length === attendedCount
-              ? "bg-green-700 text-white border-green-900"
-              : "bg-warning/20 text-warning border-warning"
-          }`}>
-          {exitsWithData.length} خروج من أصل {attendedCount}
-        </Badge>
       </div>
       <div className="w-full">
         <Table className="w-full">
