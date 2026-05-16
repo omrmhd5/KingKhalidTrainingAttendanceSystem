@@ -230,81 +230,101 @@ export function ShiftsManagementTab() {
           itemName={deleteTargetName}
           itemType="الشفت"
         />
-        <Table dir="rtl">
-          <TableHeader>
-            <TableRow>
-              <TableHead className="text-right">الاسم</TableHead>
-              <TableHead className="text-right">البداية</TableHead>
-              <TableHead className="text-right">النهاية</TableHead>
-              <TableHead className="text-right">السماح</TableHead>
-              <TableHead className="text-right">المتدربون</TableHead>
-              <TableHead className="text-right">الإجراءات</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
+        <div className="border border-gray-300 rounded-lg overflow-hidden">
+          <Table dir="rtl" className="border-collapse">
+            <TableHeader className="bg-sky-600">
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-4">
-                  جاري التحميل...
-                </TableCell>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                  الاسم
+                </TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                  البداية
+                </TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                  النهاية
+                </TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                  السماح
+                </TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                  المتدربون
+                </TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4">
+                  الإجراءات
+                </TableHead>
               </TableRow>
-            ) : shifts.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center py-4">
-                  لا توجد شفتات
-                </TableCell>
-              </TableRow>
-            ) : (
-              shifts.map((s: any) => {
-                const startTime12 = convertTo12HourArabic(s.start_time);
-                const endTime12 = convertTo12HourArabic(s.end_time);
-                const [startTimeNum, startPeriod] = startTime12.split(" ");
-                const [endTimeNum, endPeriod] = endTime12.split(" ");
-                return (
-                  <TableRow key={s._id}>
-                    <TableCell className="font-medium text-right">
-                      {s.name}
-                    </TableCell>
-                    <TableCell className="font-mono text-right">
-                      {startTimeNum}
-                      <span className="text-md font-semibold">
-                        {" "}
-                        {startPeriod}
-                      </span>
-                    </TableCell>
-                    <TableCell className="font-mono text-right">
-                      {endTimeNum}
-                      <span className="text-md font-semibold">
-                        {" "}
-                        {endPeriod}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {s.grace_minutes} دقائق
-                    </TableCell>{" "}
-                    <TableCell className="text-right">
-                      {s.trainees_count || 0}
-                    </TableCell>{" "}
-                    <TableCell className="text-right flex gap-2 justify-start">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleEditShift(s)}>
-                        <Edit className="h-4 w-4 text-blue-500" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDeleteShift(s._id, s.name)}>
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                );
-              })
-            )}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableRow className="hover:bg-blue-50">
+                  <TableCell
+                    colSpan={6}
+                    className="text-center py-4 px-4 border border-gray-300">
+                    جاري التحميل...
+                  </TableCell>
+                </TableRow>
+              ) : shifts.length === 0 ? (
+                <TableRow className="hover:bg-blue-50">
+                  <TableCell
+                    colSpan={6}
+                    className="text-center py-4 px-4 border border-gray-300">
+                    لا توجد شفتات
+                  </TableCell>
+                </TableRow>
+              ) : (
+                shifts.map((s: any, index) => {
+                  const startTime12 = convertTo12HourArabic(s.start_time);
+                  const endTime12 = convertTo12HourArabic(s.end_time);
+                  const [startTimeNum, startPeriod] = startTime12.split(" ");
+                  const [endTimeNum, endPeriod] = endTime12.split(" ");
+                  return (
+                    <TableRow
+                      key={s._id}
+                      className={`${index % 2 === 0 ? "bg-white" : "bg-gray-100"} hover:bg-blue-50`}>
+                      <TableCell className="font-medium text-center py-2 px-4 border border-gray-300">
+                        {s.name}
+                      </TableCell>
+                      <TableCell className="font-mono text-center py-2 px-4 border border-gray-300">
+                        {startTimeNum}
+                        <span className="text-md font-semibold">
+                          {" "}
+                          {startPeriod}
+                        </span>
+                      </TableCell>
+                      <TableCell className="font-mono text-center py-2 px-4 border border-gray-300">
+                        {endTimeNum}
+                        <span className="text-md font-semibold">
+                          {" "}
+                          {endPeriod}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-center py-2 px-4 border border-gray-300">
+                        {s.grace_minutes} دقائق
+                      </TableCell>
+                      <TableCell className="text-center py-2 px-4 border border-gray-300">
+                        {s.trainees_count || 0}
+                      </TableCell>
+                      <TableCell className="text-center flex gap-2 justify-center py-2 px-4 border border-gray-300">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEditShift(s)}>
+                          <Edit className="h-4 w-4 text-blue-500" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDeleteShift(s._id, s.name)}>
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </CardContent>
     </Card>
   );

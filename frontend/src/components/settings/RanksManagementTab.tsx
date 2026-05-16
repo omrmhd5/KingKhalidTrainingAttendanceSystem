@@ -203,51 +203,63 @@ export function RanksManagementTab() {
             </div>
           </DialogContent>
         </Dialog>
-        <Table dir="rtl">
-          <TableHeader>
-            <TableRow>
-              <TableHead className="text-right">الاسم</TableHead>
-              <TableHead className="text-right">الإجراءات</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
+        <div className="border border-gray-300 rounded-lg overflow-hidden">
+          <Table dir="rtl" className="border-collapse">
+            <TableHeader className="bg-violet-600">
               <TableRow>
-                <TableCell colSpan={2} className="text-center py-4">
-                  جاري التحميل...
-                </TableCell>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                  الاسم
+                </TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4">
+                  الإجراءات
+                </TableHead>
               </TableRow>
-            ) : ranks.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={2} className="text-center py-4">
-                  لا توجد رتب
-                </TableCell>
-              </TableRow>
-            ) : (
-              ranks.map((r) => (
-                <TableRow key={r._id}>
-                  <TableCell className="font-medium text-right">
-                    {r.name}
-                  </TableCell>
-                  <TableCell className="text-right flex gap-2 justify-start">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleEditRank(r)}>
-                      <Edit className="h-4 w-4 text-blue-500" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDeleteRank(r._id, r.name)}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableRow className="hover:bg-blue-50">
+                  <TableCell
+                    colSpan={2}
+                    className="text-center py-4 px-4 border border-gray-300">
+                    جاري التحميل...
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ) : ranks.length === 0 ? (
+                <TableRow className="hover:bg-blue-50">
+                  <TableCell
+                    colSpan={2}
+                    className="text-center py-4 px-4 border border-gray-300">
+                    لا توجد رتب
+                  </TableCell>
+                </TableRow>
+              ) : (
+                ranks.map((r, index) => (
+                  <TableRow
+                    key={r._id}
+                    className={`${index % 2 === 0 ? "bg-white" : "bg-gray-100"} hover:bg-blue-50`}>
+                    <TableCell className="font-medium text-center py-2 px-4 border border-gray-300">
+                      {r.name}
+                    </TableCell>
+                    <TableCell className="text-center flex gap-2 justify-center py-2 px-4 border border-gray-300 border-b-0">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleEditRank(r)}>
+                        <Edit className="h-4 w-4 text-blue-500" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDeleteRank(r._id, r.name)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </CardContent>
     </Card>
   );

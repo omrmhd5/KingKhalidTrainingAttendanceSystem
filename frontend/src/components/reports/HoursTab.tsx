@@ -137,100 +137,102 @@ export function HoursTab({ date, onFilteredDataChange }: HoursTabProps) {
           onShiftChange={setFilterShift}
           shifts={shifts}
         />
-        <Table dir="rtl">
-          <TableHeader className="bg-gray-200">
-            <TableRow className="border-gray-300 hover:bg-gray-200">
-              <TableHead className="text-right text-gray-800 font-bold">
-                الرقم العسكري
-              </TableHead>
-              <TableHead className="text-right text-gray-800 font-bold">
-                الإسم
-              </TableHead>
-              <TableHead className="text-right text-gray-800 font-bold">
-                الشفت
-              </TableHead>
-              <TableHead className="text-right text-gray-800 font-bold">
-                الحضور
-              </TableHead>
-              <TableHead className="text-right text-gray-800 font-bold">
-                الخروج
-              </TableHead>
-              <TableHead className="text-right text-gray-800 font-bold">
-                الساعات المجدولة
-              </TableHead>
-              <TableHead className="text-right text-gray-800 font-bold">
-                الساعات المفقودة
-              </TableHead>
-              <TableHead className="text-right text-white font-bold bg-green-800">
-                الساعات الفعلية
-              </TableHead>
-              <TableHead className="text-center text-gray-800 font-bold">
-                الباركود
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
+        <div className="border border-gray-300 rounded-lg overflow-hidden">
+          <Table dir="rtl" className="border-collapse">
+            <TableHeader className="bg-green-600">
               <TableRow>
-                <TableCell
-                  colSpan={9}
-                  className="text-center py-8 text-muted-foreground">
-                  جاري التحميل...
-                </TableCell>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                  الرقم العسكري
+                </TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                  الإسم
+                </TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                  الشفت
+                </TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                  الحضور
+                </TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                  الخروج
+                </TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                  الساعات المجدولة
+                </TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                  الساعات المفقودة
+                </TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                  الساعات الفعلية
+                </TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4">
+                  الباركود
+                </TableHead>
               </TableRow>
-            ) : hoursData?.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={9}
-                  className="text-center py-8 text-muted-foreground">
-                  لا توجد سجلات
-                </TableCell>
-              </TableRow>
-            ) : (
-              hoursData?.map((h: HourRow) => (
-                <TableRow
-                  key={h.id}
-                  className="h-10 border-gray-200 hover:bg-gray-100">
-                  <TableCell className="font-medium text-right py-1 text-gray-700">
-                    {h.militaryId}
-                  </TableCell>
-                  <TableCell className="text-right py-1 text-gray-700">
-                    {h.full_name}
-                  </TableCell>
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                <TableRow className="hover:bg-blue-50">
                   <TableCell
-                    className={`text-center font-medium py-1 px-2 border-2 whitespace-nowrap ${getShiftCellColor(h.shift)}`}>
-                    {h.shift}
-                  </TableCell>
-                  <TableCell className="font-mono text-xs text-right py-1 text-gray-700">
-                    {h.checkIn}
-                  </TableCell>
-                  <TableCell className="font-mono text-xs text-right py-1 text-gray-700">
-                    {h.checkOut}
-                  </TableCell>
-                  <TableCell className="text-right py-1 text-gray-700">
-                    {h.scheduledHours}
-                  </TableCell>
-                  <TableCell className="text-right py-1 text-gray-700">
-                    {h.lostHours}
-                  </TableCell>
-                  <TableCell className="text-right py-1 text-green-900 font-semibold bg-green-300">
-                    {h.actualHours}
-                  </TableCell>
-                  <TableCell className="text-center py-1">
-                    <div className="flex justify-center scale-75 origin-center">
-                      <Barcode
-                        value={h.barcode.toString()}
-                        width={1.5}
-                        height={40}
-                        displayValue={true}
-                      />
-                    </div>
+                    colSpan={9}
+                    className="text-center py-8 px-4 text-muted-foreground border border-gray-300">
+                    جاري التحميل...
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ) : hoursData?.length === 0 ? (
+                <TableRow className="hover:bg-blue-50">
+                  <TableCell
+                    colSpan={9}
+                    className="text-center py-8 px-4 text-muted-foreground border border-gray-300">
+                    لا توجد سجلات
+                  </TableCell>
+                </TableRow>
+              ) : (
+                hoursData?.map((h: HourRow, index) => (
+                  <TableRow
+                    key={h.id}
+                    className={`${index % 2 === 0 ? "bg-white" : "bg-gray-100"} hover:bg-blue-50`}>
+                    <TableCell className="font-medium text-center py-2 px-4 border border-gray-300">
+                      {h.militaryId}
+                    </TableCell>
+                    <TableCell className="text-center py-2 px-4 border border-gray-300">
+                      {h.full_name}
+                    </TableCell>
+                    <TableCell
+                      className={`text-center font-medium py-2 px-2 border-2 whitespace-nowrap ${getShiftCellColor(h.shift)}`}>
+                      {h.shift}
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-center py-2 px-4 border border-gray-300">
+                      {h.checkIn}
+                    </TableCell>
+                    <TableCell className="font-mono text-xs text-center py-2 px-4 border border-gray-300">
+                      {h.checkOut}
+                    </TableCell>
+                    <TableCell className="text-center py-2 px-4 border border-gray-300">
+                      {h.scheduledHours}
+                    </TableCell>
+                    <TableCell className="text-center py-2 px-4 border border-gray-300">
+                      {h.lostHours}
+                    </TableCell>
+                    <TableCell className="text-center py-2 px-4 border border-gray-300 font-semibold bg-green-300">
+                      {h.actualHours}
+                    </TableCell>
+                    <TableCell className="text-center py-2 px-4 border border-gray-300">
+                      <div className="flex justify-center scale-75 origin-center">
+                        <Barcode
+                          value={h.barcode.toString()}
+                          width={1.5}
+                          height={40}
+                          displayValue={true}
+                        />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </CardContent>
     </Card>
   );

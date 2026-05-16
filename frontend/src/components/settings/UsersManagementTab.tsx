@@ -302,68 +302,88 @@ export function UsersManagementTab() {
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
         ) : (
-          <Table dir="rtl">
-            <TableHeader>
-              <TableRow>
-                <TableHead className="text-right">اسم المستخدم</TableHead>
-                <TableHead className="text-right">البريد الإلكتروني</TableHead>
-                <TableHead className="text-right">الدور</TableHead>
-                <TableHead className="text-right">الفصل</TableHead>
-                <TableHead className="text-right">تاريخ الإنشاء</TableHead>
-                <TableHead className="text-right">الإجراءات</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {users.length === 0 ? (
+          <div className="border border-gray-300 rounded-lg overflow-hidden">
+            <Table dir="rtl" className="border-collapse">
+              <TableHeader className="bg-amber-600">
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-4">
-                    لا توجد مستخدمون
-                  </TableCell>
+                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                    اسم المستخدم
+                  </TableHead>
+                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                    البريد الإلكتروني
+                  </TableHead>
+                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                    الدور
+                  </TableHead>
+                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                    الفصل
+                  </TableHead>
+                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                    تاريخ الإنشاء
+                  </TableHead>
+                  <TableHead className="text-center text-white font-bold py-3 px-4">
+                    الإجراءات
+                  </TableHead>
                 </TableRow>
-              ) : (
-                users.map((user) => (
-                  <TableRow key={user._id}>
-                    <TableCell className="font-medium">
-                      {user.username}
-                    </TableCell>
-                    <TableCell>{user.email}</TableCell>
-                    <TableCell>
-                      <span
-                        className={`inline-block px-3 py-1 rounded-full text-sm ${
-                          getRoleColor(user.role).bg
-                        } ${getRoleColor(user.role).text}`}>
-                        {ROLES.find((r) => r.value === user.role)?.label}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      {user.role === "teacher"
-                        ? getClassName(user.class) || "-"
-                        : "-"}
-                    </TableCell>
-                    <TableCell>
-                      {format(new Date(user.createdAt), "dd/MM/yyyy")}
-                    </TableCell>
-                    <TableCell className="text-right flex gap-2 justify-start">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleOpenEdit(user)}
-                        disabled={submitting}>
-                        <Edit2 className="h-4 w-4 text-blue-500" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleOpenDelete(user)}
-                        disabled={submitting}>
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
+              </TableHeader>
+              <TableBody>
+                {users.length === 0 ? (
+                  <TableRow className="hover:bg-blue-50">
+                    <TableCell
+                      colSpan={6}
+                      className="text-center py-4 px-4 border border-gray-300">
+                      لا توجد مستخدمون
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ) : (
+                  users.map((user, index) => (
+                    <TableRow
+                      key={user._id}
+                      className={`${index % 2 === 0 ? "bg-white" : "bg-gray-100"} hover:bg-blue-50`}>
+                      <TableCell className="font-medium text-center py-2 px-4 border border-gray-300">
+                        {user.username}
+                      </TableCell>
+                      <TableCell className="text-center py-2 px-4 border border-gray-300">
+                        {user.email}
+                      </TableCell>
+                      <TableCell className="text-center py-2 px-4 border border-gray-300">
+                        <span
+                          className={`inline-block px-3 py-1 rounded-full text-sm ${
+                            getRoleColor(user.role).bg
+                          } ${getRoleColor(user.role).text}`}>
+                          {ROLES.find((r) => r.value === user.role)?.label}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-center py-2 px-4 border border-gray-300">
+                        {user.role === "teacher"
+                          ? getClassName(user.class) || "-"
+                          : "-"}
+                      </TableCell>
+                      <TableCell className="text-center py-2 px-4 border border-gray-300">
+                        {format(new Date(user.createdAt), "dd/MM/yyyy")}
+                      </TableCell>
+                      <TableCell className="text-center py-2 px-4 border border-gray-300 flex gap-2 justify-center">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleOpenEdit(user)}
+                          disabled={submitting}>
+                          <Edit2 className="h-4 w-4 text-blue-500" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleOpenDelete(user)}
+                          disabled={submitting}>
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
         )}
       </CardContent>
 

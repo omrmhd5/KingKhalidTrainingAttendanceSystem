@@ -249,121 +249,139 @@ export function ClassesManagementTab({
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <Table dir="rtl">
-            <TableHeader>
-              <TableRow>
-                <TableHead className="text-right">الاسم</TableHead>
-                <TableHead className="text-right">المعلم</TableHead>
-                <TableHead className="text-right">الجدول</TableHead>
-                <TableHead className="text-right">عدد الطلاب</TableHead>
-                {canWrite && (
-                  <TableHead className="text-center">الإجراءات</TableHead>
-                )}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {classes.length === 0 ? (
+          <div className="border border-gray-300 rounded-lg overflow-hidden">
+            <Table dir="rtl" className="border-collapse">
+              <TableHeader className="bg-indigo-600">
                 <TableRow>
-                  <TableCell
-                    colSpan={5}
-                    className="text-center py-8 text-muted-foreground">
-                    لا توجد فصول
-                  </TableCell>
+                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                    الاسم
+                  </TableHead>
+                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                    المعلم
+                  </TableHead>
+                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                    الجدول
+                  </TableHead>
+                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                    عدد الطلاب
+                  </TableHead>
+                  {canWrite && (
+                    <TableHead className="text-center text-white font-bold py-3 px-4">
+                      الإجراءات
+                    </TableHead>
+                  )}
                 </TableRow>
-              ) : (
-                classes
-                  .sort((a, b) => {
-                    let scheduleAStart = "";
-                    let scheduleBStart = "";
+              </TableHeader>
+              <TableBody>
+                {classes.length === 0 ? (
+                  <TableRow className="hover:bg-blue-50">
+                    <TableCell
+                      colSpan={5}
+                      className="text-center py-8 px-4 text-muted-foreground border border-gray-300">
+                      لا توجد فصول
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  classes
+                    .sort((a, b) => {
+                      let scheduleAStart = "";
+                      let scheduleBStart = "";
 
-                    if (typeof a.schedule === "string") {
-                      scheduleAStart =
-                        schedules.find((s) => s._id === a.schedule)
-                          ?.start_time || "";
-                    } else {
-                      scheduleAStart =
-                        (a.schedule as ClassTimeSchedule | undefined)
-                          ?.start_time || "";
-                    }
+                      if (typeof a.schedule === "string") {
+                        scheduleAStart =
+                          schedules.find((s) => s._id === a.schedule)
+                            ?.start_time || "";
+                      } else {
+                        scheduleAStart =
+                          (a.schedule as ClassTimeSchedule | undefined)
+                            ?.start_time || "";
+                      }
 
-                    if (typeof b.schedule === "string") {
-                      scheduleBStart =
-                        schedules.find((s) => s._id === b.schedule)
-                          ?.start_time || "";
-                    } else {
-                      scheduleBStart =
-                        (b.schedule as ClassTimeSchedule | undefined)
-                          ?.start_time || "";
-                    }
+                      if (typeof b.schedule === "string") {
+                        scheduleBStart =
+                          schedules.find((s) => s._id === b.schedule)
+                            ?.start_time || "";
+                      } else {
+                        scheduleBStart =
+                          (b.schedule as ClassTimeSchedule | undefined)
+                            ?.start_time || "";
+                      }
 
-                    return scheduleAStart.localeCompare(scheduleBStart);
-                  })
-                  .map((classItem) => (
-                    <TableRow key={classItem._id}>
-                      <TableCell className="font-medium text-right">
-                        {classItem.name}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {typeof classItem.assignedTeacherId === "string"
-                          ? "—"
-                          : (classItem.assignedTeacherId as Teacher | undefined)
-                              ?.username || "—"}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {typeof classItem.schedule === "string"
-                          ? schedules.find((s) => s._id === classItem.schedule)
-                              ?.name || "—"
-                          : (
-                              classItem.schedule as
-                                | ClassTimeSchedule
-                                | undefined
-                            )?.name || "—"}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setSelectedClass(classItem);
-                            setShowStudentModal(true);
-                          }}>
-                          <Users className="h-4 w-4 ml-1" />
-                          {classItem.studentCount}
-                        </Button>
-                      </TableCell>
-                      {canWrite && (
-                        <TableCell className="text-center">
-                          <div className="flex items-center justify-center gap-2">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              title="إضافة طلاب"
-                              onClick={() => {
-                                setSelectedClass(classItem);
-                                setShowAssignModal(true);
-                              }}>
-                              <Plus className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleOpenEdit(classItem)}>
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleOpenDelete(classItem)}>
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          </div>
+                      return scheduleAStart.localeCompare(scheduleBStart);
+                    })
+                    .map((classItem, index) => (
+                      <TableRow
+                        key={classItem._id}
+                        className={`${index % 2 === 0 ? "bg-white" : "bg-gray-100"} hover:bg-blue-50`}>
+                        <TableCell className="font-medium text-center py-2 px-4 border border-gray-300">
+                          {classItem.name}
                         </TableCell>
-                      )}
-                    </TableRow>
-                  ))
-              )}
-            </TableBody>
-          </Table>
+                        <TableCell className="text-center py-2 px-4 border border-gray-300">
+                          {typeof classItem.assignedTeacherId === "string"
+                            ? "—"
+                            : (
+                                classItem.assignedTeacherId as
+                                  | Teacher
+                                  | undefined
+                              )?.username || "—"}
+                        </TableCell>
+                        <TableCell className="text-center py-2 px-4 border border-gray-300">
+                          {typeof classItem.schedule === "string"
+                            ? schedules.find(
+                                (s) => s._id === classItem.schedule,
+                              )?.name || "—"
+                            : (
+                                classItem.schedule as
+                                  | ClassTimeSchedule
+                                  | undefined
+                              )?.name || "—"}
+                        </TableCell>
+                        <TableCell className="text-center py-2 px-4 border border-gray-300">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedClass(classItem);
+                              setShowStudentModal(true);
+                            }}>
+                            <Users className="h-4 w-4 ml-1" />
+                            {classItem.studentCount}
+                          </Button>
+                        </TableCell>
+                        {canWrite && (
+                          <TableCell className="text-center py-2 px-4 border border-gray-300">
+                            <div className="flex items-center justify-center gap-2">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                title="إضافة طلاب"
+                                onClick={() => {
+                                  setSelectedClass(classItem);
+                                  setShowAssignModal(true);
+                                }}>
+                                <Plus className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleOpenEdit(classItem)}>
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleOpenDelete(classItem)}>
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       )}
 

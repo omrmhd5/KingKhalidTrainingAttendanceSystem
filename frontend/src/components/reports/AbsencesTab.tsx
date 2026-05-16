@@ -107,76 +107,78 @@ export function AbsencesTab({
         <div className="mb-4 text-sm font-semibold text-red-800">
           الإجمالي: <span className="text-lg">{filteredAbsences.length}</span>
         </div>
-        <Table dir="rtl">
-          <TableHeader className="bg-red-600">
-            <TableRow className="border-red-600 hover:bg-red-600">
-              <TableHead className="text-right text-white font-bold">
-                الرقم العسكري
-              </TableHead>
-              <TableHead className="text-right text-white font-bold">
-                السجل المدني
-              </TableHead>
-              <TableHead className="text-right text-white font-bold">
-                الاسم
-              </TableHead>
-              <TableHead className="text-right text-white font-bold">
-                الشفت
-              </TableHead>
-              <TableHead className="text-center text-white font-bold">
-                الباركود
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
+        <div className="border border-gray-300 rounded-lg overflow-hidden">
+          <Table dir="rtl" className="border-collapse">
+            <TableHeader className="bg-red-600">
               <TableRow>
-                <TableCell
-                  colSpan={5}
-                  className="text-center py-8 text-muted-foreground">
-                  جاري التحميل...
-                </TableCell>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                  الرقم العسكري
+                </TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                  السجل المدني
+                </TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                  الاسم
+                </TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                  الشفت
+                </TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4">
+                  الباركود
+                </TableHead>
               </TableRow>
-            ) : filteredAbsences?.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={5}
-                  className="text-center py-8 text-muted-foreground">
-                  لا توجد غيابات
-                </TableCell>
-              </TableRow>
-            ) : (
-              filteredAbsences?.map((a: AbsenceRecord) => (
-                <TableRow
-                  key={a._id}
-                  className="h-10 border-red-300 hover:bg-red-200">
-                  <TableCell className="font-medium text-right py-1 text-red-900">
-                    {a.military_id}
-                  </TableCell>
-                  <TableCell className="text-right py-1 text-red-900">
-                    {a.civil_id}
-                  </TableCell>
-                  <TableCell className="text-right py-1 text-red-900">
-                    {a.full_name}
-                  </TableCell>
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                <TableRow className="hover:bg-blue-50">
                   <TableCell
-                    className={`text-center font-medium py-1 px-2 border-2 whitespace-nowrap ${getShiftCellColor(a.shift_id?.name || "")}`}>
-                    {a.shift_id?.name || "—"}
-                  </TableCell>
-                  <TableCell className="text-center py-1">
-                    <div className="flex justify-center scale-75 origin-center">
-                      <Barcode
-                        value={a.military_id.toString()}
-                        width={1.5}
-                        height={40}
-                        displayValue={true}
-                      />
-                    </div>
+                    colSpan={5}
+                    className="text-center py-8 px-4 text-muted-foreground border border-gray-300">
+                    جاري التحميل...
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ) : filteredAbsences?.length === 0 ? (
+                <TableRow className="hover:bg-blue-50">
+                  <TableCell
+                    colSpan={5}
+                    className="text-center py-8 px-4 text-muted-foreground border border-gray-300">
+                    لا توجد غيابات
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredAbsences?.map((a: AbsenceRecord, index) => (
+                  <TableRow
+                    key={a._id}
+                    className={`${index % 2 === 0 ? "bg-white" : "bg-gray-100"} hover:bg-blue-50`}>
+                    <TableCell className="font-medium text-center py-2 px-4 border border-gray-300">
+                      {a.military_id}
+                    </TableCell>
+                    <TableCell className="text-center py-2 px-4 border border-gray-300">
+                      {a.civil_id}
+                    </TableCell>
+                    <TableCell className="text-center py-2 px-4 border border-gray-300">
+                      {a.full_name}
+                    </TableCell>
+                    <TableCell
+                      className={`text-center font-medium py-2 px-2 border-2 whitespace-nowrap ${getShiftCellColor(a.shift_id?.name || "")}`}>
+                      {a.shift_id?.name || "—"}
+                    </TableCell>
+                    <TableCell className="text-center py-2 px-4 border border-gray-300">
+                      <div className="flex justify-center scale-75 origin-center">
+                        <Barcode
+                          value={a.military_id.toString()}
+                          width={1.5}
+                          height={40}
+                          displayValue={true}
+                        />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </CardContent>
     </Card>
   );

@@ -272,11 +272,11 @@ export function AddStudentsModal({
           </div>
 
           {/* Students Table */}
-          <div className="overflow-x-auto border rounded">
-            <Table dir="rtl">
-              <TableHeader>
+          <div className="overflow-x-auto border border-gray-300 rounded-lg overflow-hidden">
+            <Table dir="rtl" className="border-collapse">
+              <TableHeader className="bg-teal-600">
                 <TableRow>
-                  <TableHead className="text-center w-12">
+                  <TableHead className="text-center w-12 text-white font-bold py-3 px-4 border-r border-gray-400">
                     <Checkbox
                       checked={
                         selectedStudents.size === availableStudents.length &&
@@ -285,40 +285,52 @@ export function AddStudentsModal({
                       onCheckedChange={handleSelectAll}
                     />
                   </TableHead>
-                  <TableHead className="text-right">الاسم</TableHead>
-                  <TableHead className="text-right">السجل المدني</TableHead>
-                  <TableHead className="text-right">الرقم العسكري</TableHead>
-                  <TableHead className="text-right">الحالة</TableHead>
+                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                    الاسم
+                  </TableHead>
+                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                    السجل المدني
+                  </TableHead>
+                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                    الرقم العسكري
+                  </TableHead>
+                  <TableHead className="text-center text-white font-bold py-3 px-4">
+                    الحالة
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8">
+                  <TableRow className="hover:bg-blue-50">
+                    <TableCell
+                      colSpan={5}
+                      className="text-center py-8 px-4 border border-gray-300">
                       <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
                     </TableCell>
                   </TableRow>
                 ) : paginatedStudents.length === 0 ? (
-                  <TableRow>
+                  <TableRow className="hover:bg-blue-50">
                     <TableCell
                       colSpan={5}
-                      className="text-center py-8 text-muted-foreground">
+                      className="text-center py-8 px-4 text-muted-foreground border border-gray-300">
                       لا يوجد طلاب متاحين
                     </TableCell>
                   </TableRow>
                 ) : (
-                  paginatedStudents.map((student) => {
+                  paginatedStudents.map((student, index) => {
                     const inThisClass = isStudentInThisClass(student);
                     const hasOtherClass = !!student.class;
                     return (
                       <TableRow
                         key={student._id}
-                        className={
+                        className={`${
                           hasOtherClass || inThisClass
                             ? "opacity-50 bg-muted"
-                            : ""
-                        }>
-                        <TableCell className="text-center">
+                            : index % 2 === 0
+                              ? "bg-white"
+                              : "bg-gray-100"
+                        } hover:bg-blue-50`}>
+                        <TableCell className="text-center py-2 px-4 border border-gray-300">
                           <Checkbox
                             checked={selectedStudents.has(student._id)}
                             onCheckedChange={() =>
@@ -327,16 +339,16 @@ export function AddStudentsModal({
                             disabled={hasOtherClass || inThisClass}
                           />
                         </TableCell>
-                        <TableCell className="text-right font-medium">
+                        <TableCell className="text-center font-medium py-2 px-4 border border-gray-300">
                           {student.full_name}
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-center py-2 px-4 border border-gray-300">
                           {student.civil_id}
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-center py-2 px-4 border border-gray-300">
                           {student.military_id}
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-center py-2 px-4 border border-gray-300">
                           {inThisClass ? (
                             <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
                               معين بهذا الفصل

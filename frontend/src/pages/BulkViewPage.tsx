@@ -311,51 +311,71 @@ export default function BulkViewPage() {
               />
             </div>
             {filtered.length > 0 ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="text-right">الرقم العسكري</TableHead>
-                    <TableHead className="text-right">السجل المدني</TableHead>
-                    <TableHead className="text-right">الاسم</TableHead>
-                    <TableHead className="text-right">الرتبة</TableHead>
-                    <TableHead className="text-right">التخصص</TableHead>
-                    <TableHead className="text-right">الشفت</TableHead>
-                    <TableHead className="text-center">الباركود</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filtered.map((t: any) => (
-                    <TableRow key={t._id}>
-                      <TableCell className="font-medium text-right">
-                        {t.military_id}
-                      </TableCell>
-                      <TableCell className="text-right">{t.civil_id}</TableCell>
-                      <TableCell className="font-medium text-right">
-                        {t.full_name}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {(t as any).rank_id?.name ?? "—"}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {(t as any).specialty_id?.name ?? "—"}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {(t as any).shift_id?.name ?? "—"}
-                      </TableCell>
-                      <TableCell className="text-center py-2">
-                        <div className="flex justify-center scale-75 origin-center">
-                          <Barcode
-                            value={t.military_id.toString()}
-                            width={1.5}
-                            height={40}
-                            displayValue={true}
-                          />
-                        </div>
-                      </TableCell>
+              <div className="border border-gray-300 rounded-lg overflow-hidden">
+                <Table className="border-collapse">
+                  <TableHeader className="bg-blue-600">
+                    <TableRow>
+                      <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                        الرقم العسكري
+                      </TableHead>
+                      <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                        السجل المدني
+                      </TableHead>
+                      <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                        الاسم
+                      </TableHead>
+                      <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                        الرتبة
+                      </TableHead>
+                      <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                        التخصص
+                      </TableHead>
+                      <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                        الشفت
+                      </TableHead>
+                      <TableHead className="text-center text-white font-bold py-3 px-4">
+                        الباركود
+                      </TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {filtered.map((t: any, index) => (
+                      <TableRow
+                        key={t._id}
+                        className={`${index % 2 === 0 ? "bg-white" : "bg-gray-100"} hover:bg-blue-50`}>
+                        <TableCell className="font-medium text-center py-2 px-4 border border-gray-300">
+                          {t.military_id}
+                        </TableCell>
+                        <TableCell className="text-center py-2 px-4 border border-gray-300">
+                          {t.civil_id}
+                        </TableCell>
+                        <TableCell className="font-medium text-center py-2 px-4 border border-gray-300">
+                          {t.full_name}
+                        </TableCell>
+                        <TableCell className="text-center py-2 px-4 border border-gray-300">
+                          {(t as any).rank_id?.name ?? "—"}
+                        </TableCell>
+                        <TableCell className="text-center py-2 px-4 border border-gray-300">
+                          {(t as any).specialty_id?.name ?? "—"}
+                        </TableCell>
+                        <TableCell className="text-center py-2 px-4 border border-gray-300">
+                          {(t as any).shift_id?.name ?? "—"}
+                        </TableCell>
+                        <TableCell className="text-center py-2 px-4 border border-gray-300">
+                          <div className="flex justify-center scale-75 origin-center">
+                            <Barcode
+                              value={t.military_id.toString()}
+                              width={1.5}
+                              height={40}
+                              displayValue={true}
+                            />
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             ) : (
               <div className="py-8 text-center text-muted-foreground">
                 لا توجد نتائج تطابق معايير البحث الحالية

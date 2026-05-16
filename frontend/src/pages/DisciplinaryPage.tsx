@@ -190,73 +190,75 @@ export default function DisciplinaryPage() {
               لا توجد طلبات مسجلة حتى الآن
             </div>
           ) : (
-            <Table>
-              <TableHeader className="bg-blue-50">
-                <TableRow>
-                  <TableHead className="text-right text-blue-700 font-bold">
-                    الرقم العسكري
-                  </TableHead>
-                  <TableHead className="text-right text-blue-700 font-bold">
-                    السجل المدني
-                  </TableHead>
-                  <TableHead className="text-right text-blue-700 font-bold">
-                    الاسم
-                  </TableHead>
-                  <TableHead className="text-right text-blue-700 font-bold">
-                    سبب الاستدعاء
-                  </TableHead>
-                  <TableHead className="text-right text-blue-700 font-bold">
-                    تاريخ التسجيل
-                  </TableHead>
-                  <TableHead className="text-center text-blue-700 font-bold">
-                    الإجراءات
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {disciplinary
-                  .filter((r) => r.trainee_id)
-                  .map((request) => (
-                    <TableRow
-                      key={request._id}
-                      className="bg-blue-50 hover:bg-blue-100">
-                      <TableCell className="font-medium text-right">
-                        {request.trainee_id?.military_id ?? "—"}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {request.trainee_id?.civil_id ?? "—"}
-                      </TableCell>
-                      <TableCell className="font-medium text-right">
-                        {request.trainee_id?.full_name ?? "—"}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {request.reason ?? "—"}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {new Date(request.createdAt).toLocaleDateString(
-                          "ar-SA",
-                        )}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex justify-center gap-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setEditingDisciplinary(request)}>
-                            <Edit2 className="h-4 w-4 text-blue-600" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setDeleteConfirm(request._id)}>
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-              </TableBody>
-            </Table>
+            <div className="border border-gray-300 rounded-lg overflow-hidden">
+              <Table className="border-collapse">
+                <TableHeader className="bg-blue-600">
+                  <TableRow>
+                    <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                      الرقم العسكري
+                    </TableHead>
+                    <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                      السجل المدني
+                    </TableHead>
+                    <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                      الاسم
+                    </TableHead>
+                    <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                      سبب الاستدعاء
+                    </TableHead>
+                    <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                      تاريخ التسجيل
+                    </TableHead>
+                    <TableHead className="text-center text-white font-bold py-3 px-4">
+                      الإجراءات
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {disciplinary
+                    .filter((r) => r.trainee_id)
+                    .map((request, index) => (
+                      <TableRow
+                        key={request._id}
+                        className={`${index % 2 === 0 ? "bg-white" : "bg-gray-100"} hover:bg-blue-50`}>
+                        <TableCell className="font-medium text-center py-2 px-4 border border-gray-300">
+                          {request.trainee_id?.military_id ?? "—"}
+                        </TableCell>
+                        <TableCell className="text-center py-2 px-4 border border-gray-300">
+                          {request.trainee_id?.civil_id ?? "—"}
+                        </TableCell>
+                        <TableCell className="font-medium text-center py-2 px-4 border border-gray-300">
+                          {request.trainee_id?.full_name ?? "—"}
+                        </TableCell>
+                        <TableCell className="text-center py-2 px-4 border border-gray-300">
+                          {request.reason ?? "—"}
+                        </TableCell>
+                        <TableCell className="text-center py-2 px-4 border border-gray-300">
+                          {new Date(request.createdAt).toLocaleDateString(
+                            "ar-SA",
+                          )}
+                        </TableCell>
+                        <TableCell className="text-center py-2 px-4 border border-gray-300">
+                          <div className="flex justify-center gap-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => setEditingDisciplinary(request)}>
+                              <Edit2 className="h-4 w-4 text-blue-600" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => setDeleteConfirm(request._id)}>
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>

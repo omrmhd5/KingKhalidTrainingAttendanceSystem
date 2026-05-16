@@ -299,68 +299,82 @@ export function TeachersManagementTab({
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <Table dir="rtl">
-            <TableHeader>
-              <TableRow>
-                <TableHead className="text-right">الاسم</TableHead>
-                <TableHead className="text-right">البريد الإلكتروني</TableHead>
-                <TableHead className="text-right">الفصل المعين</TableHead>
-                {canWrite && (
-                  <TableHead className="text-center">الإجراءات</TableHead>
-                )}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {teachers.length === 0 ? (
+          <div className="border border-gray-300 rounded-lg overflow-hidden">
+            <Table dir="rtl" className="border-collapse">
+              <TableHeader className="bg-purple-600">
                 <TableRow>
-                  <TableCell
-                    colSpan={canWrite ? 4 : 3}
-                    className="text-center py-8 text-muted-foreground">
-                    لا يوجد معلمون
-                  </TableCell>
+                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                    الاسم
+                  </TableHead>
+                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                    البريد الإلكتروني
+                  </TableHead>
+                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                    الفصل المعين
+                  </TableHead>
+                  {canWrite && (
+                    <TableHead className="text-center text-white font-bold py-3 px-4">
+                      الإجراءات
+                    </TableHead>
+                  )}
                 </TableRow>
-              ) : (
-                teachers.map((teacher) => (
-                  <TableRow key={teacher._id}>
-                    <TableCell className="font-medium text-right">
-                      {teacher.username}
+              </TableHeader>
+              <TableBody>
+                {teachers.length === 0 ? (
+                  <TableRow className="hover:bg-blue-50">
+                    <TableCell
+                      colSpan={canWrite ? 4 : 3}
+                      className="text-center py-8 px-4 text-muted-foreground border border-gray-300">
+                      لا يوجد معلمون
                     </TableCell>
-                    <TableCell className="text-right">
-                      {teacher.email}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {teacher.class ? (
-                        <Badge variant="outline">
-                          {classes.find((c) => c._id === teacher.class)?.name ||
-                            "فصل محذوف"}
-                        </Badge>
-                      ) : (
-                        <span className="text-muted-foreground">غير معين</span>
-                      )}
-                    </TableCell>
-                    {canWrite && (
-                      <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleOpenEdit(teacher)}>
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleOpenDelete(teacher)}>
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    )}
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ) : (
+                  teachers.map((teacher, index) => (
+                    <TableRow
+                      key={teacher._id}
+                      className={`${index % 2 === 0 ? "bg-white" : "bg-gray-100"} hover:bg-blue-50`}>
+                      <TableCell className="font-medium text-center py-2 px-4 border border-gray-300">
+                        {teacher.username}
+                      </TableCell>
+                      <TableCell className="text-center py-2 px-4 border border-gray-300">
+                        {teacher.email}
+                      </TableCell>
+                      <TableCell className="text-center py-2 px-4 border border-gray-300">
+                        {teacher.class ? (
+                          <Badge variant="outline">
+                            {classes.find((c) => c._id === teacher.class)
+                              ?.name || "فصل محذوف"}
+                          </Badge>
+                        ) : (
+                          <span className="text-muted-foreground">
+                            غير معين
+                          </span>
+                        )}
+                      </TableCell>
+                      {canWrite && (
+                        <TableCell className="text-center py-2 px-4 border border-gray-300">
+                          <div className="flex items-center justify-center gap-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleOpenEdit(teacher)}>
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleOpenDelete(teacher)}>
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       )}
 

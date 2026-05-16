@@ -109,76 +109,78 @@ export function EscapesTab({
         <div className="mb-4 text-sm font-semibold text-orange-800">
           الإجمالي: <span className="text-lg">{filteredEscapes.length}</span>
         </div>
-        <Table dir="rtl">
-          <TableHeader className="bg-orange-600">
-            <TableRow className="border-orange-600 hover:bg-orange-600">
-              <TableHead className="text-right text-white font-bold">
-                الرقم العسكري
-              </TableHead>
-              <TableHead className="text-right text-white font-bold">
-                السجل المدني
-              </TableHead>
-              <TableHead className="text-right text-white font-bold">
-                الاسم
-              </TableHead>
-              <TableHead className="text-right text-white font-bold">
-                الشفت
-              </TableHead>
-              <TableHead className="text-center text-white font-bold">
-                الباركود
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
+        <div className="border border-gray-300 rounded-lg overflow-hidden">
+          <Table dir="rtl" className="border-collapse">
+            <TableHeader className="bg-orange-600">
               <TableRow>
-                <TableCell
-                  colSpan={5}
-                  className="text-center py-8 text-muted-foreground">
-                  جاري التحميل...
-                </TableCell>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                  الرقم العسكري
+                </TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                  السجل المدني
+                </TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                  الاسم
+                </TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                  الشفت
+                </TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4">
+                  الباركود
+                </TableHead>
               </TableRow>
-            ) : filteredEscapes?.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={5}
-                  className="text-center py-8 text-muted-foreground">
-                  لا توجد حالات هروب
-                </TableCell>
-              </TableRow>
-            ) : (
-              filteredEscapes?.map((e: EscapeRecord) => (
-                <TableRow
-                  key={e._id}
-                  className="h-10 border-orange-300 hover:bg-orange-200">
-                  <TableCell className="font-medium text-right py-1 text-orange-900">
-                    {e.military_id}
-                  </TableCell>
-                  <TableCell className="text-right py-1 text-orange-900">
-                    {e.civil_id}
-                  </TableCell>
-                  <TableCell className="text-right py-1 text-orange-900">
-                    {e.full_name}
-                  </TableCell>
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                <TableRow className="hover:bg-blue-50">
                   <TableCell
-                    className={`text-center font-medium py-1 px-2 border-2 whitespace-nowrap ${getShiftCellColor(e.shift_id?.name || "")}`}>
-                    {e.shift_id?.name || "—"}
-                  </TableCell>
-                  <TableCell className="text-center py-1">
-                    <div className="flex justify-center scale-75 origin-center">
-                      <Barcode
-                        value={e.military_id.toString()}
-                        width={1.5}
-                        height={40}
-                        displayValue={true}
-                      />
-                    </div>
+                    colSpan={5}
+                    className="text-center py-8 px-4 text-muted-foreground border border-gray-300">
+                    جاري التحميل...
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ) : filteredEscapes?.length === 0 ? (
+                <TableRow className="hover:bg-blue-50">
+                  <TableCell
+                    colSpan={5}
+                    className="text-center py-8 px-4 text-muted-foreground border border-gray-300">
+                    لا توجد حالات هروب
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredEscapes?.map((e: EscapeRecord, index) => (
+                  <TableRow
+                    key={e._id}
+                    className={`${index % 2 === 0 ? "bg-white" : "bg-gray-100"} hover:bg-blue-50`}>
+                    <TableCell className="font-medium text-center py-2 px-4 border border-gray-300">
+                      {e.military_id}
+                    </TableCell>
+                    <TableCell className="text-center py-2 px-4 border border-gray-300">
+                      {e.civil_id}
+                    </TableCell>
+                    <TableCell className="text-center py-2 px-4 border border-gray-300">
+                      {e.full_name}
+                    </TableCell>
+                    <TableCell
+                      className={`text-center font-medium py-2 px-2 border-2 whitespace-nowrap ${getShiftCellColor(e.shift_id?.name || "")}`}>
+                      {e.shift_id?.name || "—"}
+                    </TableCell>
+                    <TableCell className="text-center py-2 px-4 border border-gray-300">
+                      <div className="flex justify-center scale-75 origin-center">
+                        <Barcode
+                          value={e.military_id.toString()}
+                          width={1.5}
+                          height={40}
+                          displayValue={true}
+                        />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </CardContent>
     </Card>
   );

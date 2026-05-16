@@ -386,109 +386,131 @@ export default function TraineesPage() {
           />
         </CardHeader>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                {canWrite && (
-                  <TableHead className="text-center w-12">
-                    <Checkbox
-                      checked={
-                        selectedTrainees.size === filtered.length &&
-                        filtered.length > 0
-                      }
-                      onCheckedChange={toggleSelectAll}
-                    />
+          <div className="border border-gray-300 rounded-lg overflow-hidden">
+            <Table className="border-collapse">
+              <TableHeader className="bg-blue-600">
+                <TableRow>
+                  {canWrite && (
+                    <TableHead className="text-center w-12 py-3 px-4 text-white font-bold border-r border-gray-400">
+                      <Checkbox
+                        checked={
+                          selectedTrainees.size === filtered.length &&
+                          filtered.length > 0
+                        }
+                        onCheckedChange={toggleSelectAll}
+                      />
+                    </TableHead>
+                  )}
+                  <TableHead className="text-center py-3 px-4 text-white font-bold border-r border-gray-400">
+                    الرقم العسكري
                   </TableHead>
-                )}
-                <TableHead className="text-right">الرقم العسكري</TableHead>
-                <TableHead className="text-right">السجل المدني</TableHead>
-                <TableHead className="text-right">الاسم</TableHead>
-                <TableHead className="text-right">الرتبة</TableHead>
-                <TableHead className="text-right">التخصص</TableHead>
-                <TableHead className="text-right">الشفت</TableHead>
-                <TableHead className="text-center">الباركود</TableHead>
-                {canWrite && (
-                  <TableHead className="text-right">الإجراءات</TableHead>
-                )}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={canWrite ? 9 : 8}
-                    className="text-center py-8 text-muted-foreground">
-                    جاري التحميل...
-                  </TableCell>
+                  <TableHead className="text-center py-3 px-4 text-white font-bold border-r border-gray-400">
+                    السجل المدني
+                  </TableHead>
+                  <TableHead className="text-center py-3 px-4 text-white font-bold border-r border-gray-400">
+                    الاسم
+                  </TableHead>
+                  <TableHead className="text-center py-3 px-4 text-white font-bold border-r border-gray-400">
+                    الرتبة
+                  </TableHead>
+                  <TableHead className="text-center py-3 px-4 text-white font-bold border-r border-gray-400">
+                    التخصص
+                  </TableHead>
+                  <TableHead className="text-center py-3 px-4 text-white font-bold border-r border-gray-400">
+                    الشفت
+                  </TableHead>
+                  <TableHead className="text-center py-3 px-4 text-white font-bold border-r border-gray-400">
+                    الباركود
+                  </TableHead>
+                  {canWrite && (
+                    <TableHead className="text-center py-3 px-4 text-white font-bold">
+                      الإجراءات
+                    </TableHead>
+                  )}
                 </TableRow>
-              ) : filtered?.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={canWrite ? 9 : 8}
-                    className="text-center py-8 text-muted-foreground">
-                    لم يتم العثور على متدربين
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filtered?.map((t: Trainee) => (
-                  <TableRow key={t._id}>
-                    {canWrite && (
-                      <TableCell className="text-center w-12">
-                        <Checkbox
-                          checked={selectedTrainees.has(t._id)}
-                          onCheckedChange={() => toggleSelectTrainee(t._id)}
-                        />
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  <TableRow className="hover:bg-blue-50">
+                    <TableCell
+                      colSpan={canWrite ? 9 : 8}
+                      className="text-center py-8 px-4 text-muted-foreground border border-gray-300">
+                      جاري التحميل...
+                    </TableCell>
+                  </TableRow>
+                ) : filtered?.length === 0 ? (
+                  <TableRow className="hover:bg-blue-50">
+                    <TableCell
+                      colSpan={canWrite ? 9 : 8}
+                      className="text-center py-8 px-4 text-muted-foreground border border-gray-300">
+                      لم يتم العثور على متدربين
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filtered?.map((t: Trainee, index) => (
+                    <TableRow
+                      key={t._id}
+                      className={`${index % 2 === 0 ? "bg-white" : "bg-gray-100"} hover:bg-blue-50`}>
+                      {canWrite && (
+                        <TableCell className="text-center w-12 py-2 px-4 border border-gray-300">
+                          <Checkbox
+                            checked={selectedTrainees.has(t._id)}
+                            onCheckedChange={() => toggleSelectTrainee(t._id)}
+                          />
+                        </TableCell>
+                      )}
+                      <TableCell className="font-medium text-center py-2 px-4 border border-gray-300">
+                        {t.military_id}
                       </TableCell>
-                    )}
-                    <TableCell className="font-medium text-right">
-                      {t.military_id}
-                    </TableCell>
-                    <TableCell className="text-right">{t.civil_id}</TableCell>
-                    <TableCell className="font-medium text-right">
-                      {t.full_name}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {(t.rank_id as Rank)?.name ?? "—"}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {(t.specialty_id as Specialization)?.name ?? "—"}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {(t.shift_id as Shift)?.name ?? "—"}
-                    </TableCell>
-                    <TableCell className="text-center py-2">
-                      <div className="flex justify-center scale-75 origin-center">
-                        <Barcode
-                          value={t.military_id.toString()}
-                          width={1.5}
-                          height={40}
-                          displayValue={true}
-                        />
-                      </div>
-                    </TableCell>
-                    {canWrite && (
-                      <TableCell className="text-right">
-                        <div className="flex items-center gap-2 justify-start">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => openEdit(t)}>
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => openDelete(t._id, t.full_name)}>
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
+                      <TableCell className="text-center py-2 px-4 border border-gray-300">
+                        {t.civil_id}
+                      </TableCell>
+                      <TableCell className="font-medium text-center py-2 px-4 border border-gray-300">
+                        {t.full_name}
+                      </TableCell>
+                      <TableCell className="text-center py-2 px-4 border border-gray-300">
+                        {(t.rank_id as Rank)?.name ?? "—"}
+                      </TableCell>
+                      <TableCell className="text-center py-2 px-4 border border-gray-300">
+                        {(t.specialty_id as Specialization)?.name ?? "—"}
+                      </TableCell>
+                      <TableCell className="text-center py-2 px-4 border border-gray-300">
+                        {(t.shift_id as Shift)?.name ?? "—"}
+                      </TableCell>
+                      <TableCell className="text-center py-2 px-4 border border-gray-300">
+                        <div className="flex justify-center scale-75 origin-center">
+                          <Barcode
+                            value={t.military_id.toString()}
+                            width={1.5}
+                            height={40}
+                            displayValue={true}
+                          />
                         </div>
                       </TableCell>
-                    )}
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                      {canWrite && (
+                        <TableCell className="text-center py-2 px-4 border border-gray-300">
+                          <div className="flex items-center gap-2 justify-start">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => openEdit(t)}>
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => openDelete(t._id, t.full_name)}>
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

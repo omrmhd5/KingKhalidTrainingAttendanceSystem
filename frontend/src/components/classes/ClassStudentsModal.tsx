@@ -217,12 +217,12 @@ export function ClassStudentsModal({
           </div>
 
           {/* Students Table */}
-          <div className="overflow-x-auto border rounded">
-            <Table dir="rtl">
-              <TableHeader>
+          <div className="overflow-x-auto border border-gray-300 rounded-lg overflow-hidden">
+            <Table dir="rtl" className="border-collapse">
+              <TableHeader className="bg-rose-600">
                 <TableRow>
                   {canWrite && (
-                    <TableHead className="text-center w-12">
+                    <TableHead className="text-center w-12 text-white font-bold py-3 px-4 border-r border-gray-400">
                       <Checkbox
                         checked={
                           selectedStudents.size === paginatedStudents.length &&
@@ -232,36 +232,46 @@ export function ClassStudentsModal({
                       />
                     </TableHead>
                   )}
-                  <TableHead className="text-right">الاسم</TableHead>
-                  <TableHead className="text-right">السجل المدني</TableHead>
-                  <TableHead className="text-right">الرقم العسكري</TableHead>
+                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                    الاسم
+                  </TableHead>
+                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                    السجل المدني
+                  </TableHead>
+                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                    الرقم العسكري
+                  </TableHead>
                   {canWrite && (
-                    <TableHead className="text-center">الإجراءات</TableHead>
+                    <TableHead className="text-center text-white font-bold py-3 px-4">
+                      الإجراءات
+                    </TableHead>
                   )}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
-                  <TableRow>
+                  <TableRow className="hover:bg-blue-50">
                     <TableCell
                       colSpan={canWrite ? 5 : 4}
-                      className="text-center py-8">
+                      className="text-center py-8 px-4 border border-gray-300">
                       <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
                     </TableCell>
                   </TableRow>
                 ) : paginatedStudents.length === 0 ? (
-                  <TableRow>
+                  <TableRow className="hover:bg-blue-50">
                     <TableCell
                       colSpan={canWrite ? 5 : 4}
-                      className="text-center py-8 text-muted-foreground">
+                      className="text-center py-8 px-4 text-muted-foreground border border-gray-300">
                       لا يوجد طلاب
                     </TableCell>
                   </TableRow>
                 ) : (
-                  paginatedStudents.map((student) => (
-                    <TableRow key={student._id}>
+                  paginatedStudents.map((student, index) => (
+                    <TableRow
+                      key={student._id}
+                      className={`${index % 2 === 0 ? "bg-white" : "bg-gray-100"} hover:bg-blue-50`}>
                       {canWrite && (
-                        <TableCell className="text-center">
+                        <TableCell className="text-center py-2 px-4 border border-gray-300">
                           <Checkbox
                             checked={selectedStudents.has(student._id)}
                             onCheckedChange={() =>
@@ -270,17 +280,17 @@ export function ClassStudentsModal({
                           />
                         </TableCell>
                       )}
-                      <TableCell className="text-right font-medium">
+                      <TableCell className="text-center font-medium py-2 px-4 border border-gray-300">
                         {student.full_name}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-center py-2 px-4 border border-gray-300">
                         {student.civil_id}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-center py-2 px-4 border border-gray-300">
                         {student.military_id}
                       </TableCell>
                       {canWrite && (
-                        <TableCell className="text-center">
+                        <TableCell className="text-center py-2 px-4 border border-gray-300">
                           <Button
                             variant="ghost"
                             size="icon"
