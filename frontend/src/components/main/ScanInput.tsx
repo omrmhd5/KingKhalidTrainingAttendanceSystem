@@ -50,9 +50,14 @@ export default function ScanInput({
     }
 
     setBarcode("");
-    requestAnimationFrame(() => {
+    inputRef.current?.focus();
+  };
+
+  const handleBlur = () => {
+    // Always restore focus to the input
+    setTimeout(() => {
       inputRef.current?.focus();
-    });
+    }, 0);
   };
 
   return (
@@ -64,6 +69,7 @@ export default function ScanInput({
             ref={inputRef}
             value={barcode}
             onChange={(e) => setBarcode(e.target.value)}
+            onBlur={handleBlur}
             placeholder="امسح الباركود هنا..."
             className="h-12 border-2 border-gray-700 bg-background pr-10 text-center text-lg font-mono text-foreground"
             autoFocus
