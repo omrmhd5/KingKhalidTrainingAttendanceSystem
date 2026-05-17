@@ -9,12 +9,14 @@ interface ScanInputProps {
   onScan: (barcode: string, mode: ScanMode) => Promise<void>;
   isScanning: boolean;
   mode: ScanMode;
+  pauseFocus?: boolean;
 }
 
 export default function ScanInput({
   onScan,
   isScanning,
   mode,
+  pauseFocus = false,
 }: ScanInputProps) {
   const [barcode, setBarcode] = useState("");
   const [error, setError] = useState("");
@@ -25,6 +27,33 @@ export default function ScanInput({
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
+
+  // Permanent focus: refocus whenever the input loses focus to any element
+  useEffect(() => {
+    const refocus = () => {
+      if (pauseFocus) return;
+      setTimeout(() => inputRef.current?.focus(), 10);
+    };
+    // Refocus on any click anywhere on the page
+    document.addEventListener("click", refocus);
+    // Refocus on any keydown that isn't in our input (e.g. scanner sends Tab)
+    document.addEventListener("keydown", refocus);
+    return () => {
+      document.removeEventListener("click", refocus);
+      document.removeEventListener("keydown", refocus);
+    };
+  }, [pauseFocus]);
+
+  // Interval-based fallback: ensure input always has focus
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (pauseFocus) return;
+      if (document.activeElement !== inputRef.current) {
+        inputRef.current?.focus();
+      }
+    }, 300);
+    return () => clearInterval(interval);
+  }, [pauseFocus]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,10 +83,8 @@ export default function ScanInput({
   };
 
   const handleBlur = () => {
-    // Always restore focus to the input
-    setTimeout(() => {
-      inputRef.current?.focus();
-    }, 0);
+    if (pauseFocus) return;
+    setTimeout(() => inputRef.current?.focus(), 10);
   };
 
   return (

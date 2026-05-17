@@ -471,7 +471,12 @@ export default function MainPage() {
       />
 
       {/* Barcode scan input */}
-      <ScanInput onScan={handleScan} isScanning={scanning} mode={scanMode} />
+      <ScanInput
+        onScan={handleScan}
+        isScanning={scanning}
+        mode={scanMode}
+        pauseFocus={deleteOpen || clearExitOpen}
+      />
 
       {/* Bulk Delete Button */}
       {selectedEntries.size > 0 && (
