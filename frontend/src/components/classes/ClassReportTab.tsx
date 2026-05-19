@@ -619,10 +619,10 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
                         <Table className="border-collapse">
                           <TableHeader className="bg-green-600">
                             <TableRow>
-                              <TableHead className="text-right text-white font-bold py-3 px-4 border-r border-gray-400">
+                              <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
                                 اسم الفصل
                               </TableHead>
-                              <TableHead className="text-right text-white font-bold py-3 px-4">
+                              <TableHead className="text-center text-white font-bold py-3 px-4">
                                 المعلم المسؤول
                               </TableHead>
                             </TableRow>
@@ -641,10 +641,10 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
                                 <TableRow
                                   key={cls._id}
                                   className={`${i % 2 === 0 ? "bg-white" : "bg-green-50"} hover:bg-green-100`}>
-                                  <TableCell className="font-medium py-2 px-4 border border-gray-300">
+                                  <TableCell className="font-medium text-center py-2 px-4 border border-gray-300">
                                     {cls.name}
                                   </TableCell>
-                                  <TableCell className="py-2 px-4 border border-gray-300 text-muted-foreground">
+                                  <TableCell className="text-center py-2 px-4 border border-gray-300 text-muted-foreground">
                                     {cls.teacherName}
                                   </TableCell>
                                 </TableRow>
@@ -679,10 +679,10 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
                         <Table className="border-collapse">
                           <TableHeader className="bg-red-600">
                             <TableRow>
-                              <TableHead className="text-right text-white font-bold py-3 px-4 border-r border-gray-400">
+                              <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
                                 اسم الفصل
                               </TableHead>
-                              <TableHead className="text-right text-white font-bold py-3 px-4">
+                              <TableHead className="text-center text-white font-bold py-3 px-4">
                                 المعلم المسؤول
                               </TableHead>
                             </TableRow>
@@ -701,10 +701,10 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
                                 <TableRow
                                   key={cls._id}
                                   className={`${i % 2 === 0 ? "bg-white" : "bg-red-50"} hover:bg-red-100`}>
-                                  <TableCell className="font-medium py-2 px-4 border border-gray-300">
+                                  <TableCell className="font-medium text-center py-2 px-4 border border-gray-300">
                                     {cls.name}
                                   </TableCell>
-                                  <TableCell className="py-2 px-4 border border-gray-300 text-muted-foreground">
+                                  <TableCell className="text-center py-2 px-4 border border-gray-300 text-muted-foreground">
                                     {cls.teacherName}
                                   </TableCell>
                                 </TableRow>
