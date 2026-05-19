@@ -146,15 +146,10 @@ export function TeachersManagementTab({
   };
 
   const handleAddTeacher = async () => {
-    if (
-      !formData.username ||
-      !formData.email ||
-      !formData.password ||
-      !formData.class
-    ) {
+    if (!formData.username || !formData.email || !formData.password) {
       toast({
         title: "خطأ",
-        description: "الرجاء ملء جميع الحقول",
+        description: "الرجاء ملء جميع الحقول المطلوبة",
         variant: "destructive",
       });
       return;
@@ -177,7 +172,7 @@ export function TeachersManagementTab({
         password: formData.password,
         confirmPassword: formData.confirmPassword,
         role: "teacher",
-        class: formData.class,
+        ...(formData.class ? { class: formData.class } : {}),
       });
       setTeachers([...teachers, response.user]);
       setIsAddOpen(false);
@@ -197,10 +192,10 @@ export function TeachersManagementTab({
   };
 
   const handleUpdateTeacher = async () => {
-    if (!formData.username || !formData.email || !formData.class) {
+    if (!formData.username || !formData.email) {
       toast({
         title: "خطأ",
-        description: "الرجاء ملء جميع الحقول",
+        description: "الرجاء ملء جميع الحقول المطلوبة",
         variant: "destructive",
       });
       return;
@@ -221,7 +216,7 @@ export function TeachersManagementTab({
         username: formData.username,
         email: formData.email,
         role: "teacher",
-        class: formData.class,
+        class: formData.class || null,
       };
 
       if (formData.password) {
@@ -468,7 +463,10 @@ export function TeachersManagementTab({
                   <Label
                     htmlFor="teacher-class"
                     className="text-right block mb-2">
-                    الفصل
+                    الفصل{" "}
+                    <span className="text-muted-foreground text-xs">
+                      (اختياري)
+                    </span>
                   </Label>
                   <Select
                     value={formData.class}
@@ -476,7 +474,7 @@ export function TeachersManagementTab({
                       setFormData({ ...formData, class: value })
                     }>
                     <SelectTrigger id="teacher-class" dir="rtl">
-                      <SelectValue placeholder="اختر فصل" />
+                      <SelectValue placeholder="بدون فصل" />
                     </SelectTrigger>
                     <SelectContent dir="rtl">
                       {getAvailableClasses().map((cls) => (
@@ -598,17 +596,24 @@ export function TeachersManagementTab({
                   <Label
                     htmlFor="edit-teacher-class"
                     className="text-right block mb-2">
-                    الفصل
+                    الفصل{" "}
+                    <span className="text-muted-foreground text-xs">
+                      (اختياري)
+                    </span>
                   </Label>
                   <Select
-                    value={formData.class}
+                    value={formData.class || "__none__"}
                     onValueChange={(value) =>
-                      setFormData({ ...formData, class: value })
+                      setFormData({
+                        ...formData,
+                        class: value === "__none__" ? "" : value,
+                      })
                     }>
                     <SelectTrigger id="edit-teacher-class" dir="rtl">
-                      <SelectValue placeholder="اختر فصل" />
+                      <SelectValue placeholder="بدون فصل" />
                     </SelectTrigger>
                     <SelectContent dir="rtl">
+                      <SelectItem value="__none__">— بدون فصل</SelectItem>
                       {getAvailableClasses(selectedTeacher?.class).map(
                         (cls) => (
                           <SelectItem key={cls._id} value={cls._id}>

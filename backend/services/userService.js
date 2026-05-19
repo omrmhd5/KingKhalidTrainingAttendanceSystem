@@ -57,10 +57,6 @@ class UserService {
       throw new Error("دور غير صحيح. يجب أن يكون أحد: مسؤول، مشغل، معلم");
     }
 
-    if (role === "teacher" && !className) {
-      throw new Error("الفصل مطلوب لدور المعلم");
-    }
-
     // Check if user already exists
     const existingUser = await User.findOne({
       $or: [{ email }, { username }],
@@ -84,7 +80,7 @@ class UserService {
       email,
       password,
       role,
-      class: role === "teacher" ? className : undefined,
+      class: role === "teacher" && className ? className : null,
     });
 
     await user.save();
@@ -131,10 +127,6 @@ class UserService {
       throw new Error("دور غير صحيح. يجب أن يكون أحد: مسؤول، مشغل، معلم");
     }
 
-    if (role === "teacher" && !className) {
-      throw new Error("الفصل مطلوب لدور المعلم");
-    }
-
     // If password is provided, validate it
     if (password) {
       if (password.length < 6) {
@@ -164,7 +156,7 @@ class UserService {
     user.username = username;
     user.email = email;
     user.role = role;
-    user.class = role === "teacher" ? className : undefined;
+    user.class = role === "teacher" && className ? className : null;
 
     if (password) {
       user.password = password; // Will be hashed by pre-save hook

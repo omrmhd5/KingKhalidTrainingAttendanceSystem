@@ -52,14 +52,21 @@ export default function TeachersMainPage() {
 
   if (!teacherClass) {
     return (
-      <Card className="m-4">
-        <CardHeader className="text-right" dir="rtl">
-          <CardTitle>معلومات الفصل</CardTitle>
-        </CardHeader>
-        <CardContent className="text-right py-8" dir="rtl">
-          <p className="text-muted-foreground">لم يتم تعيين فصل لك بعد</p>
-        </CardContent>
-      </Card>
+      <div className="flex h-screen items-center justify-center p-4">
+        <Card className="max-w-md w-full text-center" dir="rtl">
+          <CardHeader>
+            <CardTitle className="text-xl">مرحباً بك</CardTitle>
+          </CardHeader>
+          <CardContent className="py-6 space-y-2">
+            <p className="text-muted-foreground">
+              شكراً لتسجيل دخولك إلى النظام.
+            </p>
+            <p className="text-muted-foreground">
+              لم يتم تعيين فصل لك بعد، يرجى التواصل مع المسؤول.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 

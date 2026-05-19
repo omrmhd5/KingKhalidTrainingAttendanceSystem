@@ -73,6 +73,23 @@ exports.updateUser = async (req, res) => {
       }
     }
 
+    // If teacher's class was removed, unassign from old class
+    if (
+      user.role === "teacher" &&
+      !req.body.class &&
+      oldUser &&
+      oldUser.class
+    ) {
+      try {
+        await classService.unassignTeacherFromClass(oldUser.class);
+      } catch (classError) {
+        console.error(
+          "Failed to unassign teacher from class:",
+          classError.message,
+        );
+      }
+    }
+
     res.json({
       message: "User updated successfully",
       user,
