@@ -2,6 +2,14 @@ import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
   getTodayDateKSA,
   convertToKSADate,
   getGregorianDateArabic,
@@ -24,6 +32,8 @@ import {
 import ReportSummary from "@/components/teacher/ReportSummary";
 import StatDetailModal from "@/components/classes/StatDetailModal";
 import { Trainee } from "@/lib/traineeApi";
+import { ClassCoverageExportPDF } from "@/components/classes/ClassCoverageExportPDF";
+import { ClassCoverageExportExcel } from "@/components/classes/ClassCoverageExportExcel";
 
 interface ClassReportTabProps {
   canWrite?: boolean;
@@ -58,6 +68,7 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
     color: "green",
   });
   const [expandMissingClasses, setExpandMissingClasses] = useState(false);
+  const [expandSentClasses, setExpandSentClasses] = useState(false);
 
   useEffect(() => {
     loadClasses();
@@ -512,13 +523,11 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
       {/* Class Coverage Summary */}
       {!loading &&
         (() => {
-          // Determine the relevant class pool (filtered or all)
           const relevantClasses =
             selectedClass !== "all"
               ? classes.filter((c) => c._id === selectedClass)
               : classes;
 
-          // Get class IDs that submitted reports
           const reportedClassIds = new Set(
             reports
               .filter((r) => r.classId != null)
@@ -529,122 +538,185 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
               ),
           );
 
-          const sentCount = relevantClasses.filter((c) =>
-            reportedClassIds.has(c._id),
-          ).length;
+          const sentClasses = relevantClasses
+            .filter((c) => reportedClassIds.has(c._id))
+            .map((c) => ({
+              _id: c._id,
+              name: c.name,
+              teacherName:
+                c.assignedTeacherId && typeof c.assignedTeacherId === "object"
+                  ? (c.assignedTeacherId as { username: string }).username
+                  : "—",
+            }));
 
-          const missingClasses = relevantClasses.filter(
-            (c) => !reportedClassIds.has(c._id),
-          );
+          const missingClasses = relevantClasses
+            .filter((c) => !reportedClassIds.has(c._id))
+            .map((c) => ({
+              _id: c._id,
+              name: c.name,
+              teacherName:
+                c.assignedTeacherId && typeof c.assignedTeacherId === "object"
+                  ? (c.assignedTeacherId as { username: string }).username
+                  : "—",
+            }));
 
           return (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3" dir="rtl">
-              {/* Total classes */}
-              <Card className="border-2 border-blue-200 bg-blue-50">
-                <CardHeader className="pb-1 pt-2 px-3">
-                  <CardTitle className="text-xs font-medium text-blue-700">
-                    إجمالي الفصول
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pb-2 px-3">
-                  <p className="text-xl font-bold text-blue-700">
-                    {relevantClasses.length}
-                  </p>
-                </CardContent>
-              </Card>
-
-              {/* Sent reports */}
-              <Card className="border-2 border-green-200 bg-green-50">
-                <CardHeader className="pb-1 pt-2 px-3">
-                  <CardTitle className="text-xs font-medium text-green-700">
-                    أرسلوا التقارير
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pb-2 px-3">
-                  <p className="text-xl font-bold text-green-700">
-                    {sentCount}
-                  </p>
-                </CardContent>
-              </Card>
-
-              {/* Did not send */}
-              <Card className="border-2 border-red-200 bg-red-50">
-                <CardHeader className="pb-1 pt-2 px-3">
-                  <CardTitle className="text-xs font-medium text-red-700">
-                    لم يرسلوا التقارير
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pb-2 px-3">
-                  <p className="text-xl font-bold text-red-700">
-                    {missingClasses.length}
-                  </p>
-                </CardContent>
-              </Card>
-
-              {/* Missing classes list */}
-              {missingClasses.length > 0 && (
-                <div className="md:col-span-3">
-                  <Card className="border-2 border-red-200">
-                    <CardHeader
-                      className="pb-2 cursor-pointer hover:bg-red-100 transition-colors"
-                      onClick={() =>
-                        setExpandMissingClasses(!expandMissingClasses)
-                      }>
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="text-sm font-medium text-red-700">
-                          الفصول التي لم ترسل تقارير ({missingClasses.length})
-                        </CardTitle>
-                        <ChevronDown
-                          className={`h-5 w-5 text-red-700 transition-transform ${expandMissingClasses ? "rotate-180" : ""}`}
-                        />
-                      </div>
-                    </CardHeader>
-                    {expandMissingClasses && (
-                      <CardContent className="p-0">
-                        <table className="w-full text-sm" dir="rtl">
-                          <thead className="bg-red-100">
-                            <tr>
-                              <th className="text-right text-red-700 font-bold py-2 px-4 border-b border-red-200">
-                                اسم الفصل
-                              </th>
-                              <th className="text-right text-red-700 font-bold py-2 px-4 border-b border-red-200">
-                                المعلم المسؤول
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {missingClasses.map((cls, i) => {
-                              const teacher =
-                                cls.assignedTeacherId &&
-                                typeof cls.assignedTeacherId === "object"
-                                  ? (
-                                      cls.assignedTeacherId as {
-                                        username: string;
-                                      }
-                                    ).username
-                                  : "—";
-                              return (
-                                <tr
-                                  key={cls._id}
-                                  className={
-                                    i % 2 === 0 ? "bg-white" : "bg-red-50"
-                                  }>
-                                  <td className="py-2 px-4 border-b border-red-100 font-medium">
-                                    {cls.name}
-                                  </td>
-                                  <td className="py-2 px-4 border-b border-red-100 text-muted-foreground">
-                                    {teacher}
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      </CardContent>
-                    )}
-                  </Card>
+            <div className="space-y-4" dir="rtl">
+              {/* Summary cards + export buttons */}
+              <div className="flex items-center justify-between flex-wrap gap-3">
+                <div className="flex gap-3 flex-wrap">
+                  <div className="flex items-center gap-2 bg-blue-50 border-2 border-blue-200 rounded-lg px-4 py-2">
+                    <span className="text-2xl font-bold text-blue-700">
+                      {relevantClasses.length}
+                    </span>
+                    <span className="text-xs text-blue-600">إجمالي الفصول</span>
+                  </div>
+                  <div className="flex items-center gap-2 bg-green-50 border-2 border-green-200 rounded-lg px-4 py-2">
+                    <span className="text-2xl font-bold text-green-700">
+                      {sentClasses.length}
+                    </span>
+                    <span className="text-xs text-green-600">أرسلوا</span>
+                  </div>
+                  <div className="flex items-center gap-2 bg-red-50 border-2 border-red-200 rounded-lg px-4 py-2">
+                    <span className="text-2xl font-bold text-red-700">
+                      {missingClasses.length}
+                    </span>
+                    <span className="text-xs text-red-600">لم يرسلوا</span>
+                  </div>
                 </div>
-              )}
+                <div className="flex gap-2">
+                  <ClassCoverageExportPDF
+                    sentClasses={sentClasses}
+                    missingClasses={missingClasses}
+                    date={selectedDate}
+                  />
+                  <ClassCoverageExportExcel
+                    sentClasses={sentClasses}
+                    missingClasses={missingClasses}
+                    date={selectedDate}
+                  />
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                {/* Sent classes collapsible */}
+                <Card className="border-2 border-green-200">
+                  <CardHeader
+                    className="pb-2 pt-3 px-4 cursor-pointer hover:bg-green-50 transition-colors"
+                    onClick={() => setExpandSentClasses(!expandSentClasses)}>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-sm font-semibold text-green-700">
+                        ✓ أرسلوا التقارير ({sentClasses.length})
+                      </CardTitle>
+                      <ChevronDown
+                        className={`h-5 w-5 text-green-700 transition-transform ${expandSentClasses ? "rotate-180" : ""}`}
+                      />
+                    </div>
+                  </CardHeader>
+                  {expandSentClasses && (
+                    <CardContent className="p-0">
+                      <div className="border border-gray-300 rounded-lg overflow-hidden">
+                        <Table className="border-collapse">
+                          <TableHeader className="bg-green-600">
+                            <TableRow>
+                              <TableHead className="text-right text-white font-bold py-3 px-4 border-r border-gray-400">
+                                اسم الفصل
+                              </TableHead>
+                              <TableHead className="text-right text-white font-bold py-3 px-4">
+                                المعلم المسؤول
+                              </TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {sentClasses.length === 0 ? (
+                              <TableRow className="hover:bg-green-50">
+                                <TableCell
+                                  colSpan={2}
+                                  className="text-center py-8 px-4 text-muted-foreground border border-gray-300">
+                                  لا يوجد فصول أرسلت تقارير
+                                </TableCell>
+                              </TableRow>
+                            ) : (
+                              sentClasses.map((cls, i) => (
+                                <TableRow
+                                  key={cls._id}
+                                  className={`${i % 2 === 0 ? "bg-white" : "bg-green-50"} hover:bg-green-100`}>
+                                  <TableCell className="font-medium py-2 px-4 border border-gray-300">
+                                    {cls.name}
+                                  </TableCell>
+                                  <TableCell className="py-2 px-4 border border-gray-300 text-muted-foreground">
+                                    {cls.teacherName}
+                                  </TableCell>
+                                </TableRow>
+                              ))
+                            )}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </CardContent>
+                  )}
+                </Card>
+
+                {/* Missing classes collapsible */}
+                <Card className="border-2 border-red-200">
+                  <CardHeader
+                    className="pb-2 pt-3 px-4 cursor-pointer hover:bg-red-50 transition-colors"
+                    onClick={() =>
+                      setExpandMissingClasses(!expandMissingClasses)
+                    }>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-sm font-semibold text-red-700">
+                        ✗ لم يرسلوا التقارير ({missingClasses.length})
+                      </CardTitle>
+                      <ChevronDown
+                        className={`h-5 w-5 text-red-700 transition-transform ${expandMissingClasses ? "rotate-180" : ""}`}
+                      />
+                    </div>
+                  </CardHeader>
+                  {expandMissingClasses && (
+                    <CardContent className="p-0">
+                      <div className="border border-gray-300 rounded-lg overflow-hidden">
+                        <Table className="border-collapse">
+                          <TableHeader className="bg-red-600">
+                            <TableRow>
+                              <TableHead className="text-right text-white font-bold py-3 px-4 border-r border-gray-400">
+                                اسم الفصل
+                              </TableHead>
+                              <TableHead className="text-right text-white font-bold py-3 px-4">
+                                المعلم المسؤول
+                              </TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {missingClasses.length === 0 ? (
+                              <TableRow className="hover:bg-red-50">
+                                <TableCell
+                                  colSpan={2}
+                                  className="text-center py-8 px-4 text-muted-foreground border border-gray-300">
+                                  جميع الفصول أرسلت تقاريرها ✓
+                                </TableCell>
+                              </TableRow>
+                            ) : (
+                              missingClasses.map((cls, i) => (
+                                <TableRow
+                                  key={cls._id}
+                                  className={`${i % 2 === 0 ? "bg-white" : "bg-red-50"} hover:bg-red-100`}>
+                                  <TableCell className="font-medium py-2 px-4 border border-gray-300">
+                                    {cls.name}
+                                  </TableCell>
+                                  <TableCell className="py-2 px-4 border border-gray-300 text-muted-foreground">
+                                    {cls.teacherName}
+                                  </TableCell>
+                                </TableRow>
+                              ))
+                            )}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </CardContent>
+                  )}
+                </Card>
+              </div>
             </div>
           );
         })()}
