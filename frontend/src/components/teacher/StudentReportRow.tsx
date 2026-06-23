@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, XCircle, ArrowRight, AlertCircle, X } from "lucide-react";
+import { CheckCircle, XCircle, ArrowRight, AlertCircle, X, GraduationCap } from "lucide-react";
 import { Trainee } from "@/lib/traineeApi";
 import ViolationModal from "@/components/teacher/ViolationModal";
 
@@ -9,7 +9,7 @@ interface StudentReportRowProps {
   report: {
     studentId: string;
     student: Trainee;
-    status: "present" | "absent" | "escape" | null;
+    status: "present" | "absent" | "escape" | "course" | null;
     violations: Array<{
       type: 1 | 2 | 3 | 4;
       description?: string;
@@ -17,7 +17,7 @@ interface StudentReportRowProps {
   };
   onStatusChange: (
     studentId: string,
-    status: "present" | "absent" | "escape",
+    status: "present" | "absent" | "escape" | "course",
   ) => void;
   onViolationAdd: (
     studentId: string,
@@ -50,6 +50,8 @@ export default function StudentReportRow({
         return "bg-red-100 border-red-300";
       case "escape":
         return "bg-orange-100 border-orange-300";
+      case "course":
+        return "bg-violet-100 border-violet-300";
       default:
         return "bg-gray-100 border-gray-300";
     }
@@ -77,13 +79,17 @@ export default function StudentReportRow({
                   ? "bg-green-600"
                   : report.status === "absent"
                     ? "bg-red-600"
-                    : "bg-orange-600"
+                    : report.status === "course"
+                      ? "bg-violet-600"
+                      : "bg-orange-600"
               }`}>
               {report.status === "present"
                 ? "حاضر"
                 : report.status === "absent"
                   ? "غايب"
-                  : "لم يسجل خروج"}
+                  : report.status === "course"
+                    ? "دورة"
+                    : "لم يسجل خروج"}
             </Badge>
           )}
         </div>
@@ -147,6 +153,20 @@ export default function StudentReportRow({
             onClick={() => onStatusChange(report.studentId, "escape")}>
             <ArrowRight className="h-4 w-4" />
             <span className="hidden sm:inline">لم يسجل خروج</span>
+          </Button>
+
+          {/* Course */}
+          <Button
+            size="sm"
+            variant={report.status === "course" ? "default" : "outline"}
+            className={
+              report.status === "course"
+                ? "bg-violet-600 hover:bg-violet-700"
+                : "text-violet-600 hover:text-violet-700"
+            }
+            onClick={() => onStatusChange(report.studentId, "course")}>
+            <GraduationCap className="h-4 w-4" />
+            <span className="hidden sm:inline">دورة</span>
           </Button>
 
           {/* Violation */}

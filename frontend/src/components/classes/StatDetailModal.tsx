@@ -27,7 +27,7 @@ interface StatDetailModalProps {
   onOpenChange: (open: boolean) => void;
   title: string;
   students: StudentWithReport[];
-  color: "green" | "red" | "orange" | "blue";
+  color: "green" | "red" | "orange" | "blue" | "violet";
 }
 
 const colorStyles = {
@@ -35,6 +35,7 @@ const colorStyles = {
   red: "bg-red-100 border-red-300",
   orange: "bg-orange-100 border-orange-300",
   blue: "bg-blue-100 border-blue-300",
+  violet: "bg-violet-100 border-violet-300",
 };
 
 const colorTextStyles = {
@@ -42,6 +43,7 @@ const colorTextStyles = {
   red: "text-red-700",
   orange: "text-orange-700",
   blue: "text-blue-700",
+  violet: "text-violet-700",
 };
 
 const violationTypes: Record<number | string, string> = {
@@ -61,16 +63,15 @@ export default function StatDetailModal({
   const [searchQuery, setSearchQuery] = useState("");
 
   // Filter students based on search query (name, military_id, civil_id)
-  const filteredStudents = students.filter(
-    (item) =>
-      item.student.full_name
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
-      item.student.military_id
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
-      item.student.civil_id.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  const filteredStudents = students.filter((item) => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      (item.student?.full_name ?? "").toLowerCase().includes(q) ||
+      (item.student?.military_id ?? "").toLowerCase().includes(q) ||
+      (item.student?.civil_id ?? "").toLowerCase().includes(q)
+    );
+  });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

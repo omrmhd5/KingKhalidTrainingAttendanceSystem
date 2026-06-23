@@ -14,6 +14,7 @@ export interface ClassReportStats {
   present: number;
   absence: number;
   escapes: number;
+  course: number;
   violations: number;
 }
 
@@ -26,6 +27,7 @@ export interface ClassReport {
   presentReports: StudentReport[];
   absenceReports: StudentReport[];
   escapeReports: StudentReport[];
+  courseReports: StudentReport[];
   violationReports: ViolationStudentReport[];
   stats: ClassReportStats;
   submittedAt: string;
@@ -41,6 +43,7 @@ export interface ClassReportCreateInput {
   presentReports: StudentReport[];
   absenceReports: StudentReport[];
   escapeReports: StudentReport[];
+  courseReports: StudentReport[];
   violationReports: ViolationStudentReport[];
 }
 
@@ -52,6 +55,7 @@ export interface ClassReportUpdateInput {
   presentReports?: StudentReport[];
   absenceReports?: StudentReport[];
   escapeReports?: StudentReport[];
+  courseReports?: StudentReport[];
   violationReports?: ViolationStudentReport[];
 }
 

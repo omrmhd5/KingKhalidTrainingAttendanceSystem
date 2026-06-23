@@ -42,6 +42,7 @@ class ClassReportController {
         presentReports,
         absenceReports,
         escapeReports,
+        courseReports,
         violationReports,
       } = req.body;
 
@@ -53,6 +54,7 @@ class ClassReportController {
         presentReports,
         absenceReports,
         escapeReports,
+        courseReports,
         violationReports,
       });
 
@@ -77,6 +79,7 @@ class ClassReportController {
         presentReports,
         absenceReports,
         escapeReports,
+        courseReports,
         violationReports,
       } = req.body;
 
@@ -90,6 +93,7 @@ class ClassReportController {
           presentReports,
           absenceReports,
           escapeReports,
+          courseReports,
           violationReports,
         },
       );

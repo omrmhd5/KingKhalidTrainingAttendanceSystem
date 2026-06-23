@@ -18,7 +18,7 @@ import TeacherScheduleCard from "@/components/teacher/TeacherScheduleCard";
 interface StudentReport {
   studentId: string;
   student: Trainee;
-  status: "present" | "absent" | "escape" | null;
+  status: "present" | "absent" | "escape" | "course" | null;
   violations: Array<{
     type: 1 | 2 | 3 | 4;
     description?: string;
@@ -82,7 +82,7 @@ export default function TeacherDailyReport({
           (student) => ({
             studentId: student._id,
             student,
-            status: null as "present" | "absent" | "escape" | null,
+            status: null as "present" | "absent" | "escape" | "course" | null,
             violations: [] as Array<{
               type: 1 | 2 | 3 | 4;
               description?: string;
@@ -126,6 +126,12 @@ export default function TeacherDailyReport({
             ) || [],
           );
 
+          const courseStudentIds = new Set(
+            report.courseReports?.map((r: any) =>
+              typeof r.studentId === "string" ? r.studentId : r.studentId._id,
+            ) || [],
+          );
+
           const violationsByStudentId = new Map();
           report.violationReports?.forEach((v: any) => {
             const studentId =
@@ -147,6 +153,8 @@ export default function TeacherDailyReport({
               reportUI.status = "absent";
             } else if (escapeStudentIds.has(reportUI.studentId)) {
               reportUI.status = "escape";
+            } else if (courseStudentIds.has(reportUI.studentId)) {
+              reportUI.status = "course";
             }
 
             // Add violations from map
@@ -176,7 +184,7 @@ export default function TeacherDailyReport({
         const reports = (classData.students as Trainee[]).map((student) => ({
           studentId: student._id,
           student,
-          status: null as "present" | "absent" | "escape" | null,
+          status: null as "present" | "absent" | "escape" | "course" | null,
           violations: [] as Array<{
             type: 1 | 2 | 3 | 4;
             description?: string;
@@ -195,7 +203,7 @@ export default function TeacherDailyReport({
 
   const handleStatusChange = (
     studentId: string,
-    status: "present" | "absent" | "escape",
+    status: "present" | "absent" | "escape" | "course",
   ) => {
     setStudentReports((prev) =>
       prev.map((report) =>
@@ -296,10 +304,11 @@ export default function TeacherDailyReport({
 
     setSubmitting(true);
     try {
-      // Transform student reports for API - separate into 4 arrays
+      // Transform student reports for API - separate into 5 arrays
       const presentReports: any[] = [];
       const absenceReports: any[] = [];
       const escapeReports: any[] = [];
+      const courseReports: any[] = [];
       const violationReports: any[] = [];
 
       studentReports.forEach((report) => {
@@ -316,6 +325,10 @@ export default function TeacherDailyReport({
           escapeReports.push({
             studentId: report.studentId,
           });
+        } else if (report.status === "course") {
+          courseReports.push({
+            studentId: report.studentId,
+          });
         }
 
         // Add violation entries (can exist with any status)
@@ -330,10 +343,11 @@ export default function TeacherDailyReport({
         }
       });
 
-      console.log("🚀 Submitting to API - 4 arrays:", {
+      console.log("🚀 Submitting to API - 5 arrays:", {
         presentReports,
         absenceReports,
         escapeReports,
+        courseReports,
         violationReports,
       });
 
@@ -348,6 +362,7 @@ export default function TeacherDailyReport({
         presentReports,
         absenceReports,
         escapeReports,
+        courseReports,
         violationReports,
       };
 
@@ -404,6 +419,7 @@ export default function TeacherDailyReport({
     present: studentReports.filter((r) => r.status === "present").length,
     absent: studentReports.filter((r) => r.status === "absent").length,
     escape: studentReports.filter((r) => r.status === "escape").length,
+    course: studentReports.filter((r) => r.status === "course").length,
     violations: studentReports.reduce((sum, r) => sum + r.violations.length, 0),
   };
 
@@ -413,6 +429,7 @@ export default function TeacherDailyReport({
     presentCount: studentReports.filter((r) => r.status === "present").length,
     absentCount: studentReports.filter((r) => r.status === "absent").length,
     escapeCount: studentReports.filter((r) => r.status === "escape").length,
+    courseCount: studentReports.filter((r) => r.status === "course").length,
     violationCount: studentReports.reduce(
       (sum, r) => sum + r.violations.length,
       0,

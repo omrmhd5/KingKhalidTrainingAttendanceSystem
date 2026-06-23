@@ -13,6 +13,7 @@ interface TeacherClassCardProps {
     present: number;
     absent: number;
     escape: number;
+    course: number;
     violations: number;
   };
 }
@@ -62,7 +63,7 @@ export default function TeacherClassCard({
           </div>
         </div>
 
-        <div className="grid grid-cols-4 gap-2 pt-4 border-t">
+        <div className="grid grid-cols-5 gap-2 pt-4 border-t">
           <div className="text-center space-y-1">
             <p className="text-2xl font-bold text-green-600">
               {reportStats?.present ?? 0}
@@ -80,6 +81,12 @@ export default function TeacherClassCard({
               {reportStats?.escape ?? 0}
             </p>
             <p className="text-xs text-muted-foreground">عدم تسجيل خروج</p>
+          </div>
+          <div className="text-center space-y-1">
+            <p className="text-2xl font-bold text-violet-600">
+              {reportStats?.course ?? 0}
+            </p>
+            <p className="text-xs text-muted-foreground">دورة</p>
           </div>
           <div className="text-center space-y-1">
             <p className="text-2xl font-bold text-purple-600">

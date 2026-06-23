@@ -61,7 +61,7 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
       teacherName: string;
       date: string;
     }>;
-    color: "green" | "red" | "orange" | "blue";
+    color: "green" | "red" | "orange" | "blue" | "violet";
   }>({
     title: "",
     students: [],
@@ -191,6 +191,21 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
       });
     });
 
+    // Add course students
+    (report.courseReports || []).forEach((sr) => {
+      const studentId =
+        typeof sr.studentId === "object" ? sr.studentId._id : sr.studentId;
+      studentMap.set(studentId, {
+        studentId,
+        student:
+          typeof sr.studentId === "object"
+            ? (sr.studentId as Trainee)
+            : ({} as Trainee),
+        status: "course" as const,
+        violations: [],
+      });
+    });
+
     // Add violations
     (report.violationReports || []).forEach((sr) => {
       const studentId =
@@ -226,6 +241,7 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
         present: report.stats?.present || 0,
         absent: report.stats?.absence || 0,
         escape: report.stats?.escapes || 0,
+        course: report.stats?.course || 0,
         violations: report.stats?.violations || 0,
       },
       studentReports,
@@ -238,7 +254,7 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
   };
 
   const handleStatClick = (
-    statType: "present" | "absent" | "escape" | "violations" | "total",
+    statType: "present" | "absent" | "escape" | "course" | "violations" | "total",
   ) => {
     const students: Array<{
       studentId: string;
@@ -299,6 +315,20 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
             date: dateStr,
           });
         });
+      } else if (statType === "course" && report.courseReports) {
+        (report.courseReports || []).forEach((sr) => {
+          const student =
+            typeof sr.studentId === "object" ? sr.studentId : ({} as Trainee);
+          const studentId =
+            typeof sr.studentId === "object" ? sr.studentId._id : sr.studentId;
+          students.push({
+            studentId,
+            student: student as Trainee,
+            className,
+            teacherName,
+            date: dateStr,
+          });
+        });
       } else if (statType === "violations" && report.violationReports) {
         report.violationReports.forEach((sr) => {
           const student =
@@ -321,6 +351,7 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
           ...(report.presentReports || []),
           ...(report.absenceReports || []),
           ...(report.escapeReports || []),
+          ...(report.courseReports || []),
         ].forEach((sr) => {
           const student =
             typeof sr.studentId === "object" ? sr.studentId : ({} as Trainee);
@@ -349,7 +380,7 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
     });
 
     let title = "";
-    let color: "green" | "red" | "orange" | "blue" = "green";
+    let color: "green" | "red" | "orange" | "blue" | "violet" = "green";
 
     if (statType === "present") {
       title = "الطلاب الحاضرون";
@@ -360,6 +391,9 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
     } else if (statType === "escape") {
       title = "الطلاب الذين لم يسجلوا خروج";
       color = "orange";
+    } else if (statType === "course") {
+      title = "طلاب الدورة";
+      color = "violet";
     } else if (statType === "violations") {
       title = "الطلاب المخالفين";
       color = "red";
@@ -401,12 +435,13 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
           {new Date(report.date).toLocaleDateString("en-US")}
         </div>
       </div>
-      <div className="grid grid-cols-5 gap-2 text-xs">
+      <div className="grid grid-cols-6 gap-2 text-xs">
         <div className="text-center bg-blue-200 p-2 rounded">
           <div className="font-bold text-blue-700">
             {(report.stats?.present || 0) +
               (report.stats?.absence || 0) +
-              (report.stats?.escapes || 0)}
+              (report.stats?.escapes || 0) +
+              (report.stats?.course || 0)}
           </div>
           <div className="text-muted-foreground">الإجمالي</div>
         </div>
@@ -427,6 +462,12 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
             {report.stats?.escapes || 0}
           </div>
           <div className="text-muted-foreground">لم يسجل خروج</div>
+        </div>
+        <div className="text-center bg-violet-200 p-2 rounded">
+          <div className="font-bold text-violet-700">
+            {report.stats?.course || 0}
+          </div>
+          <div className="text-muted-foreground">دورة</div>
         </div>
         <div className="text-center bg-red-200 p-2 rounded">
           <div className="font-bold text-red-700">
@@ -723,7 +764,7 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
 
       {/* Summary Stats */}
       {reports.length > 0 && (
-        <div className="grid grid-cols-5 gap-2">
+        <div className="grid grid-cols-6 gap-2">
           <div
             className="text-center space-y-1 bg-blue-100 border-2 border-blue-300 rounded-lg p-3 hover:bg-blue-200 cursor-pointer transition-colors"
             onClick={() => handleStatClick("total")}>
@@ -733,7 +774,8 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
                   sum +
                   ((r.stats?.present || 0) +
                     (r.stats?.absence || 0) +
-                    (r.stats?.escapes || 0)),
+                    (r.stats?.escapes || 0) +
+                    (r.stats?.course || 0)),
                 0,
               )}
             </p>
@@ -762,6 +804,14 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
               {reports.reduce((sum, r) => sum + (r.stats?.escapes || 0), 0)}
             </p>
             <p className="text-xs text-muted-foreground">لم يسجل خروج</p>
+          </div>
+          <div
+            className="text-center space-y-1 bg-violet-100 border-2 border-violet-300 rounded-lg p-3 hover:bg-violet-200 cursor-pointer transition-colors"
+            onClick={() => handleStatClick("course")}>
+            <p className="text-2xl font-bold text-violet-600">
+              {reports.reduce((sum, r) => sum + (r.stats?.course || 0), 0)}
+            </p>
+            <p className="text-xs text-muted-foreground">دورة</p>
           </div>
           <div
             className="text-center space-y-1 bg-red-100 border-2 border-red-300 rounded-lg p-3 hover:bg-red-200 cursor-pointer transition-colors"

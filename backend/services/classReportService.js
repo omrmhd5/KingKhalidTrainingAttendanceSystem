@@ -10,12 +10,14 @@ class ClassReportService {
     presentReports,
     absenceReports,
     escapeReports,
+    courseReports,
     violationReports,
   ) {
     const stats = {
       present: presentReports ? presentReports.length : 0,
       absence: absenceReports ? absenceReports.length : 0,
       escapes: escapeReports ? escapeReports.length : 0,
+      course: courseReports ? courseReports.length : 0,
       violations: violationReports ? violationReports.length : 0,
     };
 
@@ -58,6 +60,7 @@ class ClassReportService {
       .populate("presentReports.studentId", "full_name military_id civil_id")
       .populate("absenceReports.studentId", "full_name military_id civil_id")
       .populate("escapeReports.studentId", "full_name military_id civil_id")
+      .populate("courseReports.studentId", "full_name military_id civil_id")
       .populate("violationReports.studentId", "full_name military_id civil_id")
       .sort({ date: -1 });
   }
@@ -70,6 +73,7 @@ class ClassReportService {
       .populate("presentReports.studentId", "full_name military_id civil_id")
       .populate("absenceReports.studentId", "full_name military_id civil_id")
       .populate("escapeReports.studentId", "full_name military_id civil_id")
+      .populate("courseReports.studentId", "full_name military_id civil_id")
       .populate("violationReports.studentId", "full_name military_id civil_id");
 
     if (!report) {
@@ -88,8 +92,12 @@ class ClassReportService {
       presentReports,
       absenceReports,
       escapeReports,
+      courseReports: courseReportsInput,
       violationReports,
     } = data;
+
+    // Safe fallback so old API clients without courseReports still work
+    const courseReports = courseReportsInput ?? [];
 
     // Validation
     if (!date) {
@@ -108,7 +116,7 @@ class ClassReportService {
       throw new Error("معرف الجدول الزمني مطلوب");
     }
 
-    // All report arrays must be provided (can be empty)
+    // All required report arrays must be provided (can be empty)
     if (
       presentReports === undefined ||
       absenceReports === undefined ||
@@ -141,6 +149,7 @@ class ClassReportService {
       ...presentReports.map((r) => r.studentId.toString()),
       ...absenceReports.map((r) => r.studentId.toString()),
       ...escapeReports.map((r) => r.studentId.toString()),
+      ...courseReports.map((r) => r.studentId.toString()),
       ...violationReports.map((r) => r.studentId.toString()),
     ];
 
@@ -163,6 +172,7 @@ class ClassReportService {
       presentReports,
       absenceReports,
       escapeReports,
+      courseReports,
       violationReports,
       submittedAt: new Date(),
     });
@@ -172,6 +182,7 @@ class ClassReportService {
       presentReports,
       absenceReports,
       escapeReports,
+      courseReports,
       violationReports,
     );
 
@@ -185,6 +196,7 @@ class ClassReportService {
       .populate("presentReports.studentId", "full_name military_id civil_id")
       .populate("absenceReports.studentId", "full_name military_id civil_id")
       .populate("escapeReports.studentId", "full_name military_id civil_id")
+      .populate("courseReports.studentId", "full_name military_id civil_id")
       .populate("violationReports.studentId", "full_name military_id civil_id");
   }
 
@@ -197,6 +209,7 @@ class ClassReportService {
       presentReports,
       absenceReports,
       escapeReports,
+      courseReports,
       violationReports,
     } = data;
 
@@ -237,6 +250,7 @@ class ClassReportService {
       presentReports !== undefined ||
       absenceReports !== undefined ||
       escapeReports !== undefined ||
+      courseReports !== undefined ||
       violationReports !== undefined;
 
     if (hasReportUpdates) {
@@ -246,6 +260,8 @@ class ClassReportService {
         absenceReports !== undefined ? absenceReports : report.absenceReports;
       const newEscapeReports =
         escapeReports !== undefined ? escapeReports : report.escapeReports;
+      const newCourseReports =
+        courseReports !== undefined ? courseReports : (report.courseReports ?? []);
       const newViolationReports =
         violationReports !== undefined
           ? violationReports
@@ -256,6 +272,7 @@ class ClassReportService {
         ...newPresentReports.map((r) => r.studentId.toString()),
         ...newAbsenceReports.map((r) => r.studentId.toString()),
         ...newEscapeReports.map((r) => r.studentId.toString()),
+        ...newCourseReports.map((r) => r.studentId.toString()),
         ...newViolationReports.map((r) => r.studentId.toString()),
       ];
 
@@ -272,6 +289,7 @@ class ClassReportService {
       report.presentReports = newPresentReports;
       report.absenceReports = newAbsenceReports;
       report.escapeReports = newEscapeReports;
+      report.courseReports = newCourseReports;
       report.violationReports = newViolationReports;
 
       // Recalculate stats
@@ -279,6 +297,7 @@ class ClassReportService {
         newPresentReports,
         newAbsenceReports,
         newEscapeReports,
+        newCourseReports,
         newViolationReports,
       );
     }
@@ -298,6 +317,7 @@ class ClassReportService {
       .populate("presentReports.studentId", "full_name military_id civil_id")
       .populate("absenceReports.studentId", "full_name military_id civil_id")
       .populate("escapeReports.studentId", "full_name military_id civil_id")
+      .populate("courseReports.studentId", "full_name military_id civil_id")
       .populate("violationReports.studentId", "full_name military_id civil_id");
   }
 

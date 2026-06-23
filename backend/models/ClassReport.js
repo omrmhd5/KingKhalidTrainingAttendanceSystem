@@ -48,6 +48,15 @@ const ClassReportSchema = new mongoose.Schema(
         },
       },
     ],
+    courseReports: [
+      {
+        studentId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Trainee",
+          required: true,
+        },
+      },
+    ],
     violationReports: [
       {
         studentId: {
@@ -80,6 +89,10 @@ const ClassReportSchema = new mongoose.Schema(
         default: 0,
       },
       escapes: {
+        type: Number,
+        default: 0,
+      },
+      course: {
         type: Number,
         default: 0,
       },

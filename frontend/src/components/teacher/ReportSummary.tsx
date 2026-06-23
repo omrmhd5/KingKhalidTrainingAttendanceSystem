@@ -22,12 +22,13 @@ interface ReportSummaryProps {
     present: number;
     absent: number;
     escape: number;
+    course: number;
     violations: number;
   };
   studentReports: Array<{
     studentId: string;
     student: Trainee;
-    status: "present" | "absent" | "escape" | null;
+    status: "present" | "absent" | "escape" | "course" | null;
     violations: Array<{
       type: 1 | 2 | 3 | 4;
       description?: string;
@@ -47,7 +48,7 @@ const transformDataForExport = (
   data: Array<{
     studentId: string;
     student: Trainee;
-    status: "present" | "absent" | "escape" | null;
+    status: "present" | "absent" | "escape" | "course" | null;
     violations: Array<{
       type: 1 | 2 | 3 | 4;
       description?: string;
@@ -121,6 +122,7 @@ export default function ReportSummary({
   );
   const studentsAbsent = studentReports.filter((r) => r.status === "absent");
   const studentsEscaped = studentReports.filter((r) => r.status === "escape");
+  const studentsOnCourse = studentReports.filter((r) => r.status === "course");
 
   // Filter students based on search query (name, military_id, civil_id)
   const filterStudents = (students: typeof studentReports) => {
@@ -138,6 +140,7 @@ export default function ReportSummary({
   const filteredViolations = filterStudents(studentsWithViolations);
   const filteredAbsent = filterStudents(studentsAbsent);
   const filteredEscaped = filterStudents(studentsEscaped);
+  const filteredCourse = filterStudents(studentsOnCourse);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -151,7 +154,7 @@ export default function ReportSummary({
 
         <div className="space-y-4" dir="rtl">
           {/* Statistics Grid */}
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-5 gap-2">
             <div className="text-center space-y-1 bg-green-100 border-2 border-green-300 rounded-lg p-3">
               <p className="text-2xl font-bold text-green-600">
                 {stats.present}
@@ -168,6 +171,12 @@ export default function ReportSummary({
               </p>
               <p className="text-xs text-muted-foreground">لم يسجل خروج</p>
             </div>
+            <div className="text-center space-y-1 bg-violet-100 border-2 border-violet-300 rounded-lg p-3">
+              <p className="text-2xl font-bold text-violet-600">
+                {stats.course}
+              </p>
+              <p className="text-xs text-muted-foreground">دورة</p>
+            </div>
             <div className="text-center space-y-1 bg-red-100 border-2 border-red-300 rounded-lg p-3">
               <p className="text-2xl font-bold text-red-600">
                 {stats.violations}
@@ -180,7 +189,8 @@ export default function ReportSummary({
           {(studentsPresent.length > 0 ||
             studentsWithViolations.length > 0 ||
             studentsAbsent.length > 0 ||
-            studentsEscaped.length > 0) && (
+            studentsEscaped.length > 0 ||
+            studentsOnCourse.length > 0) && (
             <div className="border-t pt-4 space-y-4">
               {/* Search Bar */}
               <Input
@@ -192,17 +202,11 @@ export default function ReportSummary({
               />
 
               <Tabs value={activeTab} onValueChange={setActiveTab} dir="rtl">
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList className="grid w-full grid-cols-5">
                   <TabsTrigger value="present" className="text-xs">
                     <span>حاضرون</span>
                     <span className="mr-1 font-bold">
                       ({filteredPresent.length})
-                    </span>
-                  </TabsTrigger>
-                  <TabsTrigger value="violations" className="text-xs">
-                    <span>المخالفات</span>
-                    <span className="mr-1 font-bold">
-                      ({filteredViolations.length})
                     </span>
                   </TabsTrigger>
                   <TabsTrigger value="absent" className="text-xs">
@@ -212,9 +216,21 @@ export default function ReportSummary({
                     </span>
                   </TabsTrigger>
                   <TabsTrigger value="escape" className="text-xs">
-                    <span>عدم تسجيل خروج</span>
+                    <span>لم يسجل خروج</span>
                     <span className="mr-1 font-bold">
                       ({filteredEscaped.length})
+                    </span>
+                  </TabsTrigger>
+                  <TabsTrigger value="course" className="text-xs">
+                    <span>دورة</span>
+                    <span className="mr-1 font-bold">
+                      ({filteredCourse.length})
+                    </span>
+                  </TabsTrigger>
+                  <TabsTrigger value="violations" className="text-xs">
+                    <span>مخالفات</span>
+                    <span className="mr-1 font-bold">
+                      ({filteredViolations.length})
                     </span>
                   </TabsTrigger>
                 </TabsList>
@@ -296,6 +312,32 @@ export default function ReportSummary({
                     </p>
                   )}
                 </TabsContent>
+
+                {/* Course Tab */}
+                <TabsContent value="course" className="space-y-2 mt-4">
+                  {filteredCourse.length > 0 ? (
+                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                      {filteredCourse.map((report) => (
+                        <div
+                          key={report.studentId}
+                          className="bg-violet-100 border-2 border-violet-300 rounded-lg p-3 space-y-1 text-sm">
+                          <div className="flex justify-between items-start">
+                            <span className="font-medium">
+                              {report.student.full_name}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {report.student.civil_id}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-center text-sm text-muted-foreground py-4">
+                      لا يوجد طلاب في دورة
+                    </p>
+                  )}
+                </TabsContent>
                 {/* Violations Tab */}
                 <TabsContent value="violations" className="space-y-2 mt-4">
                   {filteredViolations.length > 0 ? (
@@ -339,7 +381,8 @@ export default function ReportSummary({
           {studentsPresent.length === 0 &&
             studentsWithViolations.length === 0 &&
             studentsAbsent.length === 0 &&
-            studentsEscaped.length === 0 && (
+            studentsEscaped.length === 0 &&
+            studentsOnCourse.length === 0 && (
               <div className="bg-green-100 border-2 border-green-300 rounded-lg p-3 text-right text-sm text-green-700">
                 ✓ لم يتم تسجيل أي بيانات حتى الآن
               </div>
@@ -392,6 +435,18 @@ export default function ReportSummary({
               <ExportPDF
                 data={transformDataForExport(filteredEscaped, "escape")}
                 title="تقرير الطلاب الذين لم يسجلوا خروج"
+              />
+            </>
+          )}
+          {activeTab === "course" && filteredCourse.length > 0 && (
+            <>
+              <ExportExcel
+                data={transformDataForExport(filteredCourse, "course")}
+                title="تقرير طلاب الدورة"
+              />
+              <ExportPDF
+                data={transformDataForExport(filteredCourse, "course")}
+                title="تقرير طلاب الدورة"
               />
             </>
           )}
