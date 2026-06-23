@@ -88,7 +88,7 @@ export function ReportsExportPDF({ data, type }: ReportsExportPDFProps) {
         <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">الباركود</th>
       `;
     } else {
-      title = "بيان الهروب";
+      title = "بيان عدم تسجيل خروج";
       headerCells = `
         <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">الرقم العسكري</th>
         <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">السجل المدني</th>
@@ -212,14 +212,14 @@ export function ReportsExportPDF({ data, type }: ReportsExportPDFProps) {
               ? "غياب"
               : type === "lates"
                 ? "تأخير"
-                : "هروب"
+                : "عدم تسجيل خروج"
         }</p>
       </div>
     `;
 
     const options = {
       margin: 10,
-      filename: `بيان_${type === "hours" ? "ساعات" : type === "absences" ? "غيابات" : type === "lates" ? "تأخيرات" : "هروب"}_${getTodayDateKSA()}.pdf`,
+      filename: `بيان_${type === "hours" ? "ساعات" : type === "absences" ? "غيابات" : type === "lates" ? "تأخيرات" : "عدم_تسجيل_خروج"}_${getTodayDateKSA()}.pdf`,
       image: { type: "jpeg", quality: 0.98 },
       html2canvas: { scale: 2 },
       jsPDF: { orientation: "landscape" },

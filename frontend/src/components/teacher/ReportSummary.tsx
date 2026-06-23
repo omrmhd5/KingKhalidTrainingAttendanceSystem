@@ -166,7 +166,7 @@ export default function ReportSummary({
               <p className="text-2xl font-bold text-orange-600">
                 {stats.escape}
               </p>
-              <p className="text-xs text-muted-foreground">هروب</p>
+              <p className="text-xs text-muted-foreground">لم يسجل خروج</p>
             </div>
             <div className="text-center space-y-1 bg-red-100 border-2 border-red-300 rounded-lg p-3">
               <p className="text-2xl font-bold text-red-600">
@@ -212,7 +212,7 @@ export default function ReportSummary({
                     </span>
                   </TabsTrigger>
                   <TabsTrigger value="escape" className="text-xs">
-                    <span>الهروب</span>
+                    <span>عدم تسجيل خروج</span>
                     <span className="mr-1 font-bold">
                       ({filteredEscaped.length})
                     </span>
@@ -292,7 +292,7 @@ export default function ReportSummary({
                     </div>
                   ) : (
                     <p className="text-center text-sm text-muted-foreground py-4">
-                      لا يوجد هروب
+                      لا يوجد عدم تسجيل خروج
                     </p>
                   )}
                 </TabsContent>
@@ -387,11 +387,11 @@ export default function ReportSummary({
             <>
               <ExportExcel
                 data={transformDataForExport(filteredEscaped, "escape")}
-                title="تقرير الطلاب الهاربين"
+                title="تقرير الطلاب الذين لم يسجلوا خروج"
               />
               <ExportPDF
                 data={transformDataForExport(filteredEscaped, "escape")}
-                title="تقرير الطلاب الهاربين"
+                title="تقرير الطلاب الذين لم يسجلوا خروج"
               />
             </>
           )}

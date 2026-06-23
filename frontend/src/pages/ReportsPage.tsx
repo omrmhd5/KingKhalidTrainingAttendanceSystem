@@ -165,7 +165,7 @@ export default function ReportsPage() {
           <TabsTrigger value="hours">الساعات ({hoursCount})</TabsTrigger>
           <TabsTrigger value="absences">الغيابات ({absencesCount})</TabsTrigger>
           <TabsTrigger value="lates">التأخيرات ({latesCount})</TabsTrigger>
-          <TabsTrigger value="escapes">الهروب ({escapesCount})</TabsTrigger>
+          <TabsTrigger value="escapes">عدم تسجيل خروج ({escapesCount})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="hours">

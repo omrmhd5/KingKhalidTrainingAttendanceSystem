@@ -89,7 +89,7 @@ export function ClassDashboardTab({ canWrite = true }: ClassDashboardTabProps) {
           teacherName: "معلم1",
           type: "escape",
           date: "2026-03-23",
-          notes: "هروب من الفصل",
+          notes: "لم يسجل خروج من الفصل",
         },
         {
           _id: "r3",
@@ -122,7 +122,7 @@ export function ClassDashboardTab({ canWrite = true }: ClassDashboardTabProps) {
   };
 
   const getTypeLabel = (type: "absence" | "escape") => {
-    return type === "absence" ? "الغياب" : "الهروب";
+    return type === "absence" ? "الغياب" : "عدم تسجيل خروج";
   };
 
   const getTypeColor = (type: "absence" | "escape") => {
@@ -149,7 +149,7 @@ export function ClassDashboardTab({ canWrite = true }: ClassDashboardTabProps) {
             </SelectTrigger>
             <SelectContent dir="rtl" className="flex-row-reverse">
               <SelectItem value="absence">الغياب</SelectItem>
-              <SelectItem value="escape">الهروب</SelectItem>
+              <SelectItem value="escape">عدم تسجيل خروج</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -205,7 +205,7 @@ export function ClassDashboardTab({ canWrite = true }: ClassDashboardTabProps) {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-right text-red-800">
-                عدد الهروب
+                عدد عدم تسجيل خروج
               </CardTitle>
             </CardHeader>
             <CardContent>

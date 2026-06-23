@@ -358,7 +358,7 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
       title = "الطلاب الغائبون";
       color = "red";
     } else if (statType === "escape") {
-      title = "الطلاب الهاربون";
+      title = "الطلاب الذين لم يسجلوا خروج";
       color = "orange";
     } else if (statType === "violations") {
       title = "الطلاب المخالفين";
@@ -426,7 +426,7 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
           <div className="font-bold text-orange-700">
             {report.stats?.escapes || 0}
           </div>
-          <div className="text-muted-foreground">هروب</div>
+          <div className="text-muted-foreground">لم يسجل خروج</div>
         </div>
         <div className="text-center bg-red-200 p-2 rounded">
           <div className="font-bold text-red-700">
@@ -761,7 +761,7 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
             <p className="text-2xl font-bold text-orange-600">
               {reports.reduce((sum, r) => sum + (r.stats?.escapes || 0), 0)}
             </p>
-            <p className="text-xs text-muted-foreground">هروب</p>
+            <p className="text-xs text-muted-foreground">لم يسجل خروج</p>
           </div>
           <div
             className="text-center space-y-1 bg-red-100 border-2 border-red-300 rounded-lg p-3 hover:bg-red-200 cursor-pointer transition-colors"

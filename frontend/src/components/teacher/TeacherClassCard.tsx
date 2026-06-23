@@ -79,7 +79,7 @@ export default function TeacherClassCard({
             <p className="text-2xl font-bold text-orange-600">
               {reportStats?.escape ?? 0}
             </p>
-            <p className="text-xs text-muted-foreground">الهروب</p>
+            <p className="text-xs text-muted-foreground">عدم تسجيل خروج</p>
           </div>
           <div className="text-center space-y-1">
             <p className="text-2xl font-bold text-purple-600">

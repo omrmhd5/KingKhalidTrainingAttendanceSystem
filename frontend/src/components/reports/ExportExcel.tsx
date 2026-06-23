@@ -107,7 +107,7 @@ export function ReportsExportExcel({ data, type }: ReportsExportExcelProps) {
         "الرقم العسكري",
       ];
     } else {
-      title = "بيان الهروب";
+      title = "بيان عدم تسجيل خروج";
       headers = [
         "",
         "الباركود",
@@ -293,7 +293,7 @@ export function ReportsExportExcel({ data, type }: ReportsExportExcelProps) {
           ? "غياب"
           : type === "lates"
             ? "تأخير"
-            : "هروب"
+            : "عدم تسجيل خروج"
     }`;
     totalCell.font = { bold: true, size: 12, color: { argb: "FFF5F5F5" } };
     totalCell.fill = solid("FF3B82F6");
@@ -308,7 +308,7 @@ export function ReportsExportExcel({ data, type }: ReportsExportExcelProps) {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `بيان_${type === "hours" ? "ساعات" : type === "absences" ? "غيابات" : type === "lates" ? "تأخيرات" : "هروب"}_${getTodayDateKSA()}.xlsx`;
+    a.download = `بيان_${type === "hours" ? "ساعات" : type === "absences" ? "غيابات" : type === "lates" ? "تأخيرات" : "عدم_تسجيل_خروج"}_${getTodayDateKSA()}.xlsx`;
     a.click();
     window.URL.revokeObjectURL(url);
   };

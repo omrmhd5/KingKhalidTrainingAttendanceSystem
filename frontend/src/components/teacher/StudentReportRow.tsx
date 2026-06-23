@@ -83,7 +83,7 @@ export default function StudentReportRow({
                 ? "حاضر"
                 : report.status === "absent"
                   ? "غايب"
-                  : "هروب"}
+                  : "لم يسجل خروج"}
             </Badge>
           )}
         </div>
@@ -146,7 +146,7 @@ export default function StudentReportRow({
             }
             onClick={() => onStatusChange(report.studentId, "escape")}>
             <ArrowRight className="h-4 w-4" />
-            <span className="hidden sm:inline">هروب</span>
+            <span className="hidden sm:inline">لم يسجل خروج</span>
           </Button>
 
           {/* Violation */}

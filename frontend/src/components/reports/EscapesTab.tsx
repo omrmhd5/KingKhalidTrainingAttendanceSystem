@@ -144,7 +144,7 @@ export function EscapesTab({
                   <TableCell
                     colSpan={5}
                     className="text-center py-8 px-4 text-muted-foreground border border-gray-300">
-                    لا توجد حالات هروب
+                    لا توجد حالات عدم تسجيل خروج
                   </TableCell>
                 </TableRow>
               ) : (
