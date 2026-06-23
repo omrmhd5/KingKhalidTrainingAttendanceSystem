@@ -174,9 +174,6 @@ export default function ExitsTable({
                 وقت الخروج
               </TableHead>
               <TableHead className="text-center text-white font-bold py-2 px-2 border-r-2 border-green-700 whitespace-nowrap">
-                الفارق الزمني
-              </TableHead>
-              <TableHead className="text-center text-white font-bold py-2 px-2 border-r-2 border-green-700 whitespace-nowrap">
                 الشفت
               </TableHead>
             </TableRow>
@@ -185,18 +182,13 @@ export default function ExitsTable({
             {sortedExits.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={5}
                   className="text-center py-8 text-muted-foreground border border-border">
                   لا توجد سجلات خروج
                 </TableCell>
               </TableRow>
             ) : (
               sortedExits.map((exit, index) => {
-                // Format duration from backend
-                const hours = Math.floor((exit.durationMinutes || 0) / 60);
-                const minutes = (exit.durationMinutes || 0) % 60;
-                const timeDiff = `${hours} س ${minutes} د`;
-
                 // Find corresponding entry to get shift info and violation/disciplinary status
                 const correspondingEntry = entries.find(
                   (e) => e.militaryId === exit.militaryId,
@@ -222,9 +214,6 @@ export default function ExitsTable({
                     </TableCell>
                     <TableCell className="text-center font-semibold text-base py-3 px-2 border-r-2 border-gray-300 whitespace-nowrap">
                       {exit.exitTime ? formatTime12HourKSA(exit.exitTime) : ""}
-                    </TableCell>
-                    <TableCell className="text-center font-semibold text-base py-3 px-2 border-r-2 border-gray-300 whitespace-nowrap">
-                      {exit.exitTime && exit.entryTime ? timeDiff : ""}
                     </TableCell>
                     <TableCell
                       className={`text-center font-semibold text-base py-3 px-2 border-2 whitespace-nowrap ${getShiftCellColor(shiftForColor)}`}>

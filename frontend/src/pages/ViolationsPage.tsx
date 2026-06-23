@@ -155,6 +155,8 @@ export default function ViolationsPage() {
     }
   };
 
+  const visibleViolations = violations.filter((v) => v.trainee_id);
+
   return (
     <div className="space-y-6 animate-slide-in">
       <div className="flex items-center justify-between">
@@ -166,9 +168,9 @@ export default function ViolationsPage() {
           <p className="text-sm text-muted-foreground">
             قم بتسجيل مخالفات المتدربين ومتابعتها
           </p>
-          {violations.length > 0 && (
+          {visibleViolations.length > 0 && (
             <p className="text-sm text-red-600 font-medium mt-2">
-              إجمالي المخالفات: {violations.length}
+              إجمالي المخالفات: {visibleViolations.length}
             </p>
           )}
         </div>
@@ -179,8 +181,8 @@ export default function ViolationsPage() {
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg">المخالفات المسجلة</CardTitle>
             <div className="flex gap-2">
-              <ExportExcel data={violations} />
-              <ExportPDF data={violations} />
+              <ExportExcel data={visibleViolations} />
+              <ExportPDF data={visibleViolations} />
               <ViolationFormModal
                 onSubmit={handleAddViolation}
                 isLoading={isLoading}
@@ -199,7 +201,7 @@ export default function ViolationsPage() {
             <div className="text-center py-8 text-muted-foreground p-4">
               جاري تحميل المخالفات...
             </div>
-          ) : violations.length === 0 ? (
+          ) : visibleViolations.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground p-4">
               لا توجد مخالفات مسجلة حتى الآن
             </div>
@@ -229,45 +231,43 @@ export default function ViolationsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {violations
-                    .filter((v) => v.trainee_id)
-                    .map((violation, index) => (
-                      <TableRow
-                        key={violation._id}
-                        className={`${index % 2 === 0 ? "bg-white" : "bg-gray-100"} hover:bg-blue-50`}>
-                        <TableCell className="font-medium text-center py-2 px-4 border border-gray-300">
-                          {violation.trainee_id?.military_id ?? "—"}
-                        </TableCell>
-                        <TableCell className="text-center py-2 px-4 border border-gray-300">
-                          {violation.trainee_id?.civil_id ?? "—"}
-                        </TableCell>
-                        <TableCell className="font-medium text-center py-2 px-4 border border-gray-300">
-                          {violation.trainee_id?.full_name ?? "—"}
-                        </TableCell>
-                        <TableCell className="text-center py-2 px-4 border border-gray-300 max-w-sm truncate">
-                          {violation.description}
-                        </TableCell>
-                        <TableCell className="text-center py-2 px-4 border border-gray-300">
-                          {getGregorianDateArabic(violation.createdAt)}
-                        </TableCell>
-                        <TableCell className="text-center py-2 px-4 border border-gray-300">
-                          <div className="flex justify-center gap-2">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => setEditingViolation(violation)}>
-                              <Edit2 className="h-4 w-4 text-blue-600" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => setDeleteConfirm(violation._id)}>
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                  {visibleViolations.map((violation, index) => (
+                    <TableRow
+                      key={violation._id}
+                      className={`${index % 2 === 0 ? "bg-white" : "bg-gray-100"} hover:bg-blue-50`}>
+                      <TableCell className="font-medium text-center py-2 px-4 border border-gray-300">
+                        {violation.trainee_id?.military_id ?? "—"}
+                      </TableCell>
+                      <TableCell className="text-center py-2 px-4 border border-gray-300">
+                        {violation.trainee_id?.civil_id ?? "—"}
+                      </TableCell>
+                      <TableCell className="font-medium text-center py-2 px-4 border border-gray-300">
+                        {violation.trainee_id?.full_name ?? "—"}
+                      </TableCell>
+                      <TableCell className="text-center py-2 px-4 border border-gray-300 max-w-sm truncate">
+                        {violation.description}
+                      </TableCell>
+                      <TableCell className="text-center py-2 px-4 border border-gray-300">
+                        {getGregorianDateArabic(violation.createdAt)}
+                      </TableCell>
+                      <TableCell className="text-center py-2 px-4 border border-gray-300">
+                        <div className="flex justify-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setEditingViolation(violation)}>
+                            <Edit2 className="h-4 w-4 text-blue-600" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setDeleteConfirm(violation._id)}>
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             </div>

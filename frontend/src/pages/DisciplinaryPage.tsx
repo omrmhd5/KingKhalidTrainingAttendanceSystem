@@ -144,6 +144,8 @@ export default function DisciplinaryPage() {
     }
   };
 
+  const visibleDisciplinary = disciplinary.filter((r) => r.trainee_id);
+
   return (
     <div className="space-y-6 animate-slide-in">
       <div className="flex items-center justify-between">
@@ -155,9 +157,9 @@ export default function DisciplinaryPage() {
           <p className="text-sm text-muted-foreground">
             قم بتسجيل طلبات الانضباط ومتابعتها
           </p>
-          {disciplinary.length > 0 && (
+          {visibleDisciplinary.length > 0 && (
             <p className="text-sm text-blue-600 font-medium mt-2">
-              إجمالي الطلبات: {disciplinary.length}
+              إجمالي الطلبات: {visibleDisciplinary.length}
             </p>
           )}
         </div>
@@ -168,8 +170,8 @@ export default function DisciplinaryPage() {
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg">الطلبات المسجلة</CardTitle>
             <div className="flex gap-2">
-              <ExportExcel data={disciplinary} />
-              <ExportPDF data={disciplinary} />
+              <ExportExcel data={visibleDisciplinary} />
+              <ExportPDF data={visibleDisciplinary} />
               <DisciplinaryFormModal
                 onSubmit={handleAddDisciplinary}
                 isLoading={isLoading}
@@ -186,7 +188,7 @@ export default function DisciplinaryPage() {
             <div className="text-center py-8 text-muted-foreground p-4">
               جاري تحميل الطلبات...
             </div>
-          ) : disciplinary.length === 0 ? (
+          ) : visibleDisciplinary.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground p-4">
               لا توجد طلبات مسجلة حتى الآن
             </div>
@@ -216,45 +218,43 @@ export default function DisciplinaryPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {disciplinary
-                    .filter((r) => r.trainee_id)
-                    .map((request, index) => (
-                      <TableRow
-                        key={request._id}
-                        className={`${index % 2 === 0 ? "bg-white" : "bg-gray-100"} hover:bg-blue-50`}>
-                        <TableCell className="font-medium text-center py-2 px-4 border border-gray-300">
-                          {request.trainee_id?.military_id ?? "—"}
-                        </TableCell>
-                        <TableCell className="text-center py-2 px-4 border border-gray-300">
-                          {request.trainee_id?.civil_id ?? "—"}
-                        </TableCell>
-                        <TableCell className="font-medium text-center py-2 px-4 border border-gray-300">
-                          {request.trainee_id?.full_name ?? "—"}
-                        </TableCell>
-                        <TableCell className="text-center py-2 px-4 border border-gray-300">
-                          {request.reason ?? "—"}
-                        </TableCell>
-                        <TableCell className="text-center py-2 px-4 border border-gray-300">
-                          {getGregorianDateArabic(request.createdAt)}
-                        </TableCell>
-                        <TableCell className="text-center py-2 px-4 border border-gray-300">
-                          <div className="flex justify-center gap-2">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => setEditingDisciplinary(request)}>
-                              <Edit2 className="h-4 w-4 text-blue-600" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => setDeleteConfirm(request._id)}>
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                  {visibleDisciplinary.map((request, index) => (
+                    <TableRow
+                      key={request._id}
+                      className={`${index % 2 === 0 ? "bg-white" : "bg-gray-100"} hover:bg-blue-50`}>
+                      <TableCell className="font-medium text-center py-2 px-4 border border-gray-300">
+                        {request.trainee_id?.military_id ?? "—"}
+                      </TableCell>
+                      <TableCell className="text-center py-2 px-4 border border-gray-300">
+                        {request.trainee_id?.civil_id ?? "—"}
+                      </TableCell>
+                      <TableCell className="font-medium text-center py-2 px-4 border border-gray-300">
+                        {request.trainee_id?.full_name ?? "—"}
+                      </TableCell>
+                      <TableCell className="text-center py-2 px-4 border border-gray-300">
+                        {request.reason ?? "—"}
+                      </TableCell>
+                      <TableCell className="text-center py-2 px-4 border border-gray-300">
+                        {getGregorianDateArabic(request.createdAt)}
+                      </TableCell>
+                      <TableCell className="text-center py-2 px-4 border border-gray-300">
+                        <div className="flex justify-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setEditingDisciplinary(request)}>
+                            <Edit2 className="h-4 w-4 text-blue-600" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setDeleteConfirm(request._id)}>
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             </div>
