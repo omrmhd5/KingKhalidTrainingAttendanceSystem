@@ -4,7 +4,7 @@ import i18n, { normalizeLanguage } from "@/i18n";
 const API_URL =
   import.meta.env.VITE_API_URL ||
   (import.meta.env.PROD
-    ? "https://king-khalid-training-attendance-system-demo.onrender.com/api"
+    ? "https://king-khalid-training-attendance-system.onrender.com/api"
     : "http://localhost:5000/api");
 
 const apiClient = axios.create({
