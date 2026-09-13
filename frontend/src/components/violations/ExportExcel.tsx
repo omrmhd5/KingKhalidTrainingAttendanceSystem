@@ -1,3 +1,4 @@
+import i18n from "@/i18n";
 import { Button } from "@/components/ui/button";
 import { FileSpreadsheet } from "lucide-react";
 import ExcelJS from "exceljs";
@@ -37,7 +38,7 @@ const thinBorder = (argb = "FFD0D0D0") => ({
 export function ExportExcel({ data }: ExportExcelProps) {
   const generateExcel = async () => {
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("المخالفات");
+    const worksheet = workbook.addWorksheet(i18n.t("violations.title"));
 
     // Column widths
     worksheet.columns = [
@@ -52,7 +53,7 @@ export function ExportExcel({ data }: ExportExcelProps) {
     // ── Row 1: Title ──────────────────────────────────────────────────────
     const titleRow = worksheet.addRow([
       "",
-      "بيان المخالفات",
+      i18n.t("violations.sheetTitle"),
       ...Array(COLS - 1).fill(""),
     ]);
     titleRow.height = 40;
@@ -67,7 +68,7 @@ export function ExportExcel({ data }: ExportExcelProps) {
     const date = getGregorianDateArabic(new Date());
     const subRow = worksheet.addRow([
       "",
-      `التاريخ: ${date}`,
+      `${i18n.t("common.date")}: ${date}`,
       ...Array(COLS - 1).fill(""),
     ]);
     subRow.height = 24;
@@ -84,11 +85,11 @@ export function ExportExcel({ data }: ExportExcelProps) {
     // ── Row 4: Column headers ─────────────────────────────────────────────
     const headers = [
       "",
-      "تاريخ التسجيل",
-      "وصف المخالفة",
-      "الاسم",
-      "السجل المدني",
-      "الرقم العسكري",
+      i18n.t("violations.registeredAt"),
+      i18n.t("violations.descCol"),
+      i18n.t("common.name"),
+      i18n.t("trainees.civilId"),
+      i18n.t("trainees.militaryId"),
     ];
     const headerRow = worksheet.addRow(headers);
     headerRow.height = 30;
@@ -134,7 +135,7 @@ export function ExportExcel({ data }: ExportExcelProps) {
     // ── Total row ─────────────────────────────────────────────────────────
     const totalRow = worksheet.addRow([
       "",
-      `الإجمالي: ${data.length} مخالفة`,
+      `${i18n.t("violations.sheetTotal", { count: data.length })}`,
       ...Array(COLS - 1).fill(""),
     ]);
     totalRow.height = 26;
@@ -154,7 +155,7 @@ export function ExportExcel({ data }: ExportExcelProps) {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `بيان_مخالفات_${getTodayDateKSA()}.xlsx`;
+    a.download = `${i18n.t("violations.filename", { date: getTodayDateKSA() })}.xlsx`;
     a.click();
     window.URL.revokeObjectURL(url);
   };
@@ -165,8 +166,6 @@ export function ExportExcel({ data }: ExportExcelProps) {
       size="sm"
       variant="default"
       className="bg-blue-600 hover:bg-blue-700 text-white">
-      <FileSpreadsheet className="ml-2 h-4 w-4" />
-      تحميل Excel
-    </Button>
+      <FileSpreadsheet className="ml-2 h-4 w-4" />{i18n.t("common.downloadExcel")}</Button>
   );
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ClassesTimeScheduleTab } from "@/components/classes/ClassesTimeScheduleTab";
@@ -9,15 +10,14 @@ import { ClassReportTab } from "@/components/classes/ClassReportTab";
 
 export default function ClassesPage() {
   const { role } = useAuth();
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState(() => {
-    // Load from localStorage or default to "schedule"
     const savedTab = localStorage.getItem("classesActiveTab");
     return savedTab || "schedule";
   });
 
   const canWrite = role === "admin";
 
-  // Save to localStorage when tab changes
   useEffect(() => {
     localStorage.setItem("classesActiveTab", activeTab);
   }, [activeTab]);
@@ -25,23 +25,23 @@ export default function ClassesPage() {
   return (
     <div className="space-y-6 animate-slide-in">
       <div>
-        <h1 className="text-2xl font-bold">الفصول الدراسية</h1>
+        <h1 className="text-2xl font-bold">{t("classes.title")}</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          إدارة الفصول والمعلمين والطلاب وجداول الفصول
+          {t("classes.subtitle")}
         </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>إدارة الفصول والمعلمين والجداول</CardTitle>
+          <CardTitle>{t("classes.cardTitle")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <Tabs value={activeTab} onValueChange={setActiveTab} dir="rtl">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="schedule">الجداول</TabsTrigger>
-              <TabsTrigger value="classes">الفصول</TabsTrigger>
-              <TabsTrigger value="teachers">المعلمون</TabsTrigger>
-              <TabsTrigger value="reports">التقارير</TabsTrigger>
+              <TabsTrigger value="schedule">{t("classes.schedule")}</TabsTrigger>
+              <TabsTrigger value="classes">{t("classes.classes")}</TabsTrigger>
+              <TabsTrigger value="teachers">{t("classes.teachers")}</TabsTrigger>
+              <TabsTrigger value="reports">{t("classes.reports")}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="schedule" className="mt-6">

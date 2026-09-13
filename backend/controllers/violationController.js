@@ -1,4 +1,6 @@
 const violationService = require("../services/violationService");
+const { t } = require("../lib/i18n");
+const { sendError, sendCaught } = require("../lib/http");
 
 class ViolationController {
   async createViolation(req, res) {
@@ -6,9 +8,7 @@ class ViolationController {
       const { trainee_id, description } = req.body;
 
       if (!trainee_id || !description) {
-        return res.status(400).json({
-          message: "trainee_id and description are required",
-        });
+        return sendError(req, res, 400, "errors.traineeAndDescriptionRequired");
       }
 
       const violation = await violationService.createViolation(
@@ -18,30 +18,27 @@ class ViolationController {
 
       res.status(201).json(violation);
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      sendCaught(req, res, error, 500);
     }
   }
 
   async getViolationsByTraineeId(req, res) {
     try {
       const { trainee_id } = req.params;
-
       const violations =
         await violationService.getViolationsByTraineeId(trainee_id);
-
       res.status(200).json(violations);
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      sendCaught(req, res, error, 500);
     }
   }
 
   async getAllViolations(req, res) {
     try {
       const violations = await violationService.getAllViolations();
-
       res.status(200).json(violations);
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      sendCaught(req, res, error, 500);
     }
   }
 
@@ -51,45 +48,38 @@ class ViolationController {
       const { description } = req.body;
 
       if (!description) {
-        return res.status(400).json({
-          message: "description is required",
-        });
+        return sendError(req, res, 400, "errors.descriptionRequired");
       }
 
       const violation = await violationService.updateViolation(id, description);
-
       res.status(200).json(violation);
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      sendCaught(req, res, error, 500);
     }
   }
 
   async deleteViolation(req, res) {
     try {
       const { id } = req.params;
-
       const violation = await violationService.deleteViolation(id);
-
       res.status(200).json({
-        message: "Violation deleted successfully",
+        message: t(req, "success.violationDeleted"),
         violation,
       });
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      sendCaught(req, res, error, 500);
     }
   }
 
   async deleteAllViolationsByTraineeId(req, res) {
     try {
       const { trainee_id } = req.params;
-
       await violationService.deleteAllViolationsByTraineeId(trainee_id);
-
       res.status(200).json({
-        message: "All violations for trainee deleted successfully",
+        message: t(req, "success.allViolationsDeleted"),
       });
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      sendCaught(req, res, error, 500);
     }
   }
 }

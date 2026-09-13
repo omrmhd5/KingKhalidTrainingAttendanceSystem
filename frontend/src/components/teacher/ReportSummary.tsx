@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import {
   Dialog,
   DialogContent,
@@ -37,10 +38,10 @@ interface ReportSummaryProps {
 }
 
 const violationLabels: Record<1 | 2 | 3 | 4, string> = {
-  1: "النوم في الفصل",
-  2: "استخدام الجوال",
-  3: "عدم احترام المسؤول",
-  4: "مخالفة الأنظمة والتعليمات",
+  1: t("teacher.sleeping"),
+  2: t("classes.usePhone"),
+  3: t("teacher.disrespectOfficial"),
+  4: t("teacher.rulesViolation"),
 };
 
 // Transform report data to export format
@@ -113,6 +114,7 @@ export default function ReportSummary({
   stats,
   studentReports,
 }: ReportSummaryProps) {
+  const { t, i18n } = useTranslation();
   const [activeTab, setActiveTab] = useState("present");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -144,44 +146,44 @@ export default function ReportSummary({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl" dir="rtl">
+      <DialogContent className="max-w-2xl" dir={i18n.dir()}>
         <DialogHeader>
           <div className="flex items-center gap-2">
             <CheckCircle className="h-5 w-5 text-blue-600" />
-            <DialogTitle className="text-right">ملخص التقرير</DialogTitle>
+            <DialogTitle className="text-right">{t("teacher.reportSummary")}</DialogTitle>
           </div>
         </DialogHeader>
 
-        <div className="space-y-4" dir="rtl">
+        <div className="space-y-4">
           {/* Statistics Grid */}
           <div className="grid grid-cols-5 gap-2">
             <div className="text-center space-y-1 bg-green-100 border-2 border-green-300 rounded-lg p-3">
               <p className="text-2xl font-bold text-green-600">
                 {stats.present}
               </p>
-              <p className="text-xs text-muted-foreground">حاضرون</p>
+              <p className="text-xs text-muted-foreground">{t("teacher.presentCount")}</p>
             </div>
             <div className="text-center space-y-1 bg-red-100 border-2 border-red-300 rounded-lg p-3">
               <p className="text-2xl font-bold text-red-600">{stats.absent}</p>
-              <p className="text-xs text-muted-foreground">غياب</p>
+              <p className="text-xs text-muted-foreground">{t("reports.absence")}</p>
             </div>
             <div className="text-center space-y-1 bg-orange-100 border-2 border-orange-300 rounded-lg p-3">
               <p className="text-2xl font-bold text-orange-600">
                 {stats.escape}
               </p>
-              <p className="text-xs text-muted-foreground">لم يسجل خروج</p>
+              <p className="text-xs text-muted-foreground">{t("reports.noExit")}</p>
             </div>
             <div className="text-center space-y-1 bg-violet-100 border-2 border-violet-300 rounded-lg p-3">
               <p className="text-2xl font-bold text-violet-600">
                 {stats.course}
               </p>
-              <p className="text-xs text-muted-foreground">دورة</p>
+              <p className="text-xs text-muted-foreground">{t("classes.course")}</p>
             </div>
             <div className="text-center space-y-1 bg-red-100 border-2 border-red-300 rounded-lg p-3">
               <p className="text-2xl font-bold text-red-600">
                 {stats.violations}
               </p>
-              <p className="text-xs text-muted-foreground">مخالفات</p>
+              <p className="text-xs text-muted-foreground">{t("teacher.violations")}</p>
             </div>
           </div>
 
@@ -194,41 +196,41 @@ export default function ReportSummary({
             <div className="border-t pt-4 space-y-4">
               {/* Search Bar */}
               <Input
-                placeholder="ابحث باسم الطالب أو رقم عسكري أو هوية..."
+                placeholder={t("teacher.searchStudent")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="text-right"
-                dir="rtl"
+               
               />
 
-              <Tabs value={activeTab} onValueChange={setActiveTab} dir="rtl">
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
                 <TabsList className="grid w-full grid-cols-5">
                   <TabsTrigger value="present" className="text-xs">
-                    <span>حاضرون</span>
+                    <span>{t("teacher.presentCount")}</span>
                     <span className="mr-1 font-bold">
                       ({filteredPresent.length})
                     </span>
                   </TabsTrigger>
                   <TabsTrigger value="absent" className="text-xs">
-                    <span>الغياب</span>
+                    <span>{t("reports.absence")}</span>
                     <span className="mr-1 font-bold">
                       ({filteredAbsent.length})
                     </span>
                   </TabsTrigger>
                   <TabsTrigger value="escape" className="text-xs">
-                    <span>لم يسجل خروج</span>
+                    <span>{t("reports.noExit")}</span>
                     <span className="mr-1 font-bold">
                       ({filteredEscaped.length})
                     </span>
                   </TabsTrigger>
                   <TabsTrigger value="course" className="text-xs">
-                    <span>دورة</span>
+                    <span>{t("classes.course")}</span>
                     <span className="mr-1 font-bold">
                       ({filteredCourse.length})
                     </span>
                   </TabsTrigger>
                   <TabsTrigger value="violations" className="text-xs">
-                    <span>مخالفات</span>
+                    <span>{t("teacher.violations")}</span>
                     <span className="mr-1 font-bold">
                       ({filteredViolations.length})
                     </span>
@@ -255,9 +257,7 @@ export default function ReportSummary({
                       ))}
                     </div>
                   ) : (
-                    <p className="text-center text-sm text-muted-foreground py-4">
-                      لا يوجد طلاب حاضرين
-                    </p>
+                    <p className="text-center text-sm text-muted-foreground py-4">{t("teacher.noPresent")}</p>
                   )}
                 </TabsContent>
 
@@ -281,9 +281,7 @@ export default function ReportSummary({
                       ))}
                     </div>
                   ) : (
-                    <p className="text-center text-sm text-muted-foreground py-4">
-                      لا يوجد غياب
-                    </p>
+                    <p className="text-center text-sm text-muted-foreground py-4">{t("teacher.noAbsent")}</p>
                   )}
                 </TabsContent>
 
@@ -307,9 +305,7 @@ export default function ReportSummary({
                       ))}
                     </div>
                   ) : (
-                    <p className="text-center text-sm text-muted-foreground py-4">
-                      لا يوجد عدم تسجيل خروج
-                    </p>
+                    <p className="text-center text-sm text-muted-foreground py-4">{t("teacher.noNoExit")}</p>
                   )}
                 </TabsContent>
 
@@ -333,9 +329,7 @@ export default function ReportSummary({
                       ))}
                     </div>
                   ) : (
-                    <p className="text-center text-sm text-muted-foreground py-4">
-                      لا يوجد طلاب في دورة
-                    </p>
+                    <p className="text-center text-sm text-muted-foreground py-4">{t("teacher.noCourseStudents")}</p>
                   )}
                 </TabsContent>
                 {/* Violations Tab */}
@@ -368,9 +362,7 @@ export default function ReportSummary({
                       ))}
                     </div>
                   ) : (
-                    <p className="text-center text-sm text-muted-foreground py-4">
-                      لا توجد مخالفات
-                    </p>
+                    <p className="text-center text-sm text-muted-foreground py-4">{t("teacher.noViolations")}</p>
                   )}
                 </TabsContent>
               </Tabs>
@@ -383,9 +375,7 @@ export default function ReportSummary({
             studentsAbsent.length === 0 &&
             studentsEscaped.length === 0 &&
             studentsOnCourse.length === 0 && (
-              <div className="bg-green-100 border-2 border-green-300 rounded-lg p-3 text-right text-sm text-green-700">
-                ✓ لم يتم تسجيل أي بيانات حتى الآن
-              </div>
+              <div className="bg-green-100 border-2 border-green-300 rounded-lg p-3 text-right text-sm text-green-700">{t("teacher.noDataYet")}</div>
             )}
         </div>
 
@@ -394,11 +384,11 @@ export default function ReportSummary({
             <>
               <ExportExcel
                 data={transformDataForExport(filteredPresent, "present")}
-                title="تقرير الطلاب الحاضرين"
+                title={t("teacher.reportPresent")}
               />
               <ExportPDF
                 data={transformDataForExport(filteredPresent, "present")}
-                title="تقرير الطلاب الحاضرين"
+                title={t("teacher.reportPresent")}
               />
             </>
           )}
@@ -406,11 +396,11 @@ export default function ReportSummary({
             <>
               <ExportExcel
                 data={transformDataForExport(filteredViolations, "violations")}
-                title="تقرير المخالفات"
+                title={t("teacher.reportViolations")}
               />
               <ExportPDF
                 data={transformDataForExport(filteredViolations, "violations")}
-                title="تقرير المخالفات"
+                title={t("teacher.reportViolations")}
               />
             </>
           )}
@@ -418,11 +408,11 @@ export default function ReportSummary({
             <>
               <ExportExcel
                 data={transformDataForExport(filteredAbsent, "absent")}
-                title="تقرير الطلاب الغائبين"
+                title={t("teacher.reportAbsent")}
               />
               <ExportPDF
                 data={transformDataForExport(filteredAbsent, "absent")}
-                title="تقرير الطلاب الغائبين"
+                title={t("teacher.reportAbsent")}
               />
             </>
           )}
@@ -430,11 +420,11 @@ export default function ReportSummary({
             <>
               <ExportExcel
                 data={transformDataForExport(filteredEscaped, "escape")}
-                title="تقرير الطلاب الذين لم يسجلوا خروج"
+                title={t("teacher.reportNoExit")}
               />
               <ExportPDF
                 data={transformDataForExport(filteredEscaped, "escape")}
-                title="تقرير الطلاب الذين لم يسجلوا خروج"
+                title={t("teacher.reportNoExit")}
               />
             </>
           )}
@@ -442,17 +432,15 @@ export default function ReportSummary({
             <>
               <ExportExcel
                 data={transformDataForExport(filteredCourse, "course")}
-                title="تقرير طلاب الدورة"
+                title={t("teacher.reportCourse")}
               />
               <ExportPDF
                 data={transformDataForExport(filteredCourse, "course")}
-                title="تقرير طلاب الدورة"
+                title={t("teacher.reportCourse")}
               />
             </>
           )}
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            إغلاق
-          </Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>{t("common.close")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

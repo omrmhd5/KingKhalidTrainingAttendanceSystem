@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowDownToLine, ArrowUpFromLine } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 type ScanMode = "IN" | "OUT";
 
@@ -22,13 +23,14 @@ export default function MainStatsBar({
   onModeChange,
   isScanning,
 }: MainStatsBarProps) {
+  const { t } = useTranslation();
   return (
-    <div className="grid grid-cols-3 gap-6 w-2/3 mx-auto" dir="rtl">
+    <div className="grid grid-cols-3 gap-6 w-2/3 mx-auto">
       {/* Column 1 (right in RTL): Entry count / Exit count */}
       <div className="flex flex-col gap-1">
         <div className="flex flex-col items-center justify-center gap-0.5 rounded-lg border-2 border-blue-400 bg-blue-100 p-2 text-center min-h-[56px]">
           <span className="text-xs font-medium text-blue-700">
-            إجمالي تسجيل الدخول
+            {t("main.totalEntries")}
           </span>
           <span className="text-2xl font-black text-blue-800">
             {entryCount}
@@ -36,7 +38,7 @@ export default function MainStatsBar({
         </div>
         <div className="flex flex-col items-center justify-center gap-0.5 rounded-lg border-2 border-green-400 bg-green-100 p-2 text-center min-h-[56px]">
           <span className="text-xs font-medium text-green-700">
-            إجمالي تسجيل الخروج
+            {t("main.totalExits")}
           </span>
           <span className="text-2xl font-black text-green-800">
             {exitCount}
@@ -56,7 +58,7 @@ export default function MainStatsBar({
               : "bg-white hover:bg-blue-50 text-blue-600 border-2 border-blue-300"
           }`}>
           <ArrowDownToLine className="h-4 w-4" />
-          دخول
+          {t("main.entry")}
         </Button>
         <Button
           type="button"
@@ -68,7 +70,7 @@ export default function MainStatsBar({
               : "bg-white hover:bg-green-50 text-green-600 border-2 border-green-300"
           }`}>
           <ArrowUpFromLine className="h-4 w-4" />
-          خروج
+          {t("main.exit")}
         </Button>
       </div>
 
@@ -76,7 +78,7 @@ export default function MainStatsBar({
       <div className="flex flex-col gap-1">
         <div className="flex flex-col items-center justify-center gap-0.5 rounded-lg border-2 border-red-400 bg-red-100 p-2 text-center min-h-[56px]">
           <span className="text-xs font-medium text-red-700">
-            إجمالي المخالفين
+            {t("main.totalViolators")}
           </span>
           <span className="text-2xl font-black text-red-800">
             {violationsCount}
@@ -84,7 +86,7 @@ export default function MainStatsBar({
         </div>
         <div className="flex flex-col items-center justify-center gap-0.5 rounded-lg border-2 border-yellow-500 bg-yellow-100 p-2 text-center min-h-[56px]">
           <span className="text-xs font-medium text-yellow-700">
-            عدد الغياب
+            {t("teacher.absentCount")}
           </span>
           <span className="text-2xl font-black text-yellow-800">
             {absencesCount}

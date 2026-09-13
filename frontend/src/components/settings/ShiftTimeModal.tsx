@@ -7,14 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-
-const convertTo12HourArabic = (time24: string): string => {
-  if (!time24) return "";
-  const [hours, minutes] = time24.split(":").map(Number);
-  const period = hours >= 12 ? "م" : "ص";
-  const hours12 = hours % 12 || 12;
-  return `${String(hours12).padStart(2, "0")}:${String(minutes).padStart(2, "0")} ${period}`;
-};
+import { useTranslation } from "react-i18next";
 
 interface ShiftTimeModalProps {
   open: boolean;
@@ -45,12 +38,22 @@ export function ShiftTimeModal({
   shiftGrace,
   setShiftGrace,
 }: ShiftTimeModalProps) {
+  const { t, i18n } = useTranslation();
+
+  const convertTo12Hour = (time24: string): string => {
+    if (!time24) return "";
+    const [hours, minutes] = time24.split(":").map(Number);
+    const period = hours >= 12 ? t("pm") : t("am");
+    const hours12 = hours % 12 || 12;
+    return `${String(hours12).padStart(2, "0")}:${String(minutes).padStart(2, "0")} ${period}`;
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent dir="rtl">
-        <DialogHeader className="text-right">
-          <DialogTitle className="text-right">
-            {isEditing ? "تعديل شفت" : "شفت جديد"}
+      <DialogContent dir={i18n.dir()}>
+        <DialogHeader className="text-start">
+          <DialogTitle className="text-start">
+            {isEditing ? t("shifts.edit") : t("shifts.newShift")}
           </DialogTitle>
         </DialogHeader>
         <form
@@ -58,20 +61,18 @@ export function ShiftTimeModal({
             e.preventDefault();
             onSubmit();
           }}
-          className="space-y-4"
-          dir="rtl">
+          className="space-y-4">
           <div>
-            <Label>الاسم</Label>
+            <Label>{t("common.name")}</Label>
             <Input
               value={shiftName}
               onChange={(e) => setShiftName(e.target.value)}
               required
-              className="text-right"
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>وقت البداية</Label>
+              <Label>{t("common.startTime")}</Label>
               <Input
                 type="time"
                 value={shiftStart}
@@ -80,13 +81,13 @@ export function ShiftTimeModal({
                 className="flex justify-end"
               />
               {shiftStart && (
-                <p className="text-xs text-muted-foreground mt-1 text-right">
-                  {convertTo12HourArabic(shiftStart)}
+                <p className="text-xs text-muted-foreground mt-1 text-start">
+                  {convertTo12Hour(shiftStart)}
                 </p>
               )}
             </div>
             <div>
-              <Label>وقت النهاية</Label>
+              <Label>{t("common.endTime")}</Label>
               <Input
                 type="time"
                 value={shiftEnd}
@@ -95,24 +96,24 @@ export function ShiftTimeModal({
                 className="flex justify-end"
               />
               {shiftEnd && (
-                <p className="text-xs text-muted-foreground mt-1 text-right">
-                  {convertTo12HourArabic(shiftEnd)}
+                <p className="text-xs text-muted-foreground mt-1 text-start">
+                  {convertTo12Hour(shiftEnd)}
                 </p>
               )}
             </div>
           </div>
           <div>
-            <Label>دقائق السماح</Label>
+            <Label>{t("common.graceMinutes")}</Label>
             <Input
               type="number"
               value={shiftGrace}
               onChange={(e) => setShiftGrace(e.target.value)}
               min={0}
-              className="text-right [&::-webkit-outer-spin-button]:hidden [&::-webkit-inner-spin-button]:hidden [&::-moz-appearance]:textfield"
+              className="[&::-webkit-outer-spin-button]:hidden [&::-webkit-inner-spin-button]:hidden [&::-moz-appearance]:textfield"
             />
           </div>
           <Button type="submit" className="w-full">
-            {isEditing ? "تحديث" : "انشاء"}
+            {isEditing ? t("common.update") : t("common.create")}
           </Button>
         </form>
       </DialogContent>

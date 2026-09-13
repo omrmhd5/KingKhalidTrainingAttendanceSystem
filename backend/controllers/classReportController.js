@@ -1,4 +1,6 @@
 const classReportService = require("../services/classReportService");
+const { t } = require("../lib/i18n");
+const { sendCaught, localizeResult } = require("../lib/http");
 
 class ClassReportController {
   async getAllClassReports(req, res) {
@@ -15,9 +17,7 @@ class ClassReportController {
       const reports = await classReportService.getAllClassReports(filters);
       res.status(200).json(reports);
     } catch (error) {
-      res.status(500).json({
-        message: error.message || "فشل في تحميل التقارير",
-      });
+      sendCaught(req, res, error, 500);
     }
   }
 
@@ -26,9 +26,7 @@ class ClassReportController {
       const report = await classReportService.getClassReportById(req.params.id);
       res.status(200).json(report);
     } catch (error) {
-      res.status(404).json({
-        message: error.message || "التقرير غير موجود",
-      });
+      sendCaught(req, res, error, 404);
     }
   }
 
@@ -59,13 +57,11 @@ class ClassReportController {
       });
 
       res.status(201).json({
-        message: "تم إنشاء التقرير بنجاح",
+        message: t(req, "success.reportCreated"),
         report: newReport,
       });
     } catch (error) {
-      res.status(400).json({
-        message: error.message || "فشل في إنشاء التقرير",
-      });
+      sendCaught(req, res, error, 400);
     }
   }
 
@@ -99,24 +95,20 @@ class ClassReportController {
       );
 
       res.status(200).json({
-        message: "تم تحديث التقرير بنجاح",
+        message: t(req, "success.reportUpdated"),
         report: updatedReport,
       });
     } catch (error) {
-      res.status(400).json({
-        message: error.message || "فشل في تحديث التقرير",
-      });
+      sendCaught(req, res, error, 400);
     }
   }
 
   async deleteClassReport(req, res) {
     try {
       const result = await classReportService.deleteClassReport(req.params.id);
-      res.status(200).json(result);
+      res.status(200).json(localizeResult(req, result));
     } catch (error) {
-      res.status(400).json({
-        message: error.message || "فشل في حذف التقرير",
-      });
+      sendCaught(req, res, error, 400);
     }
   }
 }

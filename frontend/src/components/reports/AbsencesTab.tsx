@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -57,6 +58,7 @@ export function AbsencesTab({
   isLoading = false,
   onFilteredDataChange,
 }: AbsencesTabProps) {
+  const { t, i18n } = useTranslation();
   const [search, setSearch] = useState("");
   const [filterShift, setFilterShift] = useState("all");
   const [shifts, setShifts] = useState<Shift[]>([]);
@@ -95,7 +97,7 @@ export function AbsencesTab({
   }, [filteredAbsences, onFilteredDataChange]);
 
   return (
-    <Card dir="rtl" className="bg-red-100 border-red-900">
+    <Card className="bg-red-100 border-red-900">
       <CardContent className="p-6">
         <HoursReportFilters
           search={search}
@@ -105,27 +107,19 @@ export function AbsencesTab({
           shifts={shifts}
         />
         <div className="mb-4 text-sm font-semibold text-red-800">
-          الإجمالي: <span className="text-lg">{filteredAbsences.length}</span>
+          {t("common.total")}: <span className="text-lg">{filteredAbsences.length}</span>
         </div>
         <div className="border border-gray-300 rounded-lg overflow-hidden">
-          <Table dir="rtl" className="border-collapse">
+          <Table className="border-collapse">
             <TableHeader className="bg-red-600">
               <TableRow>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("trainees.militaryId")}</TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("trainees.civilId")}</TableHead>
                 <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                  الرقم العسكري
+                  {t("common.name")}
                 </TableHead>
-                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                  السجل المدني
-                </TableHead>
-                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                  الاسم
-                </TableHead>
-                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                  الشفت
-                </TableHead>
-                <TableHead className="text-center text-white font-bold py-3 px-4">
-                  الباركود
-                </TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("trainees.shift")}</TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4">{t("common.barcode")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -133,17 +127,13 @@ export function AbsencesTab({
                 <TableRow className="hover:bg-blue-50">
                   <TableCell
                     colSpan={5}
-                    className="text-center py-8 px-4 text-muted-foreground border border-gray-300">
-                    جاري التحميل...
-                  </TableCell>
+                    className="text-center py-8 px-4 text-muted-foreground border border-gray-300">{t("common.loading")}</TableCell>
                 </TableRow>
               ) : filteredAbsences?.length === 0 ? (
                 <TableRow className="hover:bg-blue-50">
                   <TableCell
                     colSpan={5}
-                    className="text-center py-8 px-4 text-muted-foreground border border-gray-300">
-                    لا توجد غيابات
-                  </TableCell>
+                    className="text-center py-8 px-4 text-muted-foreground border border-gray-300">{t("reports.noAbsences")}</TableCell>
                 </TableRow>
               ) : (
                 filteredAbsences?.map((a: AbsenceRecord, index) => (

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -58,6 +59,7 @@ export function LateTab({
   isLoading = false,
   onFilteredDataChange,
 }: LateTabProps) {
+  const { t, i18n } = useTranslation();
   const [search, setSearch] = useState("");
   const [filterShift, setFilterShift] = useState("all");
   const [shifts, setShifts] = useState<Shift[]>([]);
@@ -96,7 +98,7 @@ export function LateTab({
   }, [filteredLates, onFilteredDataChange]);
 
   return (
-    <Card dir="rtl" className="bg-purple-100 border-purple-900">
+    <Card className="bg-purple-100 border-purple-900">
       <CardContent className="p-6">
         <HoursReportFilters
           search={search}
@@ -106,30 +108,20 @@ export function LateTab({
           shifts={shifts}
         />
         <div className="mb-4 text-sm font-semibold text-purple-800">
-          الإجمالي: <span className="text-lg">{filteredLates.length}</span>
+          {t("common.total")}: <span className="text-lg">{filteredLates.length}</span>
         </div>
         <div className="border border-gray-300 rounded-lg overflow-hidden">
-          <Table dir="rtl" className="border-collapse">
+          <Table className="border-collapse">
             <TableHeader className="bg-purple-600">
               <TableRow>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("trainees.militaryId")}</TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("trainees.civilId")}</TableHead>
                 <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                  الرقم العسكري
+                  {t("common.name")}
                 </TableHead>
-                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                  السجل المدني
-                </TableHead>
-                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                  الاسم
-                </TableHead>
-                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                  الشفت
-                </TableHead>
-                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                  وقت الدخول
-                </TableHead>
-                <TableHead className="text-center text-white font-bold py-3 px-4">
-                  الباركود
-                </TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("trainees.shift")}</TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("main.entryTime")}</TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4">{t("common.barcode")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -137,17 +129,13 @@ export function LateTab({
                 <TableRow className="hover:bg-blue-50">
                   <TableCell
                     colSpan={6}
-                    className="text-center py-8 px-4 text-muted-foreground border border-gray-300">
-                    جاري التحميل...
-                  </TableCell>
+                    className="text-center py-8 px-4 text-muted-foreground border border-gray-300">{t("common.loading")}</TableCell>
                 </TableRow>
               ) : filteredLates?.length === 0 ? (
                 <TableRow className="hover:bg-blue-50">
                   <TableCell
                     colSpan={6}
-                    className="text-center py-8 px-4 text-muted-foreground border border-gray-300">
-                    لا توجد حضورات متأخرة
-                  </TableCell>
+                    className="text-center py-8 px-4 text-muted-foreground border border-gray-300">{t("reports.noLates")}</TableCell>
                 </TableRow>
               ) : (
                 filteredLates?.map((late: LateRecord, index) => (

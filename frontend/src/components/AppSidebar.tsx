@@ -15,6 +15,7 @@ import {
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { userApi } from "@/lib/userApi";
 import {
   Sidebar,
@@ -41,64 +42,65 @@ import { Label } from "@/components/ui/label";
 
 const navItems = [
   {
-    title: "ملخص اليوم",
+    titleKey: "nav.summary",
     url: "/",
     icon: BarChart3,
     roles: ["admin", "operator", "viewer"],
   },
   {
-    title: "الصفحة الرئيسية",
+    titleKey: "nav.main",
     url: "/main",
     icon: ScanBarcode,
     roles: ["admin", "operator"],
   },
   {
-    title: "فصلي",
+    titleKey: "nav.myClass",
     url: "/teacher",
     icon: BookOpen,
     roles: ["teacher"],
   },
   {
-    title: "التقارير",
+    titleKey: "nav.reports",
     url: "/reports",
     icon: FileText,
     roles: ["admin", "operator", "viewer"],
   },
   {
-    title: "المتدربون",
+    titleKey: "nav.trainees",
     url: "/trainees",
     icon: Users,
     roles: ["admin", "operator", "viewer"],
   },
   {
-    title: "تحرير بيان",
+    titleKey: "nav.bulkView",
     url: "/bulk-view",
     icon: FileText,
     roles: ["admin", "operator", "viewer"],
   },
   {
-    title: "تسجيل المخالفين",
+    titleKey: "nav.violations",
     url: "/violations",
     icon: AlertCircle,
     roles: ["admin", "operator"],
   },
   {
-    title: "طلبات الانضباط",
+    titleKey: "nav.disciplinary",
     url: "/disciplinary",
     icon: Shield,
     roles: ["admin", "operator"],
   },
   {
-    title: "الفصول الدراسية",
+    titleKey: "nav.classes",
     url: "/classes",
     icon: BookOpen,
     roles: ["admin", "operator"],
   },
-  { title: "الإعدادات", url: "/settings", icon: Settings, roles: ["admin"] },
+  { titleKey: "nav.settings", url: "/settings", icon: Settings, roles: ["admin"] },
 ];
 
 export function AppSidebar() {
   const { role } = useAuth();
+  const { t, i18n } = useTranslation();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
@@ -137,14 +139,14 @@ export function AppSidebar() {
         newPassword,
         confirmNewPassword,
       );
-      setSuccess(result.message);
+      setSuccess(result.message || t("password.changed"));
       setTimeout(() => {
         setDialogOpen(false);
         resetDialog();
       }, 1500);
     } catch (err: any) {
       setError(
-        err.response?.data?.message ?? "حدث خطأ أثناء تغيير كلمة المرور",
+        err.response?.data?.message ?? t("password.failed"),
       );
     } finally {
       setLoading(false);
@@ -153,22 +155,22 @@ export function AppSidebar() {
 
   return (
     <>
-      <Sidebar side="right">
+      <Sidebar side={i18n.dir() === "rtl" ? "right" : "left"}>
         <SidebarHeader className="border-b border-sidebar-border p-4">
           <div className="flex items-center gap-2">
-            <img src="/Logo.png" alt="Logo" className="h-8 w-8" />
+            <img src="/Logo.png" alt={t("brand.logoAlt")} className="h-8 w-8" />
             <span className="text-sm font-bold text-sidebar-accent-foreground">
-              برنامج الحضور و الانصراف و الفصول الدراسية
+              {t("brand.tagline")}
             </span>
           </div>
         </SidebarHeader>
         <SidebarContent>
           <SidebarGroup>
-            <SidebarGroupLabel>القائمة الرئيسية</SidebarGroupLabel>
+            <SidebarGroupLabel>{t("nav.menu")}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {visibleItems.map((item) => (
-                  <SidebarMenuItem key={item.title}>
+                  <SidebarMenuItem key={item.titleKey}>
                     <SidebarMenuButton asChild>
                       <NavLink
                         to={item.url}
@@ -176,7 +178,7 @@ export function AppSidebar() {
                         className="hover:bg-sidebar-accent"
                         activeClassName="bg-sidebar-accent text-sidebar-primary font-semibold">
                         <item.icon className="mx-2 h-4 w-4" />
-                        <span>{item.title}</span>
+                        <span>{t(item.titleKey)}</span>
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -195,7 +197,7 @@ export function AppSidebar() {
                 setDialogOpen(true);
               }}>
               <KeyRound className="h-4 w-4" />
-              تغيير كلمة المرور
+              {t("password.title")}
             </Button>
           </SidebarFooter>
         )}
@@ -207,16 +209,16 @@ export function AppSidebar() {
           setDialogOpen(open);
           if (!open) resetDialog();
         }}>
-        <DialogContent dir="rtl" className="max-w-sm">
+        <DialogContent dir={i18n.dir()} className="max-w-sm">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <KeyRound className="h-5 w-5" />
-              تغيير كلمة المرور
+              {t("password.title")}
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleChangePassword} className="space-y-4 pt-2">
             <div className="space-y-1">
-              <Label htmlFor="current-password">كلمة المرور الحالية</Label>
+              <Label htmlFor="current-password">{t("password.current")}</Label>
               <div className="relative">
                 <Input
                   id="current-password"
@@ -225,11 +227,11 @@ export function AppSidebar() {
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   required
                   disabled={loading}
-                  className="pl-9"
+                  className="ps-9"
                 />
                 <button
                   type="button"
-                  className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  className="absolute start-2 top-1/2 -translate-y-1/2 text-muted-foreground"
                   onClick={() => setShowCurrent((v) => !v)}
                   tabIndex={-1}>
                   {showCurrent ? (
@@ -241,7 +243,7 @@ export function AppSidebar() {
               </div>
             </div>
             <div className="space-y-1">
-              <Label htmlFor="new-password">كلمة المرور الجديدة</Label>
+              <Label htmlFor="new-password">{t("password.new")}</Label>
               <div className="relative">
                 <Input
                   id="new-password"
@@ -250,11 +252,11 @@ export function AppSidebar() {
                   onChange={(e) => setNewPassword(e.target.value)}
                   required
                   disabled={loading}
-                  className="pl-9"
+                  className="ps-9"
                 />
                 <button
                   type="button"
-                  className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  className="absolute start-2 top-1/2 -translate-y-1/2 text-muted-foreground"
                   onClick={() => setShowNew((v) => !v)}
                   tabIndex={-1}>
                   {showNew ? (
@@ -266,9 +268,7 @@ export function AppSidebar() {
               </div>
             </div>
             <div className="space-y-1">
-              <Label htmlFor="confirm-password">
-                تأكيد كلمة المرور الجديدة
-              </Label>
+              <Label htmlFor="confirm-password">{t("password.confirm")}</Label>
               <div className="relative">
                 <Input
                   id="confirm-password"
@@ -277,11 +277,11 @@ export function AppSidebar() {
                   onChange={(e) => setConfirmNewPassword(e.target.value)}
                   required
                   disabled={loading}
-                  className="pl-9"
+                  className="ps-9"
                 />
                 <button
                   type="button"
-                  className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  className="absolute start-2 top-1/2 -translate-y-1/2 text-muted-foreground"
                   onClick={() => setShowConfirm((v) => !v)}
                   tabIndex={-1}>
                   {showConfirm ? (
@@ -297,9 +297,9 @@ export function AppSidebar() {
             <DialogFooter className="pt-2">
               <Button type="submit" disabled={loading} className="w-full">
                 {loading ? (
-                  <Loader2 className="h-4 w-4 animate-spin ml-2" />
+                  <Loader2 className="h-4 w-4 animate-spin ms-2" />
                 ) : null}
-                حفظ كلمة المرور
+                {t("password.save")}
               </Button>
             </DialogFooter>
           </form>

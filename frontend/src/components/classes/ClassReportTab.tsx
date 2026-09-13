@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -40,6 +41,7 @@ interface ClassReportTabProps {
 }
 
 export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [reports, setReports] = useState<ClassReport[]>([]);
@@ -86,8 +88,8 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
       setClasses(classesData);
     } catch (error) {
       toast({
-        title: "خطأ",
-        description: "فشل تحميل الفصول",
+        title: t("common.error"),
+        description: t("classes.loadFailed"),
         variant: "destructive",
       });
     } finally {
@@ -101,8 +103,8 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
       setSchedules(schedulesData);
     } catch (error) {
       toast({
-        title: "خطأ",
-        description: "فشل تحميل الجداول الزمنية",
+        title: t("common.error"),
+        description: t("classes.loadSchedulesFailed"),
         variant: "destructive",
       });
     }
@@ -128,8 +130,8 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
       setReports(data);
     } catch (error) {
       toast({
-        title: "خطأ",
-        description: "فشل تحميل التقارير",
+        title: t("common.error"),
+        description: t("classes.loadReportsFailed"),
         variant: "destructive",
       });
     } finally {
@@ -383,22 +385,22 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
     let color: "green" | "red" | "orange" | "blue" | "violet" = "green";
 
     if (statType === "present") {
-      title = "الطلاب الحاضرون";
+      title = t("classes.presentStudents");
       color = "green";
     } else if (statType === "absent") {
-      title = "الطلاب الغائبون";
+      title = t("classes.absentStudents");
       color = "red";
     } else if (statType === "escape") {
-      title = "الطلاب الذين لم يسجلوا خروج";
+      title = t("classes.noCheckoutStudents");
       color = "orange";
     } else if (statType === "course") {
-      title = "طلاب الدورة";
+      title = t("teacher.courseStudents");
       color = "violet";
     } else if (statType === "violations") {
-      title = "الطلاب المخالفين";
+      title = t("classes.violatingStudents");
       color = "red";
     } else if (statType === "total") {
-      title = "إجمالي الطلاب";
+      title = t("teacher.totalStudents");
       color = "blue";
     }
 
@@ -411,7 +413,7 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
       key={report._id}
       onClick={() => handleReportClick(report)}
       className="border-2 border-blue-100 rounded-lg p-4 cursor-pointer bg-blue-50 hover:bg-blue-100 transition">
-      <div className="space-y-2 mb-4 pb-3 border-b" dir="rtl">
+      <div className="space-y-2 mb-4 pb-3 border-b">
         {/* Row 1: Schedule */}
         <div className="text-sm font-semibold">
           {typeof report.schedule === "object" ? report.schedule.name : "—"}
@@ -443,37 +445,37 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
               (report.stats?.escapes || 0) +
               (report.stats?.course || 0)}
           </div>
-          <div className="text-muted-foreground">الإجمالي</div>
+          <div className="text-muted-foreground">{t("common.total")}</div>
         </div>
         <div className="text-center bg-green-200 p-2 rounded">
           <div className="font-bold text-green-700">
             {report.stats?.present || 0}
           </div>
-          <div className="text-muted-foreground">حاضرين</div>
+          <div className="text-muted-foreground">{t("teacher.presentCount")}</div>
         </div>
         <div className="text-center bg-red-200 p-2 rounded">
           <div className="font-bold text-red-700">
             {report.stats?.absence || 0}
           </div>
-          <div className="text-muted-foreground">غياب</div>
+          <div className="text-muted-foreground">{t("reports.absence")}</div>
         </div>
         <div className="text-center bg-orange-200 p-2 rounded">
           <div className="font-bold text-orange-700">
             {report.stats?.escapes || 0}
           </div>
-          <div className="text-muted-foreground">لم يسجل خروج</div>
+          <div className="text-muted-foreground">{t("reports.noExit")}</div>
         </div>
         <div className="text-center bg-violet-200 p-2 rounded">
           <div className="font-bold text-violet-700">
             {report.stats?.course || 0}
           </div>
-          <div className="text-muted-foreground">دورة</div>
+          <div className="text-muted-foreground">{t("classes.course")}</div>
         </div>
         <div className="text-center bg-red-200 p-2 rounded">
           <div className="font-bold text-red-700">
             {report.stats?.violations || 0}
           </div>
-          <div className="text-muted-foreground">مخالفات</div>
+          <div className="text-muted-foreground">{t("teacher.violations")}</div>
         </div>
       </div>
     </div>
@@ -482,17 +484,15 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
   return (
     <div className="space-y-6">
       {/* Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4" dir="rtl">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-          <label className="text-sm font-medium text-right block mb-2">
-            الفصل
-          </label>
+          <label className="text-sm font-medium text-right block mb-2">{t("common.class")}</label>
           <Select value={selectedClass} onValueChange={setSelectedClass}>
-            <SelectTrigger dir="rtl">
-              <SelectValue placeholder="اختر الفصل" />
+            <SelectTrigger>
+              <SelectValue placeholder={t("classes.selectClass")} />
             </SelectTrigger>
-            <SelectContent dir="rtl">
-              <SelectItem value="all">الكل</SelectItem>
+            <SelectContent>
+              <SelectItem value="all">{t("common.all")}</SelectItem>
               {[...classes]
                 .sort((a, b) => {
                   let scheduleAStart = "";
@@ -526,15 +526,13 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
         </div>
 
         <div>
-          <label className="text-sm font-medium text-right block mb-2">
-            الجدول الزمني
-          </label>
+          <label className="text-sm font-medium text-right block mb-2">{t("classes.timeSchedule")}</label>
           <Select value={selectedSchedule} onValueChange={setSelectedSchedule}>
-            <SelectTrigger dir="rtl">
-              <SelectValue placeholder="اختر الجدول الزمني" />
+            <SelectTrigger>
+              <SelectValue placeholder={t("classes.selectSchedule")} />
             </SelectTrigger>
-            <SelectContent dir="rtl">
-              <SelectItem value="all">الكل</SelectItem>
+            <SelectContent>
+              <SelectItem value="all">{t("common.all")}</SelectItem>
               {[...schedules]
                 .sort((a, b) => a.start_time.localeCompare(b.start_time))
                 .map((schedule) => (
@@ -548,14 +546,14 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
 
         <div>
           <label className="text-sm font-medium text-right block mb-2">
-            التاريخ
+            {t("common.date")}
           </label>
           <Input
             type="date"
             lang="en"
             value={selectedDate}
             onChange={(e) => setSelectedDate(convertToKSADate(e.target.value))}
-            dir="rtl"
+           
             className="flex-row-reverse"
           />
         </div>
@@ -602,7 +600,7 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
             }));
 
           return (
-            <div className="space-y-4" dir="rtl">
+            <div className="space-y-4">
               {/* Summary cards + export buttons */}
               <div className="flex items-center justify-between flex-wrap gap-3">
                 <div className="flex gap-3 flex-wrap">
@@ -610,19 +608,19 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
                     <span className="text-2xl font-bold text-blue-700">
                       {relevantClasses.length}
                     </span>
-                    <span className="text-xs text-blue-600">إجمالي الفصول</span>
+                    <span className="text-xs text-blue-600">{t("classes.totalClasses")}</span>
                   </div>
                   <div className="flex items-center gap-2 bg-green-50 border-2 border-green-200 rounded-lg px-4 py-2">
                     <span className="text-2xl font-bold text-green-700">
                       {sentClasses.length}
                     </span>
-                    <span className="text-xs text-green-600">أرسلوا</span>
+                    <span className="text-xs text-green-600">{t("classes.sent")}</span>
                   </div>
                   <div className="flex items-center gap-2 bg-red-50 border-2 border-red-200 rounded-lg px-4 py-2">
                     <span className="text-2xl font-bold text-red-700">
                       {missingClasses.length}
                     </span>
-                    <span className="text-xs text-red-600">لم يرسلوا</span>
+                    <span className="text-xs text-red-600">{t("classes.notSent")}</span>
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -647,7 +645,7 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
                     onClick={() => setExpandSentClasses(!expandSentClasses)}>
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-sm font-semibold text-green-700">
-                        ✓ أرسلوا التقارير ({sentClasses.length})
+                        {t("classes.sentReports", { count: sentClasses.length })}
                       </CardTitle>
                       <ChevronDown
                         className={`h-5 w-5 text-green-700 transition-transform ${expandSentClasses ? "rotate-180" : ""}`}
@@ -660,12 +658,8 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
                         <Table className="border-collapse">
                           <TableHeader className="bg-green-600">
                             <TableRow>
-                              <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                                اسم الفصل
-                              </TableHead>
-                              <TableHead className="text-center text-white font-bold py-3 px-4">
-                                المعلم المسؤول
-                              </TableHead>
+                              <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("classes.className")}</TableHead>
+                              <TableHead className="text-center text-white font-bold py-3 px-4">{t("classes.responsibleTeacher")}</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
@@ -673,9 +667,7 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
                               <TableRow className="hover:bg-green-50">
                                 <TableCell
                                   colSpan={2}
-                                  className="text-center py-8 px-4 text-muted-foreground border border-gray-300">
-                                  لا يوجد فصول أرسلت تقارير
-                                </TableCell>
+                                  className="text-center py-8 px-4 text-muted-foreground border border-gray-300">{t("classes.noneSent")}</TableCell>
                               </TableRow>
                             ) : (
                               sentClasses.map((cls, i) => (
@@ -707,7 +699,7 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
                     }>
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-sm font-semibold text-red-700">
-                        ✗ لم يرسلوا التقارير ({missingClasses.length})
+                        {t("classes.missingReports", { count: missingClasses.length })}
                       </CardTitle>
                       <ChevronDown
                         className={`h-5 w-5 text-red-700 transition-transform ${expandMissingClasses ? "rotate-180" : ""}`}
@@ -720,12 +712,8 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
                         <Table className="border-collapse">
                           <TableHeader className="bg-red-600">
                             <TableRow>
-                              <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                                اسم الفصل
-                              </TableHead>
-                              <TableHead className="text-center text-white font-bold py-3 px-4">
-                                المعلم المسؤول
-                              </TableHead>
+                              <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("classes.className")}</TableHead>
+                              <TableHead className="text-center text-white font-bold py-3 px-4">{t("classes.responsibleTeacher")}</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
@@ -733,9 +721,7 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
                               <TableRow className="hover:bg-red-50">
                                 <TableCell
                                   colSpan={2}
-                                  className="text-center py-8 px-4 text-muted-foreground border border-gray-300">
-                                  جميع الفصول أرسلت تقاريرها ✓
-                                </TableCell>
+                                  className="text-center py-8 px-4 text-muted-foreground border border-gray-300">{t("classes.allSentCheck")}</TableCell>
                               </TableRow>
                             ) : (
                               missingClasses.map((cls, i) => (
@@ -779,7 +765,7 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
                 0,
               )}
             </p>
-            <p className="text-xs text-muted-foreground">الإجمالي</p>
+            <p className="text-xs text-muted-foreground">{t("common.total")}</p>
           </div>
           <div
             className="text-center space-y-1 bg-green-100 border-2 border-green-300 rounded-lg p-3 hover:bg-green-200 cursor-pointer transition-colors"
@@ -787,7 +773,7 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
             <p className="text-2xl font-bold text-green-600">
               {reports.reduce((sum, r) => sum + (r.stats?.present || 0), 0)}
             </p>
-            <p className="text-xs text-muted-foreground">حاضرون</p>
+            <p className="text-xs text-muted-foreground">{t("teacher.presentCount")}</p>
           </div>
           <div
             className="text-center space-y-1 bg-red-100 border-2 border-red-300 rounded-lg p-3 hover:bg-red-200 cursor-pointer transition-colors"
@@ -795,7 +781,7 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
             <p className="text-2xl font-bold text-red-600">
               {reports.reduce((sum, r) => sum + (r.stats?.absence || 0), 0)}
             </p>
-            <p className="text-xs text-muted-foreground">غياب</p>
+            <p className="text-xs text-muted-foreground">{t("reports.absence")}</p>
           </div>
           <div
             className="text-center space-y-1 bg-orange-100 border-2 border-orange-300 rounded-lg p-3 hover:bg-orange-200 cursor-pointer transition-colors"
@@ -803,7 +789,7 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
             <p className="text-2xl font-bold text-orange-600">
               {reports.reduce((sum, r) => sum + (r.stats?.escapes || 0), 0)}
             </p>
-            <p className="text-xs text-muted-foreground">لم يسجل خروج</p>
+            <p className="text-xs text-muted-foreground">{t("reports.noExit")}</p>
           </div>
           <div
             className="text-center space-y-1 bg-violet-100 border-2 border-violet-300 rounded-lg p-3 hover:bg-violet-200 cursor-pointer transition-colors"
@@ -811,7 +797,7 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
             <p className="text-2xl font-bold text-violet-600">
               {reports.reduce((sum, r) => sum + (r.stats?.course || 0), 0)}
             </p>
-            <p className="text-xs text-muted-foreground">دورة</p>
+            <p className="text-xs text-muted-foreground">{t("classes.course")}</p>
           </div>
           <div
             className="text-center space-y-1 bg-red-100 border-2 border-red-300 rounded-lg p-3 hover:bg-red-200 cursor-pointer transition-colors"
@@ -819,7 +805,7 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
             <p className="text-2xl font-bold text-red-600">
               {reports.reduce((sum, r) => sum + (r.stats?.violations || 0), 0)}
             </p>
-            <p className="text-xs text-muted-foreground">مخالفات</p>
+            <p className="text-xs text-muted-foreground">{t("teacher.violations")}</p>
           </div>
         </div>
       )}
@@ -832,9 +818,7 @@ export function ClassReportTab({ canWrite = true }: ClassReportTabProps) {
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
           ) : reports.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              لا توجد تقارير
-            </div>
+            <div className="text-center py-8 text-muted-foreground">{t("classes.emptyReports")}</div>
           ) : (
             <div className="space-y-2">
               {reports.map((report) => renderReportCard(report))}

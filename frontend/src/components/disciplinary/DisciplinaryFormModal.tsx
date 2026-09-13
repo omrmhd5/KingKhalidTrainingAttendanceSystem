@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -47,6 +48,7 @@ export function DisciplinaryFormModal({
   editingDisciplinary = null,
   onEditModeChange,
 }: DisciplinaryFormModalProps) {
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
@@ -86,8 +88,8 @@ export function DisciplinaryFormModal({
 
     if (!form.reason.trim()) {
       toast({
-        title: "تحذير",
-        description: "يرجى إدخال سبب الاستدعاء",
+        title: t("common.warning"),
+        description: t("disciplinary.needReason"),
         variant: "destructive",
         duration: 1500,
       });
@@ -112,8 +114,8 @@ export function DisciplinaryFormModal({
 
     if (!form.id_number.trim()) {
       toast({
-        title: "تحذير",
-        description: "يرجى إدخال الرقم",
+        title: t("common.warning"),
+        description: t("violations.needId"),
         variant: "destructive",
         duration: 1500,
       });
@@ -122,8 +124,8 @@ export function DisciplinaryFormModal({
 
     if (!form.reason.trim()) {
       toast({
-        title: "تحذير",
-        description: "يرجى إدخال سبب الاستدعاء",
+        title: t("common.warning"),
+        description: t("disciplinary.needReason"),
         variant: "destructive",
         duration: 1500,
       });
@@ -141,8 +143,8 @@ export function DisciplinaryFormModal({
 
       if (!trainees || trainees.length === 0) {
         toast({
-          title: "لم يتم العثور على المتدرب",
-          description: `لا يوجد متدرب برقم ${form.id_type === "military" ? "عسكري" : "مدني"}: ${form.id_number}`,
+          title: t("violations.notFound"),
+          description: t("violations.notFoundDesc", { type: form.id_type === "military" ? t("violations.militaryType") : t("violations.civilType"), id: form.id_number }),
           variant: "destructive",
           duration: 2000,
         });
@@ -170,8 +172,8 @@ export function DisciplinaryFormModal({
       handleOpenChange(false);
     } catch (error) {
       toast({
-        title: "خطأ",
-        description: "حدث خطأ أثناء البحث عن المتدرب",
+        title: t("common.error"),
+        description: t("common.searchTraineeFailed"),
         variant: "destructive",
         duration: 2000,
       });
@@ -184,16 +186,13 @@ export function DisciplinaryFormModal({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
-          <Plus className="ml-2 h-4 w-4" />
-          إضافة طلب
-        </Button>
+          <Plus className="ml-2 h-4 w-4" />{t("disciplinary.add")}</Button>
       </DialogTrigger>
-      <DialogContent
-        dir="rtl"
+      <DialogContent dir={i18n.dir()}
         className="max-w-md border-r-4 border-r-blue-600">
         <DialogHeader>
           <DialogTitle className="text-right text-blue-600">
-            {isEditMode ? "تحرير سبب الاستدعاء" : "طلب انضباط جديد"}
+            {isEditMode ? t("disciplinary.editReason") : t("disciplinary.newTitle")}
           </DialogTitle>
         </DialogHeader>
         <style>{`
@@ -210,7 +209,7 @@ export function DisciplinaryFormModal({
           {!isEditMode && (
             <>
               <div className="space-y-3">
-                <label className="text-sm font-medium block">نوع الرقم</label>
+                <label className="text-sm font-medium block">{t("violations.idType")}</label>
                 <RadioGroup
                   value={form.id_type}
                   onValueChange={(value) =>
@@ -219,33 +218,27 @@ export function DisciplinaryFormModal({
                   <div className="flex justify-end items-center space-x-2">
                     <Label
                       htmlFor="military"
-                      className="cursor-pointer font-normal">
-                      رقم عسكري
-                    </Label>
+                      className="cursor-pointer font-normal">{t("violations.militaryNumber")}</Label>
                     <RadioGroupItem value="military" id="military" />
                   </div>
                   <div className="flex justify-end items-center space-x-2">
                     <Label
                       htmlFor="civil"
-                      className="cursor-pointer font-normal">
-                      سجل مدني
-                    </Label>
+                      className="cursor-pointer font-normal">{t("violations.civilNumber")}</Label>
                     <RadioGroupItem value="civil" id="civil" />
                   </div>
                 </RadioGroup>
               </div>
 
               <div>
-                <Label htmlFor="id_number" className="text-sm font-medium">
-                  الرقم *
-                </Label>
+                <Label htmlFor="id_number" className="text-sm font-medium">{t("violations.idRequired")}</Label>
                 <Input
                   id="id_number"
                   type="number"
                   placeholder={
                     form.id_type === "military"
-                      ? "أدخل الرقم العسكري"
-                      : "أدخل رقم السجل المدني"
+                      ? t("violations.militaryPlaceholder")
+                      : t("violations.civilPlaceholder")
                   }
                   value={form.id_number}
                   onChange={(e) => {
@@ -255,22 +248,20 @@ export function DisciplinaryFormModal({
                       setForm({ ...form, id_number: value });
                     }
                   }}
-                  dir="rtl"
+                 
                 />
               </div>
             </>
           )}
 
           <div>
-            <Label htmlFor="reason" className="text-sm font-medium">
-              سبب الاستدعاء *
-            </Label>
+            <Label htmlFor="reason" className="text-sm font-medium">{t("disciplinary.reasonRequired")}</Label>
             <Textarea
               id="reason"
-              placeholder="أدخل سبب الاستدعاء"
+              placeholder={t("disciplinary.reasonPlaceholder")}
               value={form.reason}
               onChange={(e) => setForm({ ...form, reason: e.target.value })}
-              dir="rtl"
+             
               rows={3}
             />
           </div>
@@ -279,20 +270,18 @@ export function DisciplinaryFormModal({
             <Button
               type="button"
               variant="outline"
-              onClick={() => handleOpenChange(false)}>
-              إلغاء
-            </Button>
+              onClick={() => handleOpenChange(false)}>{t("common.cancel")}</Button>
             <Button
               type="submit"
               disabled={isLoading || isSearching}
               className="bg-blue-600 hover:bg-blue-700">
               {isSearching
-                ? "جاري البحث..."
+                ? t("common.searching")
                 : isLoading
-                  ? "جاري الحفظ..."
+                  ? t("common.saving")
                   : isEditMode
-                    ? "حفظ التعديل"
-                    : "حفظ الطلب"}
+                    ? t("common.saveEdit")
+                    : t("disciplinary.save")}
             </Button>
           </div>
         </form>

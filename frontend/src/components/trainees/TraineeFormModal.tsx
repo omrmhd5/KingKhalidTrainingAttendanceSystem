@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -49,6 +50,7 @@ export function TraineeFormModal({
   editing,
   isLoading,
 }: TraineeFormModalProps) {
+  const { t, i18n } = useTranslation();
   const [shifts, setShifts] = useState<any[]>([]);
   const [shiftsLoading, setShiftsLoading] = useState(false);
   const [ranks, setRanks] = useState<any[]>([]);
@@ -102,14 +104,12 @@ export function TraineeFormModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
         <Button>
-          <Plus className="ml-2 h-4 w-4" />
-          إضافة متدرب
-        </Button>
+          <Plus className="ml-2 h-4 w-4" />{t("trainees.add")}</Button>
       </DialogTrigger>
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="text-right">
-            {editing ? "تعديل المتدرب" : "متدرب جديد"}
+            {editing ? t("trainees.edit") : t("trainees.newTrainee")}
           </DialogTitle>
         </DialogHeader>
         <style>{`
@@ -129,7 +129,7 @@ export function TraineeFormModal({
           }}
           className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1">
-            <Label>الرقم العسكري</Label>
+            <Label>{t("trainees.militaryId")}</Label>
             <Input
               type="number"
               value={form.military_id}
@@ -140,7 +140,7 @@ export function TraineeFormModal({
             />
           </div>
           <div className="space-y-1">
-            <Label>السجل المدني</Label>
+            <Label>{t("trainees.civilId")}</Label>
             <Input
               type="number"
               value={form.civil_id}
@@ -149,7 +149,7 @@ export function TraineeFormModal({
             />
           </div>
           <div className="space-y-1 sm:col-span-2">
-            <Label>الاسم</Label>
+            <Label>{t("common.name")}</Label>
             <Input
               value={form.full_name}
               onChange={(e) => setForm({ ...form, full_name: e.target.value })}
@@ -157,16 +157,16 @@ export function TraineeFormModal({
             />
           </div>
           <div className="space-y-1">
-            <Label>الرتبة</Label>
+            <Label>{t("trainees.rank")}</Label>
             <Select
               value={form.rank_id}
               onValueChange={(v) => setForm({ ...form, rank_id: v })}>
-              <SelectTrigger disabled={ranksLoading} dir="rtl">
+              <SelectTrigger disabled={ranksLoading}>
                 <SelectValue
-                  placeholder={ranksLoading ? "جاري التحميل..." : "اختر الرتبة"}
+                  placeholder={ranksLoading ? t("common.loading") : t("trainees.rank")}
                 />
               </SelectTrigger>
-              <SelectContent dir="rtl">
+              <SelectContent>
                 {ranks?.map((rank) => (
                   <SelectItem key={rank._id} value={rank._id}>
                     {rank.name}
@@ -176,18 +176,18 @@ export function TraineeFormModal({
             </Select>
           </div>
           <div className="space-y-1">
-            <Label>التخصص</Label>
+            <Label>{t("trainees.specialty")}</Label>
             <Select
               value={form.specialty_id}
               onValueChange={(v) => setForm({ ...form, specialty_id: v })}>
-              <SelectTrigger disabled={specializationsLoading} dir="rtl">
+              <SelectTrigger disabled={specializationsLoading}>
                 <SelectValue
                   placeholder={
-                    specializationsLoading ? "جاري التحميل..." : "اختر التخصص"
+                    specializationsLoading ? t("common.loading") : t("trainees.specialty")
                   }
                 />
               </SelectTrigger>
-              <SelectContent dir="rtl">
+              <SelectContent>
                 {specializations?.map((specialization) => (
                   <SelectItem
                     key={specialization._id}
@@ -199,16 +199,16 @@ export function TraineeFormModal({
             </Select>
           </div>
           <div className="space-y-1 sm:col-span-2">
-            <Label>الشفت</Label>
+            <Label>{t("trainees.shift")}</Label>
             <Select
               value={form.shift_id}
               onValueChange={(v) => setForm({ ...form, shift_id: v })}>
-              <SelectTrigger disabled={shiftsLoading} dir="rtl">
+              <SelectTrigger disabled={shiftsLoading}>
                 <SelectValue
-                  placeholder={shiftsLoading ? "جاري التحميل..." : "اختر الشفت"}
+                  placeholder={shiftsLoading ? t("common.loading") : t("bulk.selectShift")}
                 />
               </SelectTrigger>
-              <SelectContent dir="rtl">
+              <SelectContent>
                 {shifts?.map((shift) => (
                   <SelectItem key={shift._id} value={shift._id}>
                     {shift.name}
@@ -219,7 +219,7 @@ export function TraineeFormModal({
           </div>
           <div className="sm:col-span-2">
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "جاري الحفظ..." : "حفظ"}
+              {isLoading ? t("common.saving") : t("common.save")}
             </Button>
           </div>
         </form>

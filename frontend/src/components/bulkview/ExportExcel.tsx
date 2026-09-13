@@ -1,3 +1,4 @@
+import i18n from "@/i18n";
 import { Button } from "@/components/ui/button";
 import { FileSpreadsheet } from "lucide-react";
 import ExcelJS from "exceljs";
@@ -25,7 +26,7 @@ const thinBorder = (argb = "FFD0D0D0") => ({
 export function ExportExcel({ data }: ExportExcelProps) {
   const generateExcel = async () => {
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("المتدربين");
+    const worksheet = workbook.addWorksheet(i18n.t("trainees.itemPlural"));
 
     // Column widths
     worksheet.columns = [
@@ -50,7 +51,7 @@ export function ExportExcel({ data }: ExportExcelProps) {
       "",
       "",
       "",
-      "بيان المتدربين",
+      i18n.t("trainees.sheetTitle"),
       ...Array(COLS - 1).fill(""),
     ]);
     titleRow.height = 40;
@@ -69,7 +70,7 @@ export function ExportExcel({ data }: ExportExcelProps) {
       "",
       "",
       "",
-      `التاريخ: ${date}`,
+      `${i18n.t("common.date")}: ${date}`,
       ...Array(COLS - 1).fill(""),
     ]);
     subRow.height = 24;
@@ -90,13 +91,13 @@ export function ExportExcel({ data }: ExportExcelProps) {
       "",
       "",
       "",
-      "الباركود",
-      "الشفت",
-      "التخصص",
-      "الرتبة",
-      "الاسم",
-      "السجل المدني",
-      "الرقم العسكري",
+      i18n.t("common.barcode"),
+      i18n.t("trainees.shift"),
+      i18n.t("trainees.specialty"),
+      i18n.t("trainees.rank"),
+      i18n.t("common.name"),
+      i18n.t("trainees.civilId"),
+      i18n.t("trainees.militaryId"),
     ];
     const headerRow = worksheet.addRow(headers);
     headerRow.height = 30;
@@ -172,7 +173,7 @@ export function ExportExcel({ data }: ExportExcelProps) {
       "",
       "",
       "",
-      `الإجمالي: ${data.length} متدرب`,
+      `${i18n.t("trainees.sheetTotal", { count: data.length })}`,
       ...Array(COLS - 1).fill(""),
     ]);
     totalRow.height = 26;
@@ -192,7 +193,7 @@ export function ExportExcel({ data }: ExportExcelProps) {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `بيان_متدربين_${getTodayDateKSA()}.xlsx`;
+    a.download = `${i18n.t("trainees.filename", { date: getTodayDateKSA() })}.xlsx`;
     a.click();
     window.URL.revokeObjectURL(url);
   };
@@ -203,8 +204,6 @@ export function ExportExcel({ data }: ExportExcelProps) {
       size="sm"
       variant="default"
       className="bg-blue-600 hover:bg-blue-700 text-white">
-      <FileSpreadsheet className="ml-2 h-4 w-4" />
-      تحميل Excel
-    </Button>
+      <FileSpreadsheet className="ml-2 h-4 w-4" />{i18n.t("common.downloadExcel")}</Button>
   );
 }

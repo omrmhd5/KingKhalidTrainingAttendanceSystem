@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useState, useMemo, useEffect } from "react";
 import {
   Dialog,
@@ -37,6 +38,7 @@ export function AddStudentsModal({
   classItem,
   onStudentsAdded,
 }: AddStudentsModalProps) {
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<
@@ -63,8 +65,8 @@ export function AddStudentsModal({
       setAllTrainees(data);
     } catch (error: unknown) {
       toast({
-        title: "خطأ",
-        description: "فشل في تحميل الطلاب",
+        title: t("common.error"),
+        description: t("classes.loadStudentsFailed"),
         variant: "destructive",
       });
     } finally {
@@ -149,8 +151,8 @@ export function AddStudentsModal({
   const handleAssignStudents = async () => {
     if (selectedStudents.size === 0) {
       toast({
-        title: "تنبيه",
-        description: "يرجى تحديد طلاب للتعيين",
+        title: t("common.warning"),
+        description: t("classes.selectStudents"),
         variant: "destructive",
       });
       return;
@@ -162,8 +164,8 @@ export function AddStudentsModal({
       await classApi.assignStudents(classItem._id, studentIds);
 
       toast({
-        title: "نجاح",
-        description: `تم تعيين ${selectedStudents.size} طالب(ة) للفصل`,
+        title: t("common.success"),
+        description: t("classes.assignedCount", { count: selectedStudents.size }),
       });
 
       setSelectedStudents(new Set());
@@ -174,8 +176,8 @@ export function AddStudentsModal({
       }
     } catch (error: unknown) {
       toast({
-        title: "خطأ",
-        description: "فشل في تعيين الطلاب",
+        title: t("common.error"),
+        description: t("classes.assignFailed"),
         variant: "destructive",
       });
     } finally {
@@ -185,12 +187,11 @@ export function AddStudentsModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        dir="rtl"
+      <DialogContent dir={i18n.dir()}
         className="max-w-2xl max-h-[80vh] overflow-y-auto scrollbar-thin">
         <DialogHeader>
           <DialogTitle className="text-right">
-            إضافة طلاب للفصل: {classItem.name}
+            {t("classes.addStudentsTo", { name: classItem.name })}
           </DialogTitle>
         </DialogHeader>
 
@@ -199,13 +200,13 @@ export function AddStudentsModal({
           <div className="relative">
             <Search className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="ابحث برقم السجل المدني أو الرقم العسكري أو الاسم"
+              placeholder={t("trainees.searchPlaceholder")}
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
                 setCurrentPage(1);
               }}
-              dir="rtl"
+             
               className="pl-10 pr-10"
             />
           </div>
@@ -213,20 +214,20 @@ export function AddStudentsModal({
           {/* Status Filter Bubbles */}
           <div className="flex flex-wrap gap-2">
             {[
-              { key: "all", label: "الكل", color: "bg-gray-100 text-gray-800" },
+              { key: "all", label: t("common.all"), color: "bg-gray-100 text-gray-800" },
               {
                 key: "available",
-                label: "متاح",
+                label: t("common.available"),
                 color: "bg-green-100 text-green-800",
               },
               {
                 key: "assigned-this",
-                label: "معين بهذا الفصل",
+                label: t("classes.assignedThisClass"),
                 color: "bg-blue-100 text-blue-800",
               },
               {
                 key: "assigned-other",
-                label: "معين بفصل آخر",
+                label: t("classes.assignedOtherClass"),
                 color: "bg-yellow-100 text-yellow-800",
               },
             ].map(({ key, label, color }) => {
@@ -273,7 +274,7 @@ export function AddStudentsModal({
 
           {/* Students Table */}
           <div className="overflow-x-auto border border-gray-300 rounded-lg overflow-hidden">
-            <Table dir="rtl" className="border-collapse">
+            <Table className="border-collapse">
               <TableHeader className="bg-teal-600">
                 <TableRow>
                   <TableHead className="text-center w-12 text-white font-bold py-3 px-4 border-r border-gray-400">
@@ -286,17 +287,11 @@ export function AddStudentsModal({
                     />
                   </TableHead>
                   <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                    الاسم
+                    {t("common.name")}
                   </TableHead>
-                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                    السجل المدني
-                  </TableHead>
-                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                    الرقم العسكري
-                  </TableHead>
-                  <TableHead className="text-center text-white font-bold py-3 px-4">
-                    الحالة
-                  </TableHead>
+                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("trainees.civilId")}</TableHead>
+                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("trainees.militaryId")}</TableHead>
+                  <TableHead className="text-center text-white font-bold py-3 px-4">{t("common.status")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -312,9 +307,7 @@ export function AddStudentsModal({
                   <TableRow className="hover:bg-blue-50">
                     <TableCell
                       colSpan={5}
-                      className="text-center py-8 px-4 text-muted-foreground border border-gray-300">
-                      لا يوجد طلاب متاحين
-                    </TableCell>
+                      className="text-center py-8 px-4 text-muted-foreground border border-gray-300">{t("classes.noAvailableStudents")}</TableCell>
                   </TableRow>
                 ) : (
                   paginatedStudents.map((student, index) => {
@@ -350,17 +343,11 @@ export function AddStudentsModal({
                         </TableCell>
                         <TableCell className="text-center py-2 px-4 border border-gray-300">
                           {inThisClass ? (
-                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                              معين بهذا الفصل
-                            </span>
+                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">{t("classes.assignedThisClass")}</span>
                           ) : hasOtherClass ? (
-                            <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
-                              معين بفصل آخر
-                            </span>
+                            <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">{t("classes.assignedOtherClass")}</span>
                           ) : (
-                            <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
-                              متاح
-                            </span>
+                            <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">{t("common.available")}</span>
                           )}
                         </TableCell>
                       </TableRow>
@@ -378,11 +365,9 @@ export function AddStudentsModal({
                 variant="outline"
                 size="sm"
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                disabled={currentPage === 1}>
-                السابق
-              </Button>
+                disabled={currentPage === 1}>{t("common.previous")}</Button>
               <span className="text-sm text-muted-foreground">
-                الصفحة {currentPage} من {totalPages}
+                {t("common.pageOf", { current: currentPage, total: totalPages })}
               </span>
               <Button
                 variant="outline"
@@ -390,15 +375,13 @@ export function AddStudentsModal({
                 onClick={() =>
                   setCurrentPage((p) => Math.min(totalPages, p + 1))
                 }
-                disabled={currentPage === totalPages}>
-                التالي
-              </Button>
+                disabled={currentPage === totalPages}>{t("common.next")}</Button>
             </div>
           )}
 
           {/* Selected Count */}
           <div className="text-sm text-muted-foreground text-right">
-            عدد الطلاب المحددين: {selectedStudents.size}
+            {t("classes.selectedCount", { count: selectedStudents.size })}
           </div>
         </div>
 
@@ -406,17 +389,13 @@ export function AddStudentsModal({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            disabled={submitting}>
-            إلغاء
-          </Button>
+            disabled={submitting}>{t("common.cancel")}</Button>
           <Button onClick={handleAssignStudents} disabled={submitting}>
             {submitting ? (
               <>
-                <Loader2 className="ml-2 h-4 w-4 animate-spin" />
-                جاري التعيين...
-              </>
+                <Loader2 className="ml-2 h-4 w-4 animate-spin" />{t("classes.assigning")}</>
             ) : (
-              "تعيين الطلاب"
+              t("classes.assignStudents")
             )}
           </Button>
         </DialogFooter>

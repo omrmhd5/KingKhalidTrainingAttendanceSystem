@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useTranslation } from "react-i18next";
 
 interface ViolationModalProps {
   open: boolean;
@@ -24,16 +25,17 @@ export default function ViolationModal({
   onConfirm,
   studentName,
 }: ViolationModalProps) {
+  const { t, i18n } = useTranslation();
   const [selectedViolation, setSelectedViolation] = useState<
     1 | 2 | 3 | 4 | null
   >(null);
   const [description, setDescription] = useState("");
 
   const violations = [
-    { id: 1, label: "النوم في الفصل" },
-    { id: 2, label: "استخدام الجوال في الفصل" },
-    { id: 3, label: "عدم احترام المسؤول" },
-    { id: 4, label: "مخالفة الأنظمة والتعليمات" },
+    { id: 1 as const, label: t("teacher.sleeping") },
+    { id: 2 as const, label: t("teacher.phoneUse") },
+    { id: 3 as const, label: t("teacher.disrespectOfficial") },
+    { id: 4 as const, label: t("teacher.rulesViolation") },
   ];
 
   const handleConfirm = () => {
@@ -45,28 +47,26 @@ export default function ViolationModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md" dir="rtl">
+      <DialogContent className="max-w-md" dir={i18n.dir()}>
         <DialogHeader>
-          <DialogTitle className="text-right">تسجيل مخالفة</DialogTitle>
-          <p className="text-sm text-muted-foreground text-right">
+          <DialogTitle className="text-start">{t("violations.add")}</DialogTitle>
+          <p className="text-sm text-muted-foreground text-start">
             {studentName}
           </p>
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Violation Type Selection */}
           <div className="space-y-3">
-            <Label className="text-right block">نوع المخالفة:</Label>
+            <Label className="text-start block">{t("teacher.violationType")}</Label>
             <RadioGroup
               value={selectedViolation?.toString() || ""}
               onValueChange={(val) =>
                 setSelectedViolation(parseInt(val) as 1 | 2 | 3 | 4)
-              }
-              dir="rtl">
+              }>
               {violations.map((violation) => (
                 <div
                   key={violation.id}
-                  className="flex items-center gap-2 pr-2">
+                  className="flex items-center gap-2 pe-2">
                   <RadioGroupItem
                     value={violation.id.toString()}
                     id={`violation-${violation.id}`}
@@ -81,18 +81,16 @@ export default function ViolationModal({
             </RadioGroup>
           </div>
 
-          {/* Description Field */}
           <div className="space-y-2 py-4">
-            <Label htmlFor="description" className="text-right block">
-              ملاحظات اضافية (اختياري):
+            <Label htmlFor="description" className="text-start block">
+              {t("common.notesOptional")}
             </Label>
             <Textarea
               id="description"
-              placeholder="أضِف أي تفاصيل إضافية حول المخالفة..."
+              placeholder={t("teacher.violationDetails")}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="min-h-24"
-              dir="rtl"
             />
           </div>
         </div>
@@ -105,13 +103,13 @@ export default function ViolationModal({
               setSelectedViolation(null);
               setDescription("");
             }}>
-            إلغاء
+            {t("common.cancel")}
           </Button>
           <Button
             onClick={handleConfirm}
             disabled={!selectedViolation}
             className="bg-red-600 hover:bg-red-700">
-            تسجيل المخالفة
+            {t("teacher.registerViolation")}
           </Button>
         </DialogFooter>
       </DialogContent>

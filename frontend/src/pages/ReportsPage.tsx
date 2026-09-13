@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,6 +20,7 @@ import {
 } from "@/lib/attendanceApi";
 
 export default function ReportsPage() {
+  const { t } = useTranslation();
   const [date, setDate] = useState(getTodayDateKSA());
   const [activeTab, setActiveTab] = useState("hours");
   const [hoursCount, setHoursCount] = useState(0);
@@ -111,15 +113,13 @@ export default function ReportsPage() {
   return (
     <div className="space-y-6 animate-slide-in">
       <div>
-        <h1 className="text-2xl font-bold">التقارير</h1>
-        <p className="text-sm text-muted-foreground">
-          تقارير الحضور والبيانات اليومية
-        </p>
+        <h1 className="text-2xl font-bold">{t("reports.title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("reports.subtitle")}</p>
       </div>
 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Label className="text-sm">التاريخ</Label>
+          <Label className="text-sm">{t("common.date")}</Label>
           <Input
             type="date"
             lang="en"
@@ -159,13 +159,20 @@ export default function ReportsPage() {
       <Tabs
         value={activeTab}
         onValueChange={handleTabChange}
-        dir="rtl"
         className="w-full">
         <TabsList>
-          <TabsTrigger value="hours">الساعات ({hoursCount})</TabsTrigger>
-          <TabsTrigger value="absences">الغيابات ({absencesCount})</TabsTrigger>
-          <TabsTrigger value="lates">التأخيرات ({latesCount})</TabsTrigger>
-          <TabsTrigger value="escapes">عدم تسجيل خروج ({escapesCount})</TabsTrigger>
+          <TabsTrigger value="hours">
+            {t("reports.hoursTab", { count: hoursCount })}
+          </TabsTrigger>
+          <TabsTrigger value="absences">
+            {t("reports.absencesTab", { count: absencesCount })}
+          </TabsTrigger>
+          <TabsTrigger value="lates">
+            {t("reports.latesTab", { count: latesCount })}
+          </TabsTrigger>
+          <TabsTrigger value="escapes">
+            {t("reports.escapesTab", { count: escapesCount })}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="hours">

@@ -1,3 +1,4 @@
+import i18n from "@/i18n";
 import { Button } from "@/components/ui/button";
 import { FileSpreadsheet } from "lucide-react";
 import ExcelJS from "exceljs";
@@ -72,49 +73,49 @@ export function ReportsExportExcel({ data, type }: ReportsExportExcelProps) {
     let headers: string[] = [];
 
     if (type === "hours") {
-      title = "بيان الساعات اليومية";
+      title = i18n.t("reports.hoursSheet");
       headers = [
         "",
-        "الباركود",
-        "الساعات الفعلية",
-        "الساعات المفقودة",
-        "الساعات المجدولة",
-        "الخروج",
-        "الحضور",
-        "الشفت",
-        "الاسم",
-        "الرقم العسكري",
+        i18n.t("common.barcode"),
+        i18n.t("reports.actualHours"),
+        i18n.t("reports.missingHours"),
+        i18n.t("reports.scheduledHours"),
+        i18n.t("main.exit"),
+        i18n.t("summary.attended"),
+        i18n.t("trainees.shift"),
+        i18n.t("common.name"),
+        i18n.t("trainees.militaryId"),
       ];
     } else if (type === "absences") {
-      title = "بيان الغيابات";
+      title = i18n.t("reports.absencesSheet");
       headers = [
         "",
-        "الباركود",
-        "الشفت",
-        "الاسم",
-        "السجل المدني",
-        "الرقم العسكري",
+        i18n.t("common.barcode"),
+        i18n.t("trainees.shift"),
+        i18n.t("common.name"),
+        i18n.t("trainees.civilId"),
+        i18n.t("trainees.militaryId"),
       ];
     } else if (type === "lates") {
-      title = "بيان التأخيرات";
+      title = i18n.t("reports.latesSheet");
       headers = [
         "",
-        "الباركود",
-        "وقت الحضور",
-        "الشفت",
-        "الاسم",
-        "السجل المدني",
-        "الرقم العسكري",
+        i18n.t("common.barcode"),
+        i18n.t("main.entryTime"),
+        i18n.t("trainees.shift"),
+        i18n.t("common.name"),
+        i18n.t("trainees.civilId"),
+        i18n.t("trainees.militaryId"),
       ];
     } else {
-      title = "بيان عدم تسجيل خروج";
+      title = i18n.t("reports.escapesSheet");
       headers = [
         "",
-        "الباركود",
-        "الشفت",
-        "الاسم",
-        "السجل المدني",
-        "الرقم العسكري",
+        i18n.t("common.barcode"),
+        i18n.t("trainees.shift"),
+        i18n.t("common.name"),
+        i18n.t("trainees.civilId"),
+        i18n.t("trainees.militaryId"),
       ];
     }
 
@@ -143,7 +144,7 @@ export function ReportsExportExcel({ data, type }: ReportsExportExcelProps) {
     subRow.height = 24;
     worksheet.mergeCells(2, 2, 2, colCount);
     const subCell = worksheet.getCell(2, 2);
-    subCell.value = `التاريخ: ${date}`;
+    subCell.value = `${i18n.t("common.date")}: ${date}`;
     subCell.font = { size: 12, italic: true, color: { argb: "FF6B7280" } };
     subCell.fill = solid("FFF9FAFB");
     subCell.alignment = { horizontal: "center", vertical: "middle" };
@@ -286,14 +287,14 @@ export function ReportsExportExcel({ data, type }: ReportsExportExcelProps) {
     const totalRowIdx = worksheet.rowCount;
     worksheet.mergeCells(totalRowIdx, 2, totalRowIdx, colCount);
     const totalCell = totalRow.getCell(2);
-    totalCell.value = `الإجمالي: ${data.length} ${
+    totalCell.value = `${i18n.t("common.total")}: ${data.length} ${
       type === "hours"
-        ? "سجل"
+        ? i18n.t("common.record")
         : type === "absences"
-          ? "غياب"
+          ? i18n.t("reports.absence")
           : type === "lates"
-            ? "تأخير"
-            : "عدم تسجيل خروج"
+            ? i18n.t("reports.delay")
+            : i18n.t("reports.noExit")
     }`;
     totalCell.font = { bold: true, size: 12, color: { argb: "FFF5F5F5" } };
     totalCell.fill = solid("FF3B82F6");
@@ -308,7 +309,7 @@ export function ReportsExportExcel({ data, type }: ReportsExportExcelProps) {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `بيان_${type === "hours" ? "ساعات" : type === "absences" ? "غيابات" : type === "lates" ? "تأخيرات" : "عدم_تسجيل_خروج"}_${getTodayDateKSA()}.xlsx`;
+    a.download = `${type === "hours" ? i18n.t("reports.hoursSheet") : type === "absences" ? i18n.t("reports.absencesSheet") : type === "lates" ? i18n.t("reports.latesSheet") : i18n.t("reports.escapesSheet")}_${getTodayDateKSA()}.xlsx`;
     a.click();
     window.URL.revokeObjectURL(url);
   };
@@ -319,8 +320,6 @@ export function ReportsExportExcel({ data, type }: ReportsExportExcelProps) {
       size="sm"
       variant="default"
       className="bg-purple-600 hover:bg-purple-700 text-white">
-      <FileSpreadsheet className="ml-2 h-4 w-4" />
-      تحميل Excel
-    </Button>
+      <FileSpreadsheet className="ml-2 h-4 w-4" />{i18n.t("common.downloadExcel")}</Button>
   );
 }

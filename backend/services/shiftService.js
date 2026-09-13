@@ -22,7 +22,7 @@ class ShiftService {
     const { name, start_time, end_time, grace_minutes } = data;
 
     if (!name || !start_time || !end_time) {
-      throw new Error("Missing required fields: name, start_time, end_time");
+      throw new Error("errors.shiftRequired");
     }
 
     const graceMin = grace_minutes || 0;
@@ -48,7 +48,7 @@ class ShiftService {
     const shift = await Shift.findById(id);
 
     if (!shift) {
-      throw new Error("Shift not found");
+      throw new Error("errors.shiftNotFound");
     }
 
     if (name !== undefined) shift.name = name;
@@ -75,7 +75,7 @@ class ShiftService {
     const shift = await Shift.findById(id);
 
     if (!shift) {
-      throw new Error("Shift not found");
+      throw new Error("errors.shiftNotFound");
     }
 
     return await Shift.deleteOne({ _id: id });

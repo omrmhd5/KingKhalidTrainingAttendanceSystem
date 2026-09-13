@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useState, useMemo, useEffect } from "react";
 import {
   Dialog,
@@ -46,6 +47,7 @@ export function ClassStudentsModal({
   canWrite = true,
   onStudentRemoved,
 }: ClassStudentsModalProps) {
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -72,8 +74,8 @@ export function ClassStudentsModal({
       setClassStudents((classData.students as Student[]) || []);
     } catch (error: unknown) {
       toast({
-        title: "خطأ",
-        description: "فشل في تحميل طلاب الفصل",
+        title: t("common.error"),
+        description: t("classes.loadClassStudentsFailed"),
         variant: "destructive",
       });
     } finally {
@@ -106,16 +108,16 @@ export function ClassStudentsModal({
       await classApi.removeStudent(classItem._id, studentId);
       setClassStudents(classStudents.filter((s) => s._id !== studentId));
       toast({
-        title: "نجاح",
-        description: "تم حذف الطالب من الفصل",
+        title: t("common.success"),
+        description: t("classes.deletedStudent"),
       });
       if (onStudentRemoved) {
         onStudentRemoved();
       }
     } catch (error: unknown) {
       toast({
-        title: "خطأ",
-        description: "فشل في حذف الطالب",
+        title: t("common.error"),
+        description: t("classes.deleteStudentFailed"),
         variant: "destructive",
       });
     } finally {
@@ -140,8 +142,8 @@ export function ClassStudentsModal({
       setSelectedStudents(new Set());
 
       toast({
-        title: "نجاح",
-        description: `تم حذف ${studentIds.length} طالب(ة) من الفصل`,
+        title: t("common.success"),
+        description: t("classes.deletedStudents", { count: studentIds.length }),
       });
 
       if (onStudentRemoved) {
@@ -149,8 +151,8 @@ export function ClassStudentsModal({
       }
     } catch (error: unknown) {
       toast({
-        title: "خطأ",
-        description: "فشل في حذف الطلاب",
+        title: t("common.error"),
+        description: t("classes.deleteStudentsFailed"),
         variant: "destructive",
       });
     } finally {
@@ -191,12 +193,11 @@ export function ClassStudentsModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        dir="rtl"
+      <DialogContent dir={i18n.dir()}
         className="max-w-2xl max-h-[80vh] overflow-y-auto scrollbar-thin">
         <DialogHeader>
           <DialogTitle className="text-right">
-            طلاب الفصل: {classItem.name}
+            {t("classes.classStudents", { name: classItem.name })}
           </DialogTitle>
         </DialogHeader>
 
@@ -205,20 +206,20 @@ export function ClassStudentsModal({
           <div className="relative">
             <Search className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="ابحث برقم السجل المدني أو الرقم العسكري أو الاسم"
+              placeholder={t("trainees.searchPlaceholder")}
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
                 setCurrentPage(1);
               }}
-              dir="rtl"
+             
               className="pl-10 pr-10"
             />
           </div>
 
           {/* Students Table */}
           <div className="overflow-x-auto border border-gray-300 rounded-lg overflow-hidden">
-            <Table dir="rtl" className="border-collapse">
+            <Table className="border-collapse">
               <TableHeader className="bg-rose-600">
                 <TableRow>
                   {canWrite && (
@@ -233,18 +234,12 @@ export function ClassStudentsModal({
                     </TableHead>
                   )}
                   <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                    الاسم
+                    {t("common.name")}
                   </TableHead>
-                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                    السجل المدني
-                  </TableHead>
-                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                    الرقم العسكري
-                  </TableHead>
+                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("trainees.civilId")}</TableHead>
+                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("trainees.militaryId")}</TableHead>
                   {canWrite && (
-                    <TableHead className="text-center text-white font-bold py-3 px-4">
-                      الإجراءات
-                    </TableHead>
+                    <TableHead className="text-center text-white font-bold py-3 px-4">{t("common.actions")}</TableHead>
                   )}
                 </TableRow>
               </TableHeader>
@@ -261,9 +256,7 @@ export function ClassStudentsModal({
                   <TableRow className="hover:bg-blue-50">
                     <TableCell
                       colSpan={canWrite ? 5 : 4}
-                      className="text-center py-8 px-4 text-muted-foreground border border-gray-300">
-                      لا يوجد طلاب
-                    </TableCell>
+                      className="text-center py-8 px-4 text-muted-foreground border border-gray-300">{t("classes.emptyStudents")}</TableCell>
                   </TableRow>
                 ) : (
                   paginatedStudents.map((student, index) => (
@@ -318,11 +311,9 @@ export function ClassStudentsModal({
                 variant="outline"
                 size="sm"
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                disabled={currentPage === 1}>
-                السابق
-              </Button>
+                disabled={currentPage === 1}>{t("common.previous")}</Button>
               <span className="text-sm text-muted-foreground">
-                الصفحة {currentPage} من {totalPages}
+                {t("common.pageOf", { current: currentPage, total: totalPages })}
               </span>
               <Button
                 variant="outline"
@@ -330,15 +321,13 @@ export function ClassStudentsModal({
                 onClick={() =>
                   setCurrentPage((p) => Math.min(totalPages, p + 1))
                 }
-                disabled={currentPage === totalPages}>
-                التالي
-              </Button>
+                disabled={currentPage === totalPages}>{t("common.next")}</Button>
             </div>
           )}
 
           {/* Student Count */}
           <div className="text-sm text-muted-foreground text-right">
-            إجمالي الطلاب: {filteredStudents.length}
+            {t("classes.totalStudentsCount", { count: filteredStudents.length })}
           </div>
         </div>
 
@@ -349,15 +338,13 @@ export function ClassStudentsModal({
               onClick={handleOpenBulkDeleteConfirm}
               disabled={deleting !== null}>
               <Trash2 className="ml-2 h-4 w-4" />
-              حذف المحددين ({selectedStudents.size})
+              {t("common.deleteSelectedNamed", { count: selectedStudents.size })}
             </Button>
           )}
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            disabled={deleting !== null}>
-            إغلاق
-          </Button>
+            disabled={deleting !== null}>{t("common.close")}</Button>
         </DialogFooter>
       </DialogContent>
 
@@ -368,10 +355,10 @@ export function ClassStudentsModal({
           onOpenChange={setConfirmDeleteOpen}
           itemName={
             isBulkDelete
-              ? `${selectedStudents.size} طالب(ة)`
+              ? t("common.studentCount", { count: selectedStudents.size })
               : studentToDelete?.full_name || ""
           }
-          itemType={isBulkDelete ? "الطلاب" : "الطالب"}
+          itemType={isBulkDelete ? t("common.students") : t("common.student")}
           onConfirm={() => {
             if (isBulkDelete) {
               handleDeleteSelectedStudents();

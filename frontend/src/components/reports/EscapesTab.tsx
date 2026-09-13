@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -59,6 +60,7 @@ export function EscapesTab({
   isLoading = false,
   onFilteredDataChange,
 }: EscapesTabProps) {
+  const { t, i18n } = useTranslation();
   const [search, setSearch] = useState("");
   const [filterShift, setFilterShift] = useState("all");
   const [shifts, setShifts] = useState<Shift[]>([]);
@@ -97,7 +99,7 @@ export function EscapesTab({
   }, [filteredEscapes, onFilteredDataChange]);
 
   return (
-    <Card dir="rtl" className="bg-orange-50 border-orange-900">
+    <Card className="bg-orange-50 border-orange-900">
       <CardContent className="p-6">
         <HoursReportFilters
           search={search}
@@ -107,27 +109,19 @@ export function EscapesTab({
           shifts={shifts}
         />
         <div className="mb-4 text-sm font-semibold text-orange-800">
-          الإجمالي: <span className="text-lg">{filteredEscapes.length}</span>
+          {t("common.total")}: <span className="text-lg">{filteredEscapes.length}</span>
         </div>
         <div className="border border-gray-300 rounded-lg overflow-hidden">
-          <Table dir="rtl" className="border-collapse">
+          <Table className="border-collapse">
             <TableHeader className="bg-orange-600">
               <TableRow>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("trainees.militaryId")}</TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("trainees.civilId")}</TableHead>
                 <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                  الرقم العسكري
+                  {t("common.name")}
                 </TableHead>
-                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                  السجل المدني
-                </TableHead>
-                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                  الاسم
-                </TableHead>
-                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                  الشفت
-                </TableHead>
-                <TableHead className="text-center text-white font-bold py-3 px-4">
-                  الباركود
-                </TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("trainees.shift")}</TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4">{t("common.barcode")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -135,17 +129,13 @@ export function EscapesTab({
                 <TableRow className="hover:bg-blue-50">
                   <TableCell
                     colSpan={5}
-                    className="text-center py-8 px-4 text-muted-foreground border border-gray-300">
-                    جاري التحميل...
-                  </TableCell>
+                    className="text-center py-8 px-4 text-muted-foreground border border-gray-300">{t("common.loading")}</TableCell>
                 </TableRow>
               ) : filteredEscapes?.length === 0 ? (
                 <TableRow className="hover:bg-blue-50">
                   <TableCell
                     colSpan={5}
-                    className="text-center py-8 px-4 text-muted-foreground border border-gray-300">
-                    لا توجد حالات عدم تسجيل خروج
-                  </TableCell>
+                    className="text-center py-8 px-4 text-muted-foreground border border-gray-300">{t("reports.noEscapes")}</TableCell>
                 </TableRow>
               ) : (
                 filteredEscapes?.map((e: EscapeRecord, index) => (

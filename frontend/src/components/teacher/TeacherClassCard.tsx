@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Class } from "@/lib/classApi";
@@ -25,16 +26,17 @@ export default function TeacherClassCard({
   attendanceMap,
   reportStats,
 }: TeacherClassCardProps) {
+  const { t, i18n } = useTranslation();
   return (
     <Card className="lg:col-span-2">
       <CardHeader className="text-right space-y-4">
         <div className="flex items-center justify-between">
-          <CardTitle>معلومات الفصل</CardTitle>
+          <CardTitle>{t("teacher.classInfo")}</CardTitle>
           <BookOpen className="h-5 w-5 text-blue-500" />
         </div>
-        <div className="flex items-center gap-2" dir="rtl">
+        <div className="flex items-center gap-2">
           <label className="text-sm font-medium text-muted-foreground">
-            التاريخ:
+            {t("common.date")}:
           </label>
           <Input
             type="date"
@@ -45,18 +47,14 @@ export default function TeacherClassCard({
           />
         </div>
       </CardHeader>
-      <CardContent className="text-right space-y-4" dir="rtl">
+      <CardContent className="text-right space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1">
-            <p className="text-sm font-medium text-muted-foreground">
-              اسم الفصل
-            </p>
+            <p className="text-sm font-medium text-muted-foreground">{t("classes.className")}</p>
             <p className="text-lg font-semibold">{classData.name}</p>
           </div>
           <div className="space-y-1">
-            <p className="text-sm font-medium text-muted-foreground">
-              عدد الطلاب
-            </p>
+            <p className="text-sm font-medium text-muted-foreground">{t("teacher.totalStudents")}</p>
             <p className="text-lg font-semibold">
               {classData.studentCount || classData.students.length}
             </p>
@@ -68,31 +66,31 @@ export default function TeacherClassCard({
             <p className="text-2xl font-bold text-green-600">
               {reportStats?.present ?? 0}
             </p>
-            <p className="text-xs text-muted-foreground">الحاضرون</p>
+            <p className="text-xs text-muted-foreground">{t("classes.present")}</p>
           </div>
           <div className="text-center space-y-1">
             <p className="text-2xl font-bold text-red-600">
               {reportStats?.absent ?? 0}
             </p>
-            <p className="text-xs text-muted-foreground">الغياب</p>
+            <p className="text-xs text-muted-foreground">{t("reports.absence")}</p>
           </div>
           <div className="text-center space-y-1">
             <p className="text-2xl font-bold text-orange-600">
               {reportStats?.escape ?? 0}
             </p>
-            <p className="text-xs text-muted-foreground">عدم تسجيل خروج</p>
+            <p className="text-xs text-muted-foreground">{t("reports.noExit")}</p>
           </div>
           <div className="text-center space-y-1">
             <p className="text-2xl font-bold text-violet-600">
               {reportStats?.course ?? 0}
             </p>
-            <p className="text-xs text-muted-foreground">دورة</p>
+            <p className="text-xs text-muted-foreground">{t("classes.course")}</p>
           </div>
           <div className="text-center space-y-1">
             <p className="text-2xl font-bold text-purple-600">
               {reportStats?.violations ?? 0}
             </p>
-            <p className="text-xs text-muted-foreground">المخالفات</p>
+            <p className="text-xs text-muted-foreground">{t("teacher.violations")}</p>
           </div>
         </div>
       </CardContent>

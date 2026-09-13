@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -87,6 +88,7 @@ export function TraineeBulkImportModal({
   specializations,
   shifts,
 }: TraineeBulkImportModalProps) {
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const [step, setStep] = useState<
     "upload" | "mapping" | "preview" | "importing"
@@ -128,8 +130,8 @@ export function TraineeBulkImportModal({
       reader.readAsBinaryString(uploadedFile);
     } catch (error) {
       toast({
-        title: "خطأ",
-        description: "فشل قراءة ملف Excel",
+        title: t("common.error"),
+        description: t("trainees.excelReadFailed"),
         variant: "destructive",
       });
     }
@@ -145,15 +147,15 @@ export function TraineeBulkImportModal({
     const firstRow = rawData[0];
     return Object.keys(firstRow).map((_, idx) => ({
       index: idx,
-      label: `العمود ${String.fromCharCode(65 + idx)}`,
+      label: t("common.column", { letter: String.fromCharCode(65 + idx) }),
     }));
   };
 
   const validateAndPreview = () => {
     if (columnMapping.militaryId === null || columnMapping.fullName === null) {
       toast({
-        title: "خطأ",
-        description: "يجب تحديد رقم عسكري واسم كحد أدنى",
+        title: t("common.error"),
+        description: t("trainees.minRequired"),
         variant: "destructive",
       });
       return;
@@ -185,8 +187,8 @@ export function TraineeBulkImportModal({
       let errors: string[] = [];
 
       // Validate required fields
-      if (!militaryId) errors.push("رقم عسكري مفقود");
-      if (!fullName) errors.push("اسم مفقود");
+      if (!militaryId) errors.push(t("trainees.militaryMissing"));
+      if (!fullName) errors.push(t("trainees.nameMissing"));
 
       // Lookup IDs with case-insensitive matching
       let rankId: string | undefined;
@@ -200,10 +202,10 @@ export function TraineeBulkImportModal({
         if (rankMatch) {
           rankId = rankMatch._id;
         } else {
-          errors.push(`رتبة غير موجودة: "${rankName}"`);
+          errors.push(`${t("trainees.rankUnknown")} "${rankName}"`);
         }
       } else {
-        errors.push("الرتبة مفقودة");
+        errors.push(t("trainees.rankMissing"));
       }
 
       if (specialtyName) {
@@ -213,10 +215,10 @@ export function TraineeBulkImportModal({
         if (specMatch) {
           specialtyId = specMatch._id;
         } else {
-          errors.push(`تخصص غير موجود: "${specialtyName}"`);
+          errors.push(`${t("trainees.specialtyUnknown")} "${specialtyName}"`);
         }
       } else {
-        errors.push("التخصص مفقود");
+        errors.push(t("trainees.specialtyMissing"));
       }
 
       if (shiftName) {
@@ -226,10 +228,10 @@ export function TraineeBulkImportModal({
         if (shiftMatch) {
           shiftId = shiftMatch._id;
         } else {
-          errors.push(`شفت غير موجود: "${shiftName}"`);
+          errors.push(`${t("trainees.shiftUnknown")} "${shiftName}"`);
         }
       } else {
-        errors.push("الشفت مفقود");
+        errors.push(t("trainees.shiftMissing"));
       }
 
       return {
@@ -278,23 +280,23 @@ export function TraineeBulkImportModal({
 
       if (result.success > 0) {
         toast({
-          title: "نجح",
-          description: `تم استيراد ${result.success} متدرب بنجاح`,
+          title: t("common.success"),
+          description: t("trainees.importSuccess", { count: result.success }),
         });
         onImportSuccess();
       }
 
       if (result.failed > 0) {
         toast({
-          title: "تحذير",
-          description: `فشل استيراد ${result.failed} متدرب`,
+          title: t("common.warning"),
+          description: t("trainees.importFailed", { count: result.failed }),
           variant: "destructive",
         });
       }
     } catch (error) {
       toast({
-        title: "خطأ",
-        description: "فشل الاستيراد",
+        title: t("common.error"),
+        description: t("trainees.importError"),
         variant: "destructive",
       });
       console.error(error);
@@ -334,9 +336,9 @@ export function TraineeBulkImportModal({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>استيراد متدربين من Excel</DialogTitle>
+          <DialogTitle>{t("trainees.importTitle")}</DialogTitle>
           <DialogDescription>
-            قم بتحميل ملف Excel واختر أعمدة البيانات
+            {t("common.loadExcelHint")}
           </DialogDescription>
         </DialogHeader>
 
@@ -355,17 +357,15 @@ export function TraineeBulkImportModal({
                 htmlFor="excel-upload"
                 className="cursor-pointer flex flex-col items-center gap-2">
                 <Upload className="h-8 w-8 text-muted-foreground" />
-                <span className="font-medium">اختر ملف Excel</span>
-                <span className="text-sm text-muted-foreground">
-                  أو اسحب الملف هنا
-                </span>
+                <span className="font-medium">{t("trainees.chooseExcel")}</span>
+                <span className="text-sm text-muted-foreground">{t("trainees.orDrop")}</span>
               </Label>
             </div>
             {file && (
               <Alert>
                 <CheckCircle2 className="h-4 w-4" />
                 <AlertDescription>
-                  تم اختيار الملف: {file.name}
+                  {t("trainees.fileChosen", { name: file.name })}
                 </AlertDescription>
               </Alert>
             )}
@@ -377,18 +377,18 @@ export function TraineeBulkImportModal({
           <div className="space-y-4">
             <Alert>
               <AlertCircle className="h-4 w-4" />
-              <AlertDescription>حدد أعمدة البيانات من الملف</AlertDescription>
+              <AlertDescription>{t("trainees.mapHint")}</AlertDescription>
             </Alert>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>الرقم العسكري *</Label>
+                <Label>{t("trainees.militaryId")}</Label>
                 <Select
                   value={columnMapping.militaryId?.toString() ?? ""}
                   onValueChange={(val) =>
                     handleMappingChange("militaryId", val)
                   }>
-                  <SelectTrigger dir="rtl">
+                  <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -402,15 +402,15 @@ export function TraineeBulkImportModal({
               </div>
 
               <div>
-                <Label>السجل المدني</Label>
+                <Label>{t("trainees.civilId")}</Label>
                 <Select
                   value={columnMapping.civilId?.toString() ?? "skip"}
                   onValueChange={(val) => handleMappingChange("civilId", val)}>
-                  <SelectTrigger dir="rtl">
+                  <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="skip">— تجاهل —</SelectItem>
+                    <SelectItem value="skip">{t("common.ignore")}</SelectItem>
                     {columns.map((col) => (
                       <SelectItem key={col.index} value={col.index.toString()}>
                         {col.label}
@@ -421,11 +421,11 @@ export function TraineeBulkImportModal({
               </div>
 
               <div>
-                <Label>الاسم *</Label>
+                <Label>{t("common.name")}</Label>
                 <Select
                   value={columnMapping.fullName?.toString() ?? ""}
                   onValueChange={(val) => handleMappingChange("fullName", val)}>
-                  <SelectTrigger dir="rtl">
+                  <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -439,15 +439,15 @@ export function TraineeBulkImportModal({
               </div>
 
               <div>
-                <Label>الرتبة</Label>
+                <Label>{t("trainees.rank")}</Label>
                 <Select
                   value={columnMapping.rank?.toString() ?? "skip"}
                   onValueChange={(val) => handleMappingChange("rank", val)}>
-                  <SelectTrigger dir="rtl">
+                  <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="skip">— تجاهل —</SelectItem>
+                    <SelectItem value="skip">{t("common.ignore")}</SelectItem>
                     {columns.map((col) => (
                       <SelectItem key={col.index} value={col.index.toString()}>
                         {col.label}
@@ -458,17 +458,17 @@ export function TraineeBulkImportModal({
               </div>
 
               <div>
-                <Label>التخصص</Label>
+                <Label>{t("trainees.specialty")}</Label>
                 <Select
                   value={columnMapping.specialty?.toString() ?? "skip"}
                   onValueChange={(val) =>
                     handleMappingChange("specialty", val)
                   }>
-                  <SelectTrigger dir="rtl">
+                  <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="skip">— تجاهل —</SelectItem>
+                    <SelectItem value="skip">{t("common.ignore")}</SelectItem>
                     {columns.map((col) => (
                       <SelectItem key={col.index} value={col.index.toString()}>
                         {col.label}
@@ -479,15 +479,15 @@ export function TraineeBulkImportModal({
               </div>
 
               <div>
-                <Label>الشفت</Label>
+                <Label>{t("trainees.shift")}</Label>
                 <Select
                   value={columnMapping.shift?.toString() ?? "skip"}
                   onValueChange={(val) => handleMappingChange("shift", val)}>
-                  <SelectTrigger dir="rtl">
+                  <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="skip">— تجاهل —</SelectItem>
+                    <SelectItem value="skip">{t("common.ignore")}</SelectItem>
                     {columns.map((col) => (
                       <SelectItem key={col.index} value={col.index.toString()}>
                         {col.label}
@@ -499,10 +499,8 @@ export function TraineeBulkImportModal({
             </div>
 
             <div className="flex gap-2 justify-end">
-              <Button variant="outline" onClick={() => setStep("upload")}>
-                رجوع
-              </Button>
-              <Button onClick={validateAndPreview}>معاينة</Button>
+              <Button variant="outline" onClick={() => setStep("upload")}>{t("common.back")}</Button>
+              <Button onClick={validateAndPreview}>{t("trainees.preview")}</Button>
             </div>
           </div>
         )}
@@ -516,7 +514,7 @@ export function TraineeBulkImportModal({
               }>
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                {validCount} من {importRows.length} صف بدون أخطاء
+                {t("trainees.importRowsOk", { valid: validCount, total: importRows.length })}
               </AlertDescription>
             </Alert>
 
@@ -524,10 +522,10 @@ export function TraineeBulkImportModal({
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="text-right">الرقم</TableHead>
-                    <TableHead className="text-right">رقم عسكري</TableHead>
-                    <TableHead className="text-right">اسم</TableHead>
-                    <TableHead className="text-right">الحالة</TableHead>
+                    <TableHead className="text-right">{t("violations.idNumber")}</TableHead>
+                    <TableHead className="text-right">{t("violations.militaryNumber")}</TableHead>
+                    <TableHead className="text-right">{t("common.name")}</TableHead>
+                    <TableHead className="text-right">{t("common.status")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -554,13 +552,11 @@ export function TraineeBulkImportModal({
             </div>
 
             <div className="flex gap-2 justify-end">
-              <Button variant="outline" onClick={() => setStep("mapping")}>
-                رجوع
-              </Button>
+              <Button variant="outline" onClick={() => setStep("mapping")}>{t("common.back")}</Button>
               <Button
                 onClick={performImport}
                 disabled={validCount === 0 || importing}>
-                استيراد {validCount}
+                {t("common.importCount", { count: validCount })}
               </Button>
             </div>
           </div>
@@ -572,7 +568,7 @@ export function TraineeBulkImportModal({
             <Progress value={progress} />
             <Alert>
               <AlertCircle className="h-4 w-4" />
-              <AlertDescription>جاري الاستيراد... {progress}%</AlertDescription>
+              <AlertDescription>{t("trainees.importing", { progress })}</AlertDescription>
             </Alert>
 
             {progress === 100 && (
@@ -583,17 +579,15 @@ export function TraineeBulkImportModal({
                   }>
                   <CheckCircle2 className="h-4 w-4" />
                   <AlertDescription>
-                    تم استيراد {importResult.success} متدرب
-                    {importResult.failed > 0 && ` وفشل ${importResult.failed}`}
+                    {t("trainees.importedCount", { count: importResult.success })}
+                    {importResult.failed > 0 && t("trainees.importFailedCount", { count: importResult.failed })}
                   </AlertDescription>
                 </Alert>
                 <Button
                   onClick={() => {
                     resetModal();
                     onOpenChange(false);
-                  }}>
-                  إغلاق
-                </Button>
+                  }}>{t("common.close")}</Button>
               </>
             )}
           </div>

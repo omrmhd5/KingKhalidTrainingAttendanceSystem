@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +25,7 @@ import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
 import { rankApi } from "@/lib/rankApi";
 
 export function RanksManagementTab() {
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const [ranks, setRanks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,8 +52,8 @@ export function RanksManagementTab() {
       setRanks(data);
     } catch (error) {
       toast({
-        title: "خطأ",
-        description: "فشل تحميل الرتب",
+        title: t("common.error"),
+        description: t("ranks.loadFailed"),
         variant: "destructive",
       });
     } finally {
@@ -62,8 +64,8 @@ export function RanksManagementTab() {
   const handleAddRank = async () => {
     if (!rankName.trim()) {
       toast({
-        title: "خطأ",
-        description: "الرجاء إدخال اسم الرتبة",
+        title: t("common.error"),
+        description: t("ranks.needName"),
         variant: "destructive",
       });
       return;
@@ -73,11 +75,11 @@ export function RanksManagementTab() {
       setRanks([...ranks, newRank]);
       setRankName("");
       setDialogOpen(false);
-      toast({ title: "تم إضافة الرتبة" });
+      toast({ title: t("ranks.added") });
     } catch (error) {
       toast({
-        title: "خطأ",
-        description: "فشل إضافة الرتبة",
+        title: t("common.error"),
+        description: t("ranks.addFailed"),
         variant: "destructive",
       });
     }
@@ -94,13 +96,13 @@ export function RanksManagementTab() {
       try {
         await rankApi.deleteRank(deleteTargetId);
         setRanks(ranks.filter((r) => r._id !== deleteTargetId));
-        toast({ title: "تم حذف الرتبة" });
+        toast({ title: t("ranks.deleted") });
         setDeleteTargetId(null);
         setDeleteTargetName("");
       } catch (error) {
         toast({
-          title: "خطأ",
-          description: "فشل حذف الرتبة",
+          title: t("common.error"),
+          description: t("ranks.deleteFailed"),
           variant: "destructive",
         });
       }
@@ -116,8 +118,8 @@ export function RanksManagementTab() {
   const handleUpdateRank = async () => {
     if (!editingRankName.trim() || !editingRankId) {
       toast({
-        title: "خطأ",
-        description: "الرجاء إدخال اسم الرتبة",
+        title: t("common.error"),
+        description: t("ranks.needName"),
         variant: "destructive",
       });
       return;
@@ -130,11 +132,11 @@ export function RanksManagementTab() {
       setEditDialogOpen(false);
       setEditingRankId(null);
       setEditingRankName("");
-      toast({ title: "تم تحديث الرتبة" });
+      toast({ title: t("ranks.updated") });
     } catch (error) {
       toast({
-        title: "خطأ",
-        description: "فشل تحديث الرتبة",
+        title: t("common.error"),
+        description: t("ranks.updateFailed"),
         variant: "destructive",
       });
     }
@@ -144,32 +146,28 @@ export function RanksManagementTab() {
     <Card>
       <CardHeader
         className="flex flex-row items-center justify-between"
-        dir="rtl">
-        <CardTitle>إدارة الرتب ({ranks.length})</CardTitle>
+       >
+        <CardTitle>{t("ranks.count", { count: ranks.length })}</CardTitle>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button size="sm">
-              <Plus className="ml-2 h-4 w-4" />
-              إضافة رتبة
-            </Button>
+              <Plus className="ml-2 h-4 w-4" />{t("ranks.add")}</Button>
           </DialogTrigger>
           <DialogContent className="max-w-sm">
             <DialogHeader>
-              <DialogTitle className="text-right">رتبة جديدة</DialogTitle>
+              <DialogTitle className="text-right">{t("ranks.newRank")}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-1">
-                <Label>الاسم</Label>
+                <Label>{t("common.name")}</Label>
                 <Input
                   value={rankName}
                   onChange={(e) => setRankName(e.target.value)}
-                  placeholder="أدخل اسم الرتبة"
+                  placeholder={t("ranks.namePlaceholder")}
                   required
                 />
               </div>
-              <Button className="w-full" onClick={handleAddRank}>
-                إضافة
-              </Button>
+              <Button className="w-full" onClick={handleAddRank}>{t("common.add")}</Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -180,39 +178,35 @@ export function RanksManagementTab() {
           onOpenChange={setDeleteConfirmOpen}
           onConfirm={confirmDelete}
           itemName={deleteTargetName}
-          itemType="الرتبة"
+          itemType={t("trainees.rank")}
         />
         <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
           <DialogContent className="max-w-sm">
             <DialogHeader>
-              <DialogTitle className="text-right">تعديل الرتبة</DialogTitle>
+              <DialogTitle className="text-right">{t("ranks.edit")}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-1">
-                <Label>الاسم</Label>
+                <Label>{t("common.name")}</Label>
                 <Input
                   value={editingRankName}
                   onChange={(e) => setEditingRankName(e.target.value)}
-                  placeholder="أدخل اسم الرتبة"
+                  placeholder={t("ranks.namePlaceholder")}
                   required
                 />
               </div>
-              <Button className="w-full" onClick={handleUpdateRank}>
-                تحديث
-              </Button>
+              <Button className="w-full" onClick={handleUpdateRank}>{t("common.update")}</Button>
             </div>
           </DialogContent>
         </Dialog>
         <div className="border border-gray-300 rounded-lg overflow-hidden">
-          <Table dir="rtl" className="border-collapse">
+          <Table className="border-collapse">
             <TableHeader className="bg-violet-600">
               <TableRow>
                 <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                  الاسم
+                  {t("common.name")}
                 </TableHead>
-                <TableHead className="text-center text-white font-bold py-3 px-4">
-                  الإجراءات
-                </TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4">{t("common.actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -220,17 +214,13 @@ export function RanksManagementTab() {
                 <TableRow className="hover:bg-blue-50">
                   <TableCell
                     colSpan={2}
-                    className="text-center py-4 px-4 border border-gray-300">
-                    جاري التحميل...
-                  </TableCell>
+                    className="text-center py-4 px-4 border border-gray-300">{t("common.loading")}</TableCell>
                 </TableRow>
               ) : ranks.length === 0 ? (
                 <TableRow className="hover:bg-blue-50">
                   <TableCell
                     colSpan={2}
-                    className="text-center py-4 px-4 border border-gray-300">
-                    لا توجد رتب
-                  </TableCell>
+                    className="text-center py-4 px-4 border border-gray-300">{t("ranks.empty")}</TableCell>
                 </TableRow>
               ) : (
                 ranks.map((r, index) => (

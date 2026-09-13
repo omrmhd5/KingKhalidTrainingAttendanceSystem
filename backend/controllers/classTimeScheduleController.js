@@ -1,4 +1,6 @@
 const classTimeScheduleService = require("../services/classTimeScheduleService");
+const { t } = require("../lib/i18n");
+const { sendCaught, localizeResult } = require("../lib/http");
 
 class ClassTimeScheduleController {
   async getAllSchedules(req, res) {
@@ -6,9 +8,7 @@ class ClassTimeScheduleController {
       const schedules = await classTimeScheduleService.getAllSchedules();
       res.status(200).json(schedules);
     } catch (error) {
-      res.status(500).json({
-        message: error.message || "فشل في تحميل الجداول الزمنية",
-      });
+      sendCaught(req, res, error, 500);
     }
   }
 
@@ -19,9 +19,7 @@ class ClassTimeScheduleController {
       );
       res.status(200).json(schedule);
     } catch (error) {
-      res.status(404).json({
-        message: error.message || "الجدول الزمني غير موجود",
-      });
+      sendCaught(req, res, error, 404);
     }
   }
 
@@ -36,13 +34,11 @@ class ClassTimeScheduleController {
       });
 
       res.status(201).json({
-        message: "تم إنشاء الجدول الزمني بنجاح",
+        message: t(req, "success.scheduleCreated"),
         schedule: newSchedule,
       });
     } catch (error) {
-      res.status(400).json({
-        message: error.message || "فشل في إنشاء الجدول الزمني",
-      });
+      sendCaught(req, res, error, 400);
     }
   }
 
@@ -60,13 +56,11 @@ class ClassTimeScheduleController {
       );
 
       res.status(200).json({
-        message: "تم تحديث الجدول الزمني بنجاح",
+        message: t(req, "success.scheduleUpdated"),
         schedule: updatedSchedule,
       });
     } catch (error) {
-      res.status(400).json({
-        message: error.message || "فشل في تحديث الجدول الزمني",
-      });
+      sendCaught(req, res, error, 400);
     }
   }
 
@@ -75,11 +69,9 @@ class ClassTimeScheduleController {
       const result = await classTimeScheduleService.deleteSchedule(
         req.params.id,
       );
-      res.status(200).json(result);
+      res.status(200).json(localizeResult(req, result));
     } catch (error) {
-      res.status(400).json({
-        message: error.message || "فشل في حذف الجدول الزمني",
-      });
+      sendCaught(req, res, error, 400);
     }
   }
 
@@ -94,13 +86,11 @@ class ClassTimeScheduleController {
         );
 
       res.status(200).json({
-        message: "تم تعيين الفصول بنجاح",
+        message: t(req, "success.classesAssigned"),
         schedule: updatedSchedule,
       });
     } catch (error) {
-      res.status(400).json({
-        message: error.message || "فشل في تعيين الفصول",
-      });
+      sendCaught(req, res, error, 400);
     }
   }
 
@@ -115,13 +105,11 @@ class ClassTimeScheduleController {
         );
 
       res.status(200).json({
-        message: "تم إزالة الفصل بنجاح",
+        message: t(req, "success.classRemovedFromSchedule"),
         schedule: updatedSchedule,
       });
     } catch (error) {
-      res.status(400).json({
-        message: error.message || "فشل في إزالة الفصل",
-      });
+      sendCaught(req, res, error, 400);
     }
   }
 }

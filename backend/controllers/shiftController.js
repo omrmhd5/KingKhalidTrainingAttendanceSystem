@@ -1,54 +1,51 @@
 const shiftService = require("../services/shiftService");
+const { t } = require("../lib/i18n");
+const { sendError, sendCaught } = require("../lib/http");
 
-// Get all shifts
 exports.getAllShifts = async (req, res) => {
   try {
     const shifts = await shiftService.getAllShifts();
     res.json(shifts);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendCaught(req, res, error, 500);
   }
 };
 
-// Get single shift
 exports.getShift = async (req, res) => {
   try {
     const shift = await shiftService.getShiftById(req.params.id);
     if (!shift) {
-      return res.status(404).json({ message: "Shift not found" });
+      return sendError(req, res, 404, "errors.shiftNotFound");
     }
     res.json(shift);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendCaught(req, res, error, 500);
   }
 };
 
-// Create shift
 exports.createShift = async (req, res) => {
   try {
     const shift = await shiftService.createShift(req.body);
     res.status(201).json(shift);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    sendCaught(req, res, error, 400);
   }
 };
 
-// Update shift
 exports.updateShift = async (req, res) => {
   try {
     const shift = await shiftService.updateShift(req.params.id, req.body);
     res.json(shift);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    sendCaught(req, res, error, 400);
   }
 };
 
-// Delete shift
 exports.deleteShift = async (req, res) => {
   try {
     await shiftService.deleteShift(req.params.id);
-    res.json({ message: "Shift deleted successfully" });
+    res.json({ message: t(req, "success.shiftDeleted") });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendCaught(req, res, error, 500);
   }
 };

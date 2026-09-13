@@ -1,4 +1,6 @@
 const classService = require("../services/classService");
+const { t } = require("../lib/i18n");
+const { sendCaught, localizeResult } = require("../lib/http");
 
 class ClassController {
   async getAllClasses(req, res) {
@@ -10,9 +12,7 @@ class ClassController {
       const classes = await classService.getAllClasses(filters);
       res.status(200).json(classes);
     } catch (error) {
-      res.status(500).json({
-        message: error.message || "فشل في تحميل الفصول",
-      });
+      sendCaught(req, res, error, 500);
     }
   }
 
@@ -21,9 +21,7 @@ class ClassController {
       const classItem = await classService.getClassById(req.params.id);
       res.status(200).json(classItem);
     } catch (error) {
-      res.status(404).json({
-        message: error.message || "الفصل غير موجود",
-      });
+      sendCaught(req, res, error, 404);
     }
   }
 
@@ -38,13 +36,11 @@ class ClassController {
       });
 
       res.status(201).json({
-        message: "تم إنشاء الفصل بنجاح",
+        message: t(req, "success.classCreated"),
         class: newClass,
       });
     } catch (error) {
-      res.status(400).json({
-        message: error.message || "فشل في إنشاء الفصل",
-      });
+      sendCaught(req, res, error, 400);
     }
   }
 
@@ -59,24 +55,20 @@ class ClassController {
       });
 
       res.status(200).json({
-        message: "تم تحديث الفصل بنجاح",
+        message: t(req, "success.classUpdated"),
         class: updatedClass,
       });
     } catch (error) {
-      res.status(400).json({
-        message: error.message || "فشل في تحديث الفصل",
-      });
+      sendCaught(req, res, error, 400);
     }
   }
 
   async deleteClass(req, res) {
     try {
       const result = await classService.deleteClass(req.params.id);
-      res.status(200).json(result);
+      res.status(200).json(localizeResult(req, result));
     } catch (error) {
-      res.status(400).json({
-        message: error.message || "فشل في حذف الفصل",
-      });
+      sendCaught(req, res, error, 400);
     }
   }
 
@@ -90,13 +82,11 @@ class ClassController {
       );
 
       res.status(200).json({
-        message: "تم تعيين الطلاب بنجاح",
+        message: t(req, "success.studentsAssigned"),
         class: updatedClass,
       });
     } catch (error) {
-      res.status(400).json({
-        message: error.message || "فشل في تعيين الطلاب",
-      });
+      sendCaught(req, res, error, 400);
     }
   }
 
@@ -110,13 +100,11 @@ class ClassController {
       );
 
       res.status(200).json({
-        message: "تم إزالة الطالب بنجاح",
+        message: t(req, "success.studentRemoved"),
         class: updatedClass,
       });
     } catch (error) {
-      res.status(400).json({
-        message: error.message || "فشل في إزالة الطالب",
-      });
+      sendCaught(req, res, error, 400);
     }
   }
 }

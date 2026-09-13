@@ -1,3 +1,5 @@
+import i18n from "@/i18n";
+import { useTranslation } from "react-i18next";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,7 +25,7 @@ import axios, { AxiosError } from "axios";
 const convertTo12HourArabic = (time24: string): string => {
   if (!time24) return "";
   const [hours, minutes] = time24.split(":").map(Number);
-  const period = hours >= 12 ? "م" : "ص";
+  const period = hours >= 12 ? i18n.t("pm") : i18n.t("am");
   const hours12 = hours % 12 || 12;
   return `${String(hours12).padStart(2, "0")}:${String(minutes).padStart(2, "0")} ${period}`;
 };
@@ -49,6 +51,7 @@ interface ClassesTimeScheduleTabProps {
 export function ClassesTimeScheduleTab({
   canWrite = true,
 }: ClassesTimeScheduleTabProps = {}) {
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
 
@@ -87,8 +90,8 @@ export function ClassesTimeScheduleTab({
       setSchedules(data);
     } catch (error) {
       toast({
-        title: "خطأ",
-        description: "فشل تحميل جداول الفصول",
+        title: t("common.error"),
+        description: t("classes.loadSchedulesFailed"),
         variant: "destructive",
       });
     } finally {
@@ -99,8 +102,8 @@ export function ClassesTimeScheduleTab({
   const handleAddSchedule = async () => {
     if (!scheduleClassName.trim() || !scheduleStart || !scheduleEnd) {
       toast({
-        title: "خطأ",
-        description: "الرجاء ملء جميع الحقول",
+        title: t("common.error"),
+        description: t("common.required"),
         variant: "destructive",
       });
       return;
@@ -118,13 +121,13 @@ export function ClassesTimeScheduleTab({
       setScheduleStart("");
       setScheduleEnd("");
       toast({
-        title: "نجاح",
-        description: "تم إضافة الجدول",
+        title: t("common.success"),
+        description: t("classes.addedSchedule"),
       });
     } catch (error: unknown) {
-      const errorMessage = getErrorMessage(error, "فشل إضافة الجدول");
+      const errorMessage = getErrorMessage(error, t("classes.addScheduleFailed"));
       toast({
-        title: "خطأ",
+        title: t("common.error"),
         description: errorMessage,
         variant: "destructive",
       });
@@ -146,15 +149,15 @@ export function ClassesTimeScheduleTab({
         await classTimeScheduleApi.deleteSchedule(deleteTargetId);
         setSchedules(schedules.filter((s) => s._id !== deleteTargetId));
         toast({
-          title: "نجاح",
-          description: "تم حذف الجدول",
+          title: t("common.success"),
+          description: t("classes.deletedSchedule"),
         });
         setDeleteTargetId(null);
         setDeleteTargetName("");
       } catch (error: unknown) {
-        const errorMessage = getErrorMessage(error, "فشل حذف الجدول");
+        const errorMessage = getErrorMessage(error, t("classes.deleteScheduleFailed"));
         toast({
-          title: "خطأ",
+          title: t("common.error"),
           description: errorMessage,
           variant: "destructive",
         });
@@ -181,8 +184,8 @@ export function ClassesTimeScheduleTab({
       !editingScheduleId
     ) {
       toast({
-        title: "خطأ",
-        description: "الرجاء ملء جميع الحقول",
+        title: t("common.error"),
+        description: t("common.required"),
         variant: "destructive",
       });
       return;
@@ -208,13 +211,13 @@ export function ClassesTimeScheduleTab({
       setEditingScheduleStart("");
       setEditingScheduleEnd("");
       toast({
-        title: "نجاح",
-        description: "تم تحديث الجدول",
+        title: t("common.success"),
+        description: t("classes.updatedSchedule"),
       });
     } catch (error: unknown) {
-      const errorMessage = getErrorMessage(error, "فشل تحديث الجدول");
+      const errorMessage = getErrorMessage(error, t("classes.updateScheduleFailed"));
       toast({
-        title: "خطأ",
+        title: t("common.error"),
         description: errorMessage,
         variant: "destructive",
       });
@@ -227,8 +230,8 @@ export function ClassesTimeScheduleTab({
     <Card>
       <CardHeader
         className="flex flex-row items-center justify-between"
-        dir="rtl">
-        <CardTitle>جداول الفصول ({schedules.length})</CardTitle>
+       >
+        <CardTitle>{t("classes.schedulesCount", { count: schedules.length })}</CardTitle>
         {canWrite && (
           <Button
             size="sm"
@@ -239,9 +242,7 @@ export function ClassesTimeScheduleTab({
               setScheduleDialogOpen(true);
             }}
             disabled={loading}>
-            <Plus className="ml-2 h-4 w-4" />
-            إضافة جدول
-          </Button>
+            <Plus className="ml-2 h-4 w-4" />{t("classes.addSchedule")}</Button>
         )}
       </CardHeader>
       <CardContent className="p-0">
@@ -275,30 +276,22 @@ export function ClassesTimeScheduleTab({
               onOpenChange={setDeleteConfirmOpen}
               onConfirm={confirmDelete}
               itemName={deleteTargetName}
-              itemType="جدول الفصل"
+              itemType={t("teacher.classSchedule")}
             />
           </>
         )}
         <div className="border border-gray-300 rounded-lg overflow-hidden">
-          <Table dir="rtl" className="border-collapse">
+          <Table className="border-collapse">
             <TableHeader className="bg-cyan-600">
               <TableRow>
                 <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                  الاسم
+                  {t("common.name")}
                 </TableHead>
-                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                  البداية
-                </TableHead>
-                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                  النهاية
-                </TableHead>
-                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                  عدد الفصول
-                </TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("common.start")}</TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("common.end")}</TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("classes.classCount")}</TableHead>
                 {canWrite && (
-                  <TableHead className="text-center text-white font-bold py-3 px-4">
-                    الإجراءات
-                  </TableHead>
+                  <TableHead className="text-center text-white font-bold py-3 px-4">{t("common.actions")}</TableHead>
                 )}
               </TableRow>
             </TableHeader>
@@ -315,9 +308,7 @@ export function ClassesTimeScheduleTab({
                 <TableRow className="hover:bg-blue-50">
                   <TableCell
                     colSpan={5}
-                    className="text-center py-4 px-4 border border-gray-300">
-                    لا توجد جداول
-                  </TableCell>
+                    className="text-center py-4 px-4 border border-gray-300">{t("classes.emptySchedules")}</TableCell>
                 </TableRow>
               ) : (
                 [...schedules]

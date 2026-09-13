@@ -1,3 +1,4 @@
+import i18n from "@/i18n";
 import { Button } from "@/components/ui/button";
 import { FileDown } from "lucide-react";
 import html2pdf from "html2pdf.js";
@@ -24,16 +25,16 @@ export function ExportPDF({ data }: ExportPDFProps) {
   const generatePDF = () => {
     let html = `
       <div style="direction: rtl; text-align: right; font-family: Arial, sans-serif;">
-        <h2>بيان المخالفات</h2>
-        <p>التاريخ: ${getGregorianDateArabic(new Date())}</p>
+        <h2>${i18n.t("violations.sheetTitle")}</h2>
+        <p>${i18n.t("common.date")}: ${getGregorianDateArabic(new Date())}</p>
         <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
           <thead>
             <tr style="background-color: #DC2626; color: white;">
-              <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">الرقم العسكري</th>
-              <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">السجل المدني</th>
-              <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">الاسم</th>
-              <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">وصف المخالفة</th>
-              <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">تاريخ التسجيل</th>
+              <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">${i18n.t("trainees.militaryId")}</th>
+              <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">${i18n.t("trainees.civilId")}</th>
+              <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">${i18n.t("common.name")}</th>
+              <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">${i18n.t("violations.descCol")}</th>
+              <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">${i18n.t("violations.registeredAt")}</th>
             </tr>
           </thead>
           <tbody>
@@ -55,13 +56,13 @@ export function ExportPDF({ data }: ExportPDFProps) {
     html += `
           </tbody>
         </table>
-        <p style="margin-top: 20px; color: #666;">إجمالي: ${data.length} مخالفة</p>
+        <p style="margin-top: 20px; color: #666;">${i18n.t("violations.sheetTotal", { count: data.length })}</p>
       </div>
     `;
 
     const options = {
       margin: 10,
-      filename: `بيان_مخالفات_${getTodayDateKSA()}.pdf`,
+      filename: `${i18n.t("violations.filename", { date: getTodayDateKSA() })}.pdf`,
       image: { type: "jpeg" as const, quality: 0.98 },
       html2canvas: { scale: 2 },
       jsPDF: { orientation: "landscape" },
@@ -76,8 +77,6 @@ export function ExportPDF({ data }: ExportPDFProps) {
       size="sm"
       variant="default"
       className="bg-red-600 hover:bg-red-700 text-white">
-      <FileDown className="ml-2 h-4 w-4" />
-      تحميل PDF
-    </Button>
+      <FileDown className="ml-2 h-4 w-4" />{i18n.t("common.downloadPdf")}</Button>
   );
 }

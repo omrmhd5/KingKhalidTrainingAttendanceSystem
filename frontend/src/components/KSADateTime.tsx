@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 export default function KSADateTime() {
+  const { t, i18n } = useTranslation();
   const [ksaDateTime, setKsaDateTime] = useState("");
 
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
+      const locale = i18n.language?.startsWith("en") ? "en-US" : "ar-SA";
 
-      // Use Intl.DateTimeFormat.formatToParts for reliable KSA timezone extraction (no locale-string parsing)
       const parts = new Intl.DateTimeFormat("en-US", {
         timeZone: "Asia/Riyadh",
         year: "numeric",
@@ -21,28 +23,26 @@ export default function KSADateTime() {
       const get = (type: string) =>
         parseInt(parts.find((p) => p.type === type)?.value ?? "0");
 
-      // Get Arabic day and month names
-      const dayName = now.toLocaleDateString("ar-SA", {
+      const dayName = now.toLocaleDateString(locale, {
         weekday: "long",
         timeZone: "Asia/Riyadh",
         calendar: "gregory",
       });
 
-      const monthName = now.toLocaleDateString("ar-SA", {
+      const monthName = now.toLocaleDateString(locale, {
         month: "long",
         timeZone: "Asia/Riyadh",
         calendar: "gregory",
       });
 
-      // Get English numbers and 12-hour format
       const day = get("day");
       const year = get("year");
       let hours = get("hour");
       const minutes = String(get("minute")).padStart(2, "0");
       const seconds = String(get("second")).padStart(2, "0");
-      const ampm = hours >= 12 ? "م" : "ص";
+      const ampm = hours >= 12 ? t("pm") : t("am");
       hours = hours % 12;
-      hours = hours ? hours : 12; // 0 hours should be 12
+      hours = hours ? hours : 12;
 
       const time = `${dayName}، ${day} ${monthName} ${year} - ${hours}:${minutes}:${seconds} ${ampm}`;
       setKsaDateTime(time);
@@ -51,7 +51,7 @@ export default function KSADateTime() {
     updateTime();
     const interval = setInterval(updateTime, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [i18n.language, t]);
 
   return (
     <div className="text-sm font-medium text-foreground text-center">

@@ -10,6 +10,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { attendanceApi } from "@/lib/attendanceApi";
 import { getTodayDateKSA, convertToKSADate } from "@/lib/utils";
 
@@ -23,6 +24,7 @@ interface DashboardStats {
 }
 
 export default function TodaysSummaryPage() {
+  const { t } = useTranslation();
   const [date, setDate] = useState(getTodayDateKSA());
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -46,7 +48,6 @@ export default function TodaysSummaryPage() {
     }
   }, [date]);
 
-  // Get unique shifts for table headers
   const allActualShifts = new Set<string>();
   if (stats?.shiftSummary) {
     Object.values(stats.shiftSummary).forEach((shiftMap) => {
@@ -55,7 +56,6 @@ export default function TodaysSummaryPage() {
   }
   const sortedActualShifts = Array.from(allActualShifts).sort();
 
-  // Calculate column totals
   const columnTotals: Record<string, number> = {};
   let grandTotal = 0;
   if (stats?.shiftSummary) {
@@ -75,14 +75,12 @@ export default function TodaysSummaryPage() {
     <div className="space-y-6 animate-slide-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">ملخص اليوم</h1>
-          <p className="text-sm text-muted-foreground">
-            ملخص الحضور والإحصائيات اليومية
-          </p>
+          <h1 className="text-2xl font-bold">{t("summary.title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("summary.subtitle")}</p>
         </div>
         <div className="flex items-center gap-2">
           <Label htmlFor="date" className="text-sm">
-            التاريخ
+            {t("summary.date")}
           </Label>
           <Input
             id="date"
@@ -98,28 +96,28 @@ export default function TodaysSummaryPage() {
       <Card>
         <CardHeader className="bg-blue-50">
           <CardTitle className="text-lg text-blue-900">
-            ملخص الحضور حسب الشفت
+            {t("summary.byShift")}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
           {isLoading ? (
-            <p className="text-center text-muted-foreground">جاري التحميل...</p>
+            <p className="text-center text-muted-foreground">{t("common.loading")}</p>
           ) : (
-            <Table dir="rtl">
+            <Table>
               <TableHeader>
                 <TableRow className="bg-blue-100">
-                  <TableHead className="text-right text-blue-900 font-bold">
-                    الشفت المخصص للطالب
+                  <TableHead className="text-start text-blue-900 font-bold">
+                    {t("summary.assignedShift")}
                   </TableHead>
                   {sortedActualShifts.map((shift) => (
                     <TableHead
                       key={shift}
                       className="text-center text-blue-900 font-bold">
-                      الشفت الذي حضر فيه: {shift}
+                      {t("summary.attendedInShift", { shift })}
                     </TableHead>
                   ))}
                   <TableHead className="text-center text-blue-900 font-bold">
-                    الإجمالي
+                    {t("summary.total")}
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -135,7 +133,7 @@ export default function TodaysSummaryPage() {
 
                         return (
                           <TableRow key={assignedShift} className="border-b">
-                            <TableCell className="font-medium text-right text-blue-900">
+                            <TableCell className="font-medium text-start text-blue-900">
                               {assignedShift}
                             </TableCell>
                             {sortedActualShifts.map((actualShift) => (
@@ -153,8 +151,8 @@ export default function TodaysSummaryPage() {
                       },
                     )}
                     <TableRow className="bg-blue-100 border-t-2 border-blue-300">
-                      <TableCell className="font-bold text-right text-blue-900">
-                        الإجمالي
+                      <TableCell className="font-bold text-start text-blue-900">
+                        {t("summary.total")}
                       </TableCell>
                       {sortedActualShifts.map((actualShift) => (
                         <TableCell
@@ -173,7 +171,7 @@ export default function TodaysSummaryPage() {
                     <TableCell
                       colSpan={sortedActualShifts.length + 2}
                       className="text-center py-8 text-muted-foreground">
-                      لا توجد بيانات حضور
+                      {t("summary.noAttendance")}
                     </TableCell>
                   </TableRow>
                 )}
@@ -186,31 +184,31 @@ export default function TodaysSummaryPage() {
       <Card>
         <CardHeader className="bg-green-50">
           <CardTitle className="text-lg text-green-900">
-            إحصائيات الحضور العامة
+            {t("summary.generalStats")}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             <div className="p-4 bg-green-100 rounded-lg">
-              <p className="text-sm text-green-700">إجمالي الحاضرين</p>
+              <p className="text-sm text-green-700">{t("summary.totalAttended")}</p>
               <p className="text-3xl font-bold text-green-900">
                 {stats?.attended || 0}
               </p>
             </div>
             <div className="p-4 bg-blue-100 rounded-lg">
-              <p className="text-sm text-blue-700">في الموعد</p>
+              <p className="text-sm text-blue-700">{t("main.onTime")}</p>
               <p className="text-3xl font-bold text-blue-900">
                 {stats?.onTime || 0}
               </p>
             </div>
             <div className="p-4 bg-yellow-100 rounded-lg">
-              <p className="text-sm text-yellow-700">متأخرين</p>
+              <p className="text-sm text-yellow-700">{t("summary.lateCount")}</p>
               <p className="text-3xl font-bold text-yellow-900">
                 {stats?.late || 0}
               </p>
             </div>
             <div className="p-4 bg-orange-100 rounded-lg">
-              <p className="text-sm text-orange-700">خروج</p>
+              <p className="text-sm text-orange-700">{t("summary.exit")}</p>
               <p className="text-3xl font-bold text-orange-900">
                 {stats?.exited || 0}
               </p>

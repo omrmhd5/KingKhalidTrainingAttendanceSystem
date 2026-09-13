@@ -1,3 +1,4 @@
+import i18n from "@/i18n";
 import { Button } from "@/components/ui/button";
 import { FileDown } from "lucide-react";
 import html2pdf from "html2pdf.js";
@@ -26,22 +27,22 @@ export function ClassCoverageExportPDF({
 
     let html = `
       <div style="direction: rtl; text-align: right; font-family: Arial, sans-serif; padding: 10px;">
-        <h2 style="text-align: center; color: #1E3A8A; margin-bottom: 4px;">بيان تغطية تقارير الفصول</h2>
-        <p style="text-align: center; color: #555; margin-bottom: 16px;">التاريخ: ${displayDate}</p>
+        <h2 style="text-align: center; color: #1E3A8A; margin-bottom: 4px;">${i18n.t("classes.coverageSheet")}</h2>
+        <p style="text-align: center; color: #555; margin-bottom: 16px;">${i18n.t("common.date")}: ${displayDate}</p>
 
         <!-- Summary bar -->
         <div style="display: flex; justify-content: center; gap: 30px; margin-bottom: 20px;">
           <div style="text-align: center; background: #DBEAFE; border: 1px solid #93C5FD; border-radius: 8px; padding: 8px 20px;">
             <div style="font-size: 22px; font-weight: bold; color: #1D4ED8;">${total}</div>
-            <div style="font-size: 12px; color: #555;">إجمالي الفصول</div>
+            <div style="font-size: 12px; color: #555;">${i18n.t("classes.totalClasses")}</div>
           </div>
           <div style="text-align: center; background: #DCFCE7; border: 1px solid #86EFAC; border-radius: 8px; padding: 8px 20px;">
             <div style="font-size: 22px; font-weight: bold; color: #15803D;">${sentClasses.length}</div>
-            <div style="font-size: 12px; color: #555;">أرسلوا التقارير</div>
+            <div style="font-size: 12px; color: #555;">${i18n.t("classes.sent")}</div>
           </div>
           <div style="text-align: center; background: #FEE2E2; border: 1px solid #FCA5A5; border-radius: 8px; padding: 8px 20px;">
             <div style="font-size: 22px; font-weight: bold; color: #B91C1C;">${missingClasses.length}</div>
-            <div style="font-size: 12px; color: #555;">لم يرسلوا</div>
+            <div style="font-size: 12px; color: #555;">${i18n.t("classes.notSent")}</div>
           </div>
         </div>
     `;
@@ -49,13 +50,13 @@ export function ClassCoverageExportPDF({
     // Sent classes table
     if (sentClasses.length > 0) {
       html += `
-        <h3 style="color: #15803D; margin-bottom: 8px;">✓ الفصول التي أرسلت التقارير (${sentClasses.length})</h3>
+        <h3 style="color: #15803D; margin-bottom: 8px;">${i18n.t("classes.sentTitle", { count: sentClasses.length })}</h3>
         <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
           <thead>
             <tr style="background-color: #15803D; color: white;">
               <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">#</th>
-              <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">اسم الفصل</th>
-              <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">المعلم المسؤول</th>
+              <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">${i18n.t("classes.className")}</th>
+              <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">${i18n.t("classes.responsibleTeacher")}</th>
             </tr>
           </thead>
           <tbody>
@@ -76,13 +77,13 @@ export function ClassCoverageExportPDF({
     // Missing classes table
     if (missingClasses.length > 0) {
       html += `
-        <h3 style="color: #B91C1C; margin-bottom: 8px;">✗ الفصول التي لم ترسل التقارير (${missingClasses.length})</h3>
+        <h3 style="color: #B91C1C; margin-bottom: 8px;">${i18n.t("classes.missingTitle", { count: missingClasses.length })}</h3>
         <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
           <thead>
             <tr style="background-color: #B91C1C; color: white;">
               <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">#</th>
-              <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">اسم الفصل</th>
-              <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">المعلم المسؤول</th>
+              <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">${i18n.t("classes.className")}</th>
+              <th style="border: 1px solid #ddd; padding: 10px; text-align: center;">${i18n.t("classes.responsibleTeacher")}</th>
             </tr>
           </thead>
           <tbody>
@@ -104,7 +105,7 @@ export function ClassCoverageExportPDF({
 
     const options = {
       margin: 10,
-      filename: `بيان_تغطية_الفصول_${getTodayDateKSA()}.pdf`,
+      filename: `${i18n.t("classes.coverageFilename", { date: getTodayDateKSA() })}.pdf`,
       image: { type: "jpeg" as const, quality: 0.98 },
       html2canvas: { scale: 2 },
       jsPDF: { orientation: "portrait" as const },
@@ -119,8 +120,6 @@ export function ClassCoverageExportPDF({
       size="sm"
       variant="default"
       className="bg-red-700 hover:bg-red-800 text-white gap-2">
-      <FileDown className="h-4 w-4" />
-      تحميل PDF
-    </Button>
+      <FileDown className="h-4 w-4" />{i18n.t("common.downloadPdf")}</Button>
   );
 }

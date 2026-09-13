@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { classApi, Class } from "@/lib/classApi";
@@ -9,6 +10,7 @@ import TeacherDailyReport from "@/components/teacher/TeacherDailyReport";
 export default function TeachersMainPage() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [teacherClass, setTeacherClass] = useState<Class | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -24,14 +26,14 @@ export default function TeachersMainPage() {
           setTeacherClass(classes[0]);
         } else {
           toast({
-            title: "معلومات",
-            description: "لم يتم تعيين فصل لك بعد",
+            title: t("teacher.infoTitle"),
+            description: t("teacher.noClassYet"),
           });
         }
       } catch (error) {
         toast({
-          title: "خطأ",
-          description: "فشل تحميل بيانات الفصل",
+          title: t("common.error"),
+          description: t("teacher.loadFailed"),
           variant: "destructive",
         });
       } finally {
@@ -40,7 +42,7 @@ export default function TeachersMainPage() {
     };
 
     loadTeacherClass();
-  }, [user?.id, toast]);
+  }, [user?.id, toast, t]);
 
   if (loading) {
     return (
@@ -53,17 +55,13 @@ export default function TeachersMainPage() {
   if (!teacherClass) {
     return (
       <div className="flex h-screen items-center justify-center p-4">
-        <Card className="max-w-md w-full text-center" dir="rtl">
+        <Card className="max-w-md w-full text-center">
           <CardHeader>
-            <CardTitle className="text-xl">مرحباً بك</CardTitle>
+            <CardTitle className="text-xl">{t("teacher.welcome")}</CardTitle>
           </CardHeader>
           <CardContent className="py-6 space-y-2">
-            <p className="text-muted-foreground">
-              شكراً لتسجيل دخولك إلى النظام.
-            </p>
-            <p className="text-muted-foreground">
-              لم يتم تعيين فصل لك بعد، يرجى التواصل مع المسؤول.
-            </p>
+            <p className="text-muted-foreground">{t("teacher.thanks")}</p>
+            <p className="text-muted-foreground">{t("teacher.noClass")}</p>
           </CardContent>
         </Card>
       </div>

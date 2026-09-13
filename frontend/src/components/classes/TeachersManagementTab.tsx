@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -46,6 +47,7 @@ interface TeachersManagementTabProps {
 export function TeachersManagementTab({
   canWrite = true,
 }: TeachersManagementTabProps) {
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [classes, setClasses] = useState<Class[]>([]);
@@ -90,8 +92,8 @@ export function TeachersManagementTab({
       setTeachers(data);
     } catch (error: unknown) {
       toast({
-        title: "خطأ",
-        description: "فشل في تحميل المعلمين",
+        title: t("common.error"),
+        description: t("classes.loadTeachersFailed"),
         variant: "destructive",
       });
     } finally {
@@ -148,8 +150,8 @@ export function TeachersManagementTab({
   const handleAddTeacher = async () => {
     if (!formData.username || !formData.email || !formData.password) {
       toast({
-        title: "خطأ",
-        description: "الرجاء ملء جميع الحقول المطلوبة",
+        title: t("common.error"),
+        description: t("common.requiredFields"),
         variant: "destructive",
       });
       return;
@@ -157,8 +159,8 @@ export function TeachersManagementTab({
 
     if (formData.password !== formData.confirmPassword) {
       toast({
-        title: "خطأ",
-        description: "كلمات المرور غير متطابقة",
+        title: t("common.error"),
+        description: t("settings.passwordsMismatch"),
         variant: "destructive",
       });
       return;
@@ -177,13 +179,13 @@ export function TeachersManagementTab({
       setTeachers([...teachers, response.user]);
       setIsAddOpen(false);
       toast({
-        title: "نجاح",
-        description: `تم إضافة المعلم بنجاح\nكلمة المرور: ${(response as any).plainTextPassword}`,
+        title: t("common.success"),
+        description: t("classes.addedTeacher", { password: (response as any).plainTextPassword }),
       });
     } catch (error: unknown) {
       toast({
-        title: "خطأ",
-        description: "فشل في إضافة المعلم",
+        title: t("common.error"),
+        description: t("classes.addTeacherFailed"),
         variant: "destructive",
       });
     } finally {
@@ -194,8 +196,8 @@ export function TeachersManagementTab({
   const handleUpdateTeacher = async () => {
     if (!formData.username || !formData.email) {
       toast({
-        title: "خطأ",
-        description: "الرجاء ملء جميع الحقول المطلوبة",
+        title: t("common.error"),
+        description: t("common.requiredFields"),
         variant: "destructive",
       });
       return;
@@ -203,8 +205,8 @@ export function TeachersManagementTab({
 
     if (formData.password && formData.password !== formData.confirmPassword) {
       toast({
-        title: "خطأ",
-        description: "كلمات المرور غير متطابقة",
+        title: t("common.error"),
+        description: t("settings.passwordsMismatch"),
         variant: "destructive",
       });
       return;
@@ -235,13 +237,13 @@ export function TeachersManagementTab({
       );
       setIsEditOpen(false);
       toast({
-        title: "نجاح",
-        description: "تم تحديث المعلم بنجاح",
+        title: t("common.success"),
+        description: t("classes.updatedTeacher"),
       });
     } catch (error: unknown) {
       toast({
-        title: "خطأ",
-        description: "فشل في تحديث المعلم",
+        title: t("common.error"),
+        description: t("classes.updateTeacherFailed"),
         variant: "destructive",
       });
     } finally {
@@ -258,13 +260,13 @@ export function TeachersManagementTab({
       setTeachers(teachers.filter((t) => t._id !== selectedTeacher._id));
       setIsDeleteOpen(false);
       toast({
-        title: "نجاح",
-        description: "تم حذف المعلم بنجاح",
+        title: t("common.success"),
+        description: t("classes.deletedTeacher"),
       });
     } catch (error: unknown) {
       toast({
-        title: "خطأ",
-        description: "فشل في حذف المعلم",
+        title: t("common.error"),
+        description: t("classes.deleteTeacherFailed"),
         variant: "destructive",
       });
     } finally {
@@ -277,14 +279,12 @@ export function TeachersManagementTab({
       <div className="flex justify-between items-center mb-4">
         <div>
           <h3 className="text-lg font-semibold">
-            المعلمون ({teachers.length})
+            {t("classes.teachersCount", { count: teachers.length })}
           </h3>
         </div>
         {canWrite && (
           <Button size="sm" onClick={handleOpenAdd} disabled={loading}>
-            <Plus className="ml-2 h-4 w-4" />
-            إضافة معلم
-          </Button>
+            <Plus className="ml-2 h-4 w-4" />{t("classes.addTeacher")}</Button>
         )}
       </div>
 
@@ -295,22 +295,16 @@ export function TeachersManagementTab({
       ) : (
         <div className="overflow-x-auto">
           <div className="border border-gray-300 rounded-lg overflow-hidden">
-            <Table dir="rtl" className="border-collapse">
+            <Table className="border-collapse">
               <TableHeader className="bg-purple-600">
                 <TableRow>
                   <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                    الاسم
+                    {t("common.name")}
                   </TableHead>
-                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                    البريد الإلكتروني
-                  </TableHead>
-                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                    الفصل المعين
-                  </TableHead>
+                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("common.email")}</TableHead>
+                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("classes.assignedClass")}</TableHead>
                   {canWrite && (
-                    <TableHead className="text-center text-white font-bold py-3 px-4">
-                      الإجراءات
-                    </TableHead>
+                    <TableHead className="text-center text-white font-bold py-3 px-4">{t("common.actions")}</TableHead>
                   )}
                 </TableRow>
               </TableHeader>
@@ -319,9 +313,7 @@ export function TeachersManagementTab({
                   <TableRow className="hover:bg-blue-50">
                     <TableCell
                       colSpan={canWrite ? 4 : 3}
-                      className="text-center py-8 px-4 text-muted-foreground border border-gray-300">
-                      لا يوجد معلمون
-                    </TableCell>
+                      className="text-center py-8 px-4 text-muted-foreground border border-gray-300">{t("classes.emptyTeachers")}</TableCell>
                   </TableRow>
                 ) : (
                   teachers.map((teacher, index) => (
@@ -338,12 +330,10 @@ export function TeachersManagementTab({
                         {teacher.class ? (
                           <Badge variant="outline">
                             {classes.find((c) => c._id === teacher.class)
-                              ?.name || "فصل محذوف"}
+                              ?.name || t("classes.deletedClass")}
                           </Badge>
                         ) : (
-                          <span className="text-muted-foreground">
-                            غير معين
-                          </span>
+                          <span className="text-muted-foreground">{t("classes.unassigned")}</span>
                         )}
                       </TableCell>
                       {canWrite && (
@@ -377,46 +367,40 @@ export function TeachersManagementTab({
       {canWrite && (
         <>
           <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-            <DialogContent dir="rtl" className="max-w-md">
+            <DialogContent dir={i18n.dir()} className="max-w-md">
               <DialogHeader>
-                <DialogTitle className="text-right">
-                  إضافة معلم جديد
-                </DialogTitle>
+                <DialogTitle className="text-right">{t("classes.addTeacherTitle")}</DialogTitle>
               </DialogHeader>
 
               <div className="space-y-4">
                 <div>
                   <Label
                     htmlFor="teacher-name"
-                    className="text-right block mb-2">
-                    اسم المعلم
-                  </Label>
+                    className="text-right block mb-2">{t("classes.teacherName")}</Label>
                   <Input
                     id="teacher-name"
-                    placeholder="أدخل اسم المعلم"
+                    placeholder={t("classes.teacherNamePlaceholder")}
                     value={formData.username}
                     onChange={(e) =>
                       setFormData({ ...formData, username: e.target.value })
                     }
-                    dir="rtl"
+                   
                   />
                 </div>
 
                 <div>
                   <Label
                     htmlFor="teacher-email"
-                    className="text-right block mb-2">
-                    البريد الإلكتروني
-                  </Label>
+                    className="text-right block mb-2">{t("common.email")}</Label>
                   <Input
                     id="teacher-email"
                     type="email"
-                    placeholder="أدخل البريد الإلكتروني"
+                    placeholder={t("login.emailPlaceholder")}
                     value={formData.email}
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
                     }
-                    dir="rtl"
+                   
                   />
                 </div>
 
@@ -424,30 +408,28 @@ export function TeachersManagementTab({
                   <Label
                     htmlFor="teacher-password"
                     className="text-right block mb-2">
-                    كلمة المرور
+                    {t("common.password")}
                   </Label>
                   <Input
                     id="teacher-password"
                     type="password"
-                    placeholder="أدخل كلمة المرور"
+                    placeholder={t("login.passwordPlaceholder")}
                     value={formData.password}
                     onChange={(e) =>
                       setFormData({ ...formData, password: e.target.value })
                     }
-                    dir="rtl"
+                   
                   />
                 </div>
 
                 <div>
                   <Label
                     htmlFor="teacher-confirm-password"
-                    className="text-right block mb-2">
-                    تأكيد كلمة المرور
-                  </Label>
+                    className="text-right block mb-2">{t("settings.confirmPassword")}</Label>
                   <Input
                     id="teacher-confirm-password"
                     type="password"
-                    placeholder="أكد كلمة المرور"
+                    placeholder={t("common.confirmPasswordPlaceholder")}
                     value={formData.confirmPassword}
                     onChange={(e) =>
                       setFormData({
@@ -455,7 +437,7 @@ export function TeachersManagementTab({
                         confirmPassword: e.target.value,
                       })
                     }
-                    dir="rtl"
+                   
                   />
                 </div>
 
@@ -463,20 +445,18 @@ export function TeachersManagementTab({
                   <Label
                     htmlFor="teacher-class"
                     className="text-right block mb-2">
-                    الفصل{" "}
-                    <span className="text-muted-foreground text-xs">
-                      (اختياري)
-                    </span>
+                    {t("classes.assignedClassLabel")}{" "}
+                    <span className="text-muted-foreground text-xs">{t("common.optional")}</span>
                   </Label>
                   <Select
                     value={formData.class}
                     onValueChange={(value) =>
                       setFormData({ ...formData, class: value })
                     }>
-                    <SelectTrigger id="teacher-class" dir="rtl">
-                      <SelectValue placeholder="بدون فصل" />
+                    <SelectTrigger id="teacher-class">
+                      <SelectValue placeholder={t("classes.noClass")} />
                     </SelectTrigger>
-                    <SelectContent dir="rtl">
+                    <SelectContent>
                       {getAvailableClasses().map((cls) => (
                         <SelectItem key={cls._id} value={cls._id}>
                           {cls.name}
@@ -491,17 +471,13 @@ export function TeachersManagementTab({
                 <Button
                   variant="outline"
                   onClick={() => setIsAddOpen(false)}
-                  disabled={submitting}>
-                  إلغاء
-                </Button>
+                  disabled={submitting}>{t("common.cancel")}</Button>
                 <Button onClick={handleAddTeacher} disabled={submitting}>
                   {submitting ? (
                     <>
-                      <Loader2 className="ml-2 h-4 w-4 animate-spin" />
-                      جاري الإضافة...
-                    </>
+                      <Loader2 className="ml-2 h-4 w-4 animate-spin" />{t("common.adding")}</>
                   ) : (
-                    "إضافة"
+                    t("common.add")
                   )}
                 </Button>
               </DialogFooter>
@@ -510,62 +486,56 @@ export function TeachersManagementTab({
 
           {/* Edit Teacher Modal */}
           <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-            <DialogContent dir="rtl" className="max-w-md">
+            <DialogContent dir={i18n.dir()} className="max-w-md">
               <DialogHeader>
-                <DialogTitle className="text-right">تعديل المعلم</DialogTitle>
+                <DialogTitle className="text-right">{t("classes.editTeacher")}</DialogTitle>
               </DialogHeader>
 
               <div className="space-y-4">
                 <div>
                   <Label
                     htmlFor="edit-teacher-name"
-                    className="text-right block mb-2">
-                    اسم المعلم
-                  </Label>
+                    className="text-right block mb-2">{t("classes.teacherName")}</Label>
                   <Input
                     id="edit-teacher-name"
-                    placeholder="أدخل اسم المعلم"
+                    placeholder={t("classes.teacherNamePlaceholder")}
                     value={formData.username}
                     onChange={(e) =>
                       setFormData({ ...formData, username: e.target.value })
                     }
-                    dir="rtl"
+                   
                   />
                 </div>
 
                 <div>
                   <Label
                     htmlFor="edit-teacher-email"
-                    className="text-right block mb-2">
-                    البريد الإلكتروني
-                  </Label>
+                    className="text-right block mb-2">{t("common.email")}</Label>
                   <Input
                     id="edit-teacher-email"
                     type="email"
-                    placeholder="أدخل البريد الإلكتروني"
+                    placeholder={t("login.emailPlaceholder")}
                     value={formData.email}
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
                     }
-                    dir="rtl"
+                   
                   />
                 </div>
 
                 <div>
                   <Label
                     htmlFor="edit-teacher-password"
-                    className="text-right block mb-2">
-                    كلمة المرور الجديدة (اختياري)
-                  </Label>
+                    className="text-right block mb-2">{t("settings.newPasswordOptional")}</Label>
                   <Input
                     id="edit-teacher-password"
                     type="password"
-                    placeholder="اترك فارغاً لعدم تغيير كلمة المرور"
+                    placeholder={t("settings.leavePasswordBlank")}
                     value={formData.password}
                     onChange={(e) =>
                       setFormData({ ...formData, password: e.target.value })
                     }
-                    dir="rtl"
+                   
                   />
                 </div>
 
@@ -573,13 +543,11 @@ export function TeachersManagementTab({
                   <div>
                     <Label
                       htmlFor="edit-teacher-confirm-password"
-                      className="text-right block mb-2">
-                      تأكيد كلمة المرور
-                    </Label>
+                      className="text-right block mb-2">{t("settings.confirmPassword")}</Label>
                     <Input
                       id="edit-teacher-confirm-password"
                       type="password"
-                      placeholder="أكد كلمة المرور"
+                      placeholder={t("common.confirmPasswordPlaceholder")}
                       value={formData.confirmPassword}
                       onChange={(e) =>
                         setFormData({
@@ -587,7 +555,7 @@ export function TeachersManagementTab({
                           confirmPassword: e.target.value,
                         })
                       }
-                      dir="rtl"
+                     
                     />
                   </div>
                 )}
@@ -596,10 +564,8 @@ export function TeachersManagementTab({
                   <Label
                     htmlFor="edit-teacher-class"
                     className="text-right block mb-2">
-                    الفصل{" "}
-                    <span className="text-muted-foreground text-xs">
-                      (اختياري)
-                    </span>
+                    {t("classes.assignedClassLabel")}{" "}
+                    <span className="text-muted-foreground text-xs">{t("common.optional")}</span>
                   </Label>
                   <Select
                     value={formData.class || "__none__"}
@@ -609,11 +575,11 @@ export function TeachersManagementTab({
                         class: value === "__none__" ? "" : value,
                       })
                     }>
-                    <SelectTrigger id="edit-teacher-class" dir="rtl">
-                      <SelectValue placeholder="بدون فصل" />
+                    <SelectTrigger id="edit-teacher-class">
+                      <SelectValue placeholder={t("classes.noClass")} />
                     </SelectTrigger>
-                    <SelectContent dir="rtl">
-                      <SelectItem value="__none__">— بدون فصل</SelectItem>
+                    <SelectContent>
+                      <SelectItem value="__none__">{t("teacher.noClassDash")}</SelectItem>
                       {getAvailableClasses(selectedTeacher?.class).map(
                         (cls) => (
                           <SelectItem key={cls._id} value={cls._id}>
@@ -630,17 +596,13 @@ export function TeachersManagementTab({
                 <Button
                   variant="outline"
                   onClick={() => setIsEditOpen(false)}
-                  disabled={submitting}>
-                  إلغاء
-                </Button>
+                  disabled={submitting}>{t("common.cancel")}</Button>
                 <Button onClick={handleUpdateTeacher} disabled={submitting}>
                   {submitting ? (
                     <>
-                      <Loader2 className="ml-2 h-4 w-4 animate-spin" />
-                      جاري التحديث...
-                    </>
+                      <Loader2 className="ml-2 h-4 w-4 animate-spin" />{t("common.updating")}</>
                   ) : (
-                    "تحديث"
+                    t("common.update")
                   )}
                 </Button>
               </DialogFooter>
@@ -653,7 +615,7 @@ export function TeachersManagementTab({
             onOpenChange={setIsDeleteOpen}
             onConfirm={handleDeleteTeacher}
             itemName={deleteTargetName}
-            itemType="المعلم"
+            itemType={t("common.teacher")}
           />
         </>
       )}

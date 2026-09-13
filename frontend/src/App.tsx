@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import DashboardLayout from "@/layouts/DashboardLayout";
+import DemoBanner from "@/components/DemoBanner";
 import AuthPage from "@/pages/AuthPage";
 import TodaysSummaryPage from "@/pages/TodaysSummaryPage";
 import MainPage from "@/pages/MainPage";
@@ -23,6 +24,7 @@ const App = () => (
     <Sonner />
     <BrowserRouter>
       <AuthProvider>
+        <DemoBanner />
         <Routes>
           <Route path="/auth" element={<AuthPage />} />
           <Route element={<DashboardLayout />}>

@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { useTranslation } from "react-i18next";
 
 interface Shift {
   _id: string;
@@ -45,16 +46,17 @@ export function ChangeShiftModal({
   isLoading,
   onConfirm,
 }: ChangeShiftModalProps) {
+  const { t, i18n } = useTranslation();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent dir="rtl" className="max-w-md">
+      <DialogContent dir={i18n.dir()} className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-right">تغيير الشفت</DialogTitle>
+          <DialogTitle className="text-start">{t("bulk.changeShift")}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div>
-            <p className="text-sm text-muted-foreground mb-3 text-right">
-              توزيع الشفتات للمتدربين المحددين ({filteredCount} متدربين):
+            <p className="text-sm text-muted-foreground mb-3 text-start">
+              {t("bulk.distribution", { count: filteredCount })}
             </p>
             <div className="space-y-2">
               {Object.values(shiftBreakdown).map(
@@ -62,23 +64,25 @@ export function ChangeShiftModal({
                   <div
                     key={s.name}
                     className="flex items-center justify-between rounded-md border px-3 py-2 text-sm">
-                    <span className="font-semibold">شفت: {s.name}</span>
-                    <span> {s.count} متدربين </span>
+                    <span className="font-semibold">
+                      {t("bulk.shiftLabel", { name: s.name })}
+                    </span>
+                    <span>{t("bulk.traineesInShift", { count: s.count })}</span>
                   </div>
                 ),
               )}
             </div>
           </div>
           <div className="space-y-2">
-            <Label className="text-right block">تغيير الكل إلى</Label>
+            <Label className="text-start block">{t("bulk.changeAllTo")}</Label>
             <Select value={targetShiftId} onValueChange={onTargetShiftChange}>
-              <SelectTrigger dir="rtl">
-                <SelectValue placeholder="اختر الشفت" />
+              <SelectTrigger>
+                <SelectValue placeholder={t("bulk.selectShift")} />
               </SelectTrigger>
-              <SelectContent dir="rtl">
+              <SelectContent>
                 {shifts.map((shift) => (
                   <SelectItem key={shift._id} value={shift._id}>
-                    شفت: {shift.name}
+                    {t("bulk.shiftLabel", { name: shift.name })}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -87,7 +91,7 @@ export function ChangeShiftModal({
         </div>
         <DialogFooter className="flex flex-row-reverse gap-2">
           <Button onClick={onConfirm} disabled={!targetShiftId || isLoading}>
-            {isLoading ? "جاري التحديث..." : "تأكيد التغيير"}
+            {isLoading ? t("common.updating") : t("common.confirmChange")}
           </Button>
           <Button
             variant="outline"
@@ -95,7 +99,7 @@ export function ChangeShiftModal({
               onOpenChange(false);
               onTargetShiftChange("");
             }}>
-            إلغاء
+            {t("common.cancel")}
           </Button>
         </DialogFooter>
       </DialogContent>

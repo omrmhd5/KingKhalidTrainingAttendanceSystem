@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { getGregorianDateArabic } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,6 +43,7 @@ interface Disciplinary {
 }
 
 export default function DisciplinaryPage() {
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const [disciplinary, setDisciplinary] = useState<Disciplinary[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -63,8 +65,8 @@ export default function DisciplinaryPage() {
       setDisciplinary(data || []);
     } catch (error) {
       toast({
-        title: "خطأ",
-        description: "فشل تحميل الطلبات",
+        title: t("common.error"),
+        description: t("disciplinary.loadFailed"),
         variant: "destructive",
         duration: 2000,
       });
@@ -89,8 +91,8 @@ export default function DisciplinaryPage() {
           ),
         );
         toast({
-          title: "تم التحديث",
-          description: "تم تحديث سبب الاستدعاء بنجاح",
+          title: t("disciplinary.updated"),
+          description: t("disciplinary.updatedDesc"),
           duration: 1500,
         });
         setEditingDisciplinary(null);
@@ -102,15 +104,15 @@ export default function DisciplinaryPage() {
         );
         setDisciplinary([newDisciplinary, ...disciplinary]);
         toast({
-          title: "تم إضافة الطلب",
-          description: `تم تسجيل طلب جديد لـ ${data.full_name}`,
+          title: t("disciplinary.added"),
+          description: t("disciplinary.addedDesc", { name: data.full_name }),
           duration: 1500,
         });
       }
     } catch (error) {
       toast({
-        title: "خطأ",
-        description: "فشل تسجيل الطلب",
+        title: t("common.error"),
+        description: t("disciplinary.createFailed"),
         variant: "destructive",
         duration: 2000,
       });
@@ -127,14 +129,14 @@ export default function DisciplinaryPage() {
       await disciplinaryApi.deleteDisciplinary(deleteConfirm);
       setDisciplinary(disciplinary.filter((d) => d._id !== deleteConfirm));
       toast({
-        title: "تم الحذف",
-        description: "تم حذف الطلب بنجاح",
+        title: t("disciplinary.deleted"),
+        description: t("disciplinary.deletedDesc"),
         duration: 1500,
       });
     } catch (error) {
       toast({
-        title: "خطأ",
-        description: "فشل حذف الطلب",
+        title: t("common.error"),
+        description: t("disciplinary.deleteFailed"),
         variant: "destructive",
         duration: 2000,
       });
@@ -152,14 +154,14 @@ export default function DisciplinaryPage() {
         <div>
           <div className="flex items-center gap-2">
             <AlertCircle className="h-8 w-8 text-blue-600" />
-            <h1 className="text-2xl font-bold text-blue-600">طلبات الانضباط</h1>
+            <h1 className="text-2xl font-bold text-blue-600">{t("disciplinary.title")}</h1>
           </div>
           <p className="text-sm text-muted-foreground">
-            قم بتسجيل طلبات الانضباط ومتابعتها
+            {t("disciplinary.subtitle")}
           </p>
           {visibleDisciplinary.length > 0 && (
             <p className="text-sm text-blue-600 font-medium mt-2">
-              إجمالي الطلبات: {visibleDisciplinary.length}
+              {t("disciplinary.totalCount", { count: visibleDisciplinary.length })}
             </p>
           )}
         </div>
@@ -168,7 +170,7 @@ export default function DisciplinaryPage() {
       <Card className="border-r-4 border-r-blue-600">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg">الطلبات المسجلة</CardTitle>
+            <CardTitle className="text-lg">{t("disciplinary.registered")}</CardTitle>
             <div className="flex gap-2">
               <ExportExcel data={visibleDisciplinary} />
               <ExportPDF data={visibleDisciplinary} />
@@ -186,11 +188,11 @@ export default function DisciplinaryPage() {
         <CardContent className="p-0">
           {isLoadingDisciplinary ? (
             <div className="text-center py-8 text-muted-foreground p-4">
-              جاري تحميل الطلبات...
+              {t("disciplinary.loadingList")}
             </div>
           ) : visibleDisciplinary.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground p-4">
-              لا توجد طلبات مسجلة حتى الآن
+              {t("disciplinary.empty")}
             </div>
           ) : (
             <div className="border border-gray-300 rounded-lg overflow-hidden">
@@ -198,22 +200,22 @@ export default function DisciplinaryPage() {
                 <TableHeader className="bg-blue-600">
                   <TableRow>
                     <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                      الرقم العسكري
+                      {t("trainees.militaryId")}
                     </TableHead>
                     <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                      السجل المدني
+                      {t("trainees.civilId")}
                     </TableHead>
                     <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                      الاسم
+                      {t("common.name")}
                     </TableHead>
                     <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                      سبب الاستدعاء
+                      {t("disciplinary.reasonCol")}
                     </TableHead>
                     <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                      تاريخ التسجيل
+                      {t("disciplinary.registeredAt")}
                     </TableHead>
                     <TableHead className="text-center text-white font-bold py-3 px-4">
-                      الإجراءات
+                      {t("common.actions")}
                     </TableHead>
                   </TableRow>
                 </TableHeader>
@@ -265,22 +267,22 @@ export default function DisciplinaryPage() {
       <AlertDialog
         open={!!deleteConfirm}
         onOpenChange={(open) => !open && setDeleteConfirm(null)}>
-        <AlertDialogContent dir="rtl">
+        <AlertDialogContent dir={i18n.dir()}>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-right text-blue-600">
-              تأكيد الحذف
+            <AlertDialogTitle className="text-start text-blue-600">
+              {t("common.confirmDelete")}
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-right">
-              هل أنت متأكد من حذف هذا الطلب؟ لا يمكن التراجع عن هذا الإجراء.
+            <AlertDialogDescription className="text-start">
+              {t("disciplinary.confirmDelete")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="flex gap-2 justify-end">
-            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteDisciplinary}
               disabled={isDeleting}
               className="bg-blue-600 hover:bg-blue-700">
-              {isDeleting ? "جاري الحذف..." : "حذف"}
+              {isDeleting ? t("common.deleting") : t("common.delete")}
             </AlertDialogAction>
           </div>
         </AlertDialogContent>

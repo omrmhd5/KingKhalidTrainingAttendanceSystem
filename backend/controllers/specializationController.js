@@ -1,11 +1,12 @@
 const specializationService = require("../services/specializationService");
+const { sendError, sendCaught } = require("../lib/http");
 
 exports.getAllSpecializations = async (req, res) => {
   try {
     const specializations = await specializationService.getAllSpecializations();
     res.json(specializations);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    sendCaught(req, res, error, 500);
   }
 };
 
@@ -15,11 +16,11 @@ exports.getSpecialization = async (req, res) => {
       req.params.id,
     );
     if (!specialization) {
-      return res.status(404).json({ error: "Specialization not found" });
+      return sendError(req, res, 404, "errors.specNotFound");
     }
     res.json(specialization);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    sendCaught(req, res, error, 500);
   }
 };
 
@@ -30,7 +31,7 @@ exports.createSpecialization = async (req, res) => {
     );
     res.status(201).json(specialization);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    sendCaught(req, res, error, 400);
   }
 };
 
@@ -41,11 +42,11 @@ exports.updateSpecialization = async (req, res) => {
       req.body,
     );
     if (!specialization) {
-      return res.status(404).json({ error: "Specialization not found" });
+      return sendError(req, res, 404, "errors.specNotFound");
     }
     res.json(specialization);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    sendCaught(req, res, error, 400);
   }
 };
 
@@ -56,6 +57,6 @@ exports.deleteSpecialization = async (req, res) => {
     );
     res.json(specialization);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    sendCaught(req, res, error, 400);
   }
 };

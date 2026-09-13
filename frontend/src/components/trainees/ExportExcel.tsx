@@ -1,3 +1,4 @@
+import i18n from "@/i18n";
 import { Button } from "@/components/ui/button";
 import { FileSpreadsheet } from "lucide-react";
 import ExcelJS from "exceljs";
@@ -51,7 +52,7 @@ const thinBorder = (argb = "FFD0D0D0") => ({
 export function TraineesExportExcel({ data }: TraineesExportExcelProps) {
   const generateExcel = async () => {
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("المتدربون");
+    const worksheet = workbook.addWorksheet(i18n.t("trainees.title"));
 
     // Column widths
     worksheet.columns = [
@@ -70,7 +71,7 @@ export function TraineesExportExcel({ data }: TraineesExportExcelProps) {
     titleRow.height = 40;
     worksheet.mergeCells(1, 2, 1, 2 + COLS - 1);
     const titleCell = worksheet.getCell("B1");
-    titleCell.value = "بيان المتدربين";
+    titleCell.value = i18n.t("trainees.sheetTitle");
     titleCell.font = { bold: true, size: 18, color: { argb: "FFFFFFFF" } };
     titleCell.fill = solid("FF3B82F6");
     titleCell.alignment = { horizontal: "center", vertical: "middle" };
@@ -82,7 +83,7 @@ export function TraineesExportExcel({ data }: TraineesExportExcelProps) {
     subRow.height = 24;
     worksheet.mergeCells(2, 2, 2, 2 + COLS - 1);
     const subCell = worksheet.getCell("B2");
-    subCell.value = `التاريخ: ${date}`;
+    subCell.value = `${i18n.t("common.date")}: ${date}`;
     subCell.font = { size: 12, italic: true, color: { argb: "FF6B7280" } };
     subCell.fill = solid("FFF9FAFB");
     subCell.alignment = { horizontal: "center", vertical: "middle" };
@@ -94,13 +95,13 @@ export function TraineesExportExcel({ data }: TraineesExportExcelProps) {
     // ── Row 4: Column headers ─────────────────────────────────────────────
     const headers = [
       "",
-      "الباركود",
-      "الشفت",
-      "التخصص",
-      "الرتبة",
-      "الاسم",
-      "السجل المدني",
-      "الرقم العسكري",
+      i18n.t("common.barcode"),
+      i18n.t("trainees.shift"),
+      i18n.t("trainees.specialty"),
+      i18n.t("trainees.rank"),
+      i18n.t("common.name"),
+      i18n.t("trainees.civilId"),
+      i18n.t("trainees.militaryId"),
     ];
     const headerRow = worksheet.addRow(headers);
     headerRow.height = 30;
@@ -178,7 +179,7 @@ export function TraineesExportExcel({ data }: TraineesExportExcelProps) {
     const totalRowIdx = worksheet.rowCount;
     worksheet.mergeCells(totalRowIdx, 2, totalRowIdx, 2 + COLS - 1);
     const totalCell = totalRow.getCell(2);
-    totalCell.value = `الإجمالي: ${data.length} متدرب`;
+    totalCell.value = `${i18n.t("trainees.sheetTotal", { count: data.length })}`;
     totalCell.font = { bold: true, size: 13, color: { argb: "FFF5F5F5" } };
     totalCell.fill = solid("FF3B82F6");
     totalCell.alignment = { horizontal: "center", vertical: "middle" };
@@ -192,7 +193,7 @@ export function TraineesExportExcel({ data }: TraineesExportExcelProps) {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `بيان_متدربين_${getTodayDateKSA()}.xlsx`;
+    a.download = `${i18n.t("trainees.filename", { date: getTodayDateKSA() })}.xlsx`;
     a.click();
     window.URL.revokeObjectURL(url);
   };
@@ -203,8 +204,6 @@ export function TraineesExportExcel({ data }: TraineesExportExcelProps) {
       size="sm"
       variant="default"
       className="bg-purple-600 hover:bg-purple-700 text-white">
-      <FileSpreadsheet className="ml-2 h-4 w-4" />
-      تحميل Excel
-    </Button>
+      <FileSpreadsheet className="ml-2 h-4 w-4" />{i18n.t("common.downloadExcel")}</Button>
   );
 }

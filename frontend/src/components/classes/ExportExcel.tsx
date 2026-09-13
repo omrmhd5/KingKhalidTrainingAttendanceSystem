@@ -1,3 +1,4 @@
+import i18n from "@/i18n";
 import { Button } from "@/components/ui/button";
 import { FileSpreadsheet } from "lucide-react";
 import ExcelJS from "exceljs";
@@ -5,10 +6,10 @@ import { Trainee } from "@/lib/traineeApi";
 import { getGregorianDateArabic, getTodayDateKSA } from "@/lib/utils";
 
 const violationTypes: Record<number | string, string> = {
-  1: "النوم في الفصل",
-  2: "استخدام الجوال في الفصل",
-  3: "عدم احترام المسؤول",
-  4: "مخالفة الأنظمة والتعليمات",
+  1: i18n.t("teacher.sleeping"),
+  2: i18n.t("teacher.phoneUse"),
+  3: i18n.t("teacher.disrespectOfficial"),
+  4: i18n.t("teacher.rulesViolation"),
 };
 
 interface ExportExcelProps {
@@ -42,7 +43,7 @@ export function ExportExcel({ data, title }: ExportExcelProps) {
     const columnCount = hasViolations ? 4 : 3;
 
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("الطلاب");
+    const worksheet = workbook.addWorksheet(i18n.t("common.sheetStudents"));
 
     // Column widths
     worksheet.columns = [
@@ -69,7 +70,7 @@ export function ExportExcel({ data, title }: ExportExcelProps) {
     // ── Row 2: Date subtitle ──────────────────────────────────────────────
     const date = getGregorianDateArabic(new Date());
     const subRow = worksheet.addRow([
-      `التاريخ: ${date}`,
+      `${i18n.t("common.date")}: ${date}`,
       "",
       ...(hasViolations ? [""] : []),
     ]);
@@ -86,10 +87,10 @@ export function ExportExcel({ data, title }: ExportExcelProps) {
 
     // ── Row 4: Column headers ─────────────────────────────────────────────
     const headers = [
-      ...(hasViolations ? ["المخالفة"] : []),
-      "السجل المدني",
-      "الرقم العسكري",
-      "الاسم",
+      ...(hasViolations ? [i18n.t("classes.violation")] : []),
+      i18n.t("trainees.civilId"),
+      i18n.t("trainees.militaryId"),
+      i18n.t("common.name"),
     ];
     const headerRow = worksheet.addRow(headers);
     headerRow.height = 30;
@@ -135,7 +136,7 @@ export function ExportExcel({ data, title }: ExportExcelProps) {
 
     // ── Total row ─────────────────────────────────────────────────────────
     const totalRow = worksheet.addRow([
-      `الإجمالي: ${data.length} طالب`,
+      `${i18n.t("common.totalStudentsSheet", { count: data.length })}`,
       "",
       ...(hasViolations ? [""] : []),
     ]);
@@ -171,8 +172,6 @@ export function ExportExcel({ data, title }: ExportExcelProps) {
       size="sm"
       variant="default"
       className="bg-blue-600 hover:bg-blue-700 text-white">
-      <FileSpreadsheet className="ml-2 h-4 w-4" />
-      تحميل Excel
-    </Button>
+      <FileSpreadsheet className="ml-2 h-4 w-4" />{i18n.t("common.downloadExcel")}</Button>
   );
 }

@@ -48,7 +48,7 @@ class AttendanceService {
     if (!scannedId || !shiftId || !date) {
       throw {
         code: "MISSING_FIELDS",
-        message: "الرقم المسح والشفت والتاريخ مطلوبة",
+        message: "errors.scanRequired",
       };
     }
 
@@ -60,7 +60,7 @@ class AttendanceService {
     if (providedDateOnly.getTime() !== ksaToday.getTime()) {
       throw {
         code: "INVALID_DATE",
-        message: "يمكن تسجيل الحضور لليوم الحالي فقط",
+        message: "errors.todayOnly",
       };
     }
 
@@ -78,7 +78,8 @@ class AttendanceService {
     if (!trainee) {
       throw {
         code: "TRAINEE_NOT_FOUND",
-        message: `لم يتم العثور على متدرب برقم مدني أو عسكري ${scannedId}`,
+        message: "errors.traineeScanNotFound",
+        vars: { id: scannedId },
       };
     }
 
@@ -87,7 +88,7 @@ class AttendanceService {
     if (!shift) {
       throw {
         code: "SHIFT_NOT_FOUND",
-        message: "لم يتم العثور على الشفت",
+        message: "errors.shiftNotFound",
       };
     }
 
@@ -105,7 +106,7 @@ class AttendanceService {
     if (existingEntry) {
       throw {
         code: "DUPLICATE_ENTRY",
-        message: "تم تسجيل الدخول مسبقاً",
+        message: "errors.alreadyEntered",
       };
     }
 
@@ -148,7 +149,7 @@ class AttendanceService {
     if (!scannedId || !date) {
       throw {
         code: "MISSING_FIELDS",
-        message: "الرقم المسح والتاريخ مطلوبة",
+        message: "errors.scanDateRequired",
       };
     }
 
@@ -160,7 +161,7 @@ class AttendanceService {
     if (providedDateOnly.getTime() !== ksaToday.getTime()) {
       throw {
         code: "INVALID_DATE",
-        message: "يمكن تسجيل الحضور لليوم الحالي فقط",
+        message: "errors.todayOnly",
       };
     }
 
@@ -178,7 +179,8 @@ class AttendanceService {
     if (!trainee) {
       throw {
         code: "TRAINEE_NOT_FOUND",
-        message: `لم يتم العثور على متدرب برقم مدني أو عسكري ${scannedId}`,
+        message: "errors.traineeScanNotFound",
+        vars: { id: scannedId },
       };
     }
 
@@ -196,8 +198,7 @@ class AttendanceService {
     if (!attendance) {
       throw {
         code: "NO_ENTRY",
-        message:
-          "لم يتم العثور على سجل دخول لهذا المتدرب اليوم. لا يمكن تسجيل الخروج بدون دخول",
+        message: "errors.noEntry",
       };
     }
 
@@ -205,7 +206,7 @@ class AttendanceService {
     if (attendance.exit_time) {
       throw {
         code: "DUPLICATE_EXIT",
-        message: "تم تسجيل الخروج مسبقاً",
+        message: "errors.alreadyExited",
       };
     }
 
@@ -232,7 +233,7 @@ class AttendanceService {
     if (!date) {
       throw {
         code: "MISSING_FIELDS",
-        message: "التاريخ مطلوب",
+        message: "errors.dateRequired",
       };
     }
 
@@ -267,7 +268,7 @@ class AttendanceService {
     if (!date) {
       throw {
         code: "MISSING_FIELDS",
-        message: "التاريخ مطلوب",
+        message: "errors.dateRequired",
       };
     }
 
@@ -417,7 +418,7 @@ class AttendanceService {
     if (!date) {
       throw {
         code: "MISSING_FIELDS",
-        message: "التاريخ مطلوب",
+        message: "errors.dateRequired",
       };
     }
 
@@ -485,7 +486,7 @@ class AttendanceService {
     if (!date) {
       throw {
         code: "MISSING_FIELDS",
-        message: "التاريخ مطلوب",
+        message: "errors.dateRequired",
       };
     }
 
@@ -523,7 +524,7 @@ class AttendanceService {
     if (!date) {
       throw {
         code: "MISSING_FIELDS",
-        message: "التاريخ مطلوب",
+        message: "errors.dateRequired",
       };
     }
 
@@ -559,7 +560,7 @@ class AttendanceService {
 
   async clearExitData(ids) {
     if (!Array.isArray(ids) || ids.length === 0) {
-      throw new Error("Array of attendance IDs is required");
+      throw new Error("errors.attendanceIdsRequired");
     }
 
     const result = await Attendance.updateMany(
@@ -567,36 +568,38 @@ class AttendanceService {
       { $unset: { exit_time: "", duration_minutes: "" } },
     );
     return {
-      message: `تم مسح بيانات الخروج لـ ${result.modifiedCount} سجل`,
+      message: "success.exitsCleared",
+      vars: { count: result.modifiedCount },
       modifiedCount: result.modifiedCount,
     };
   }
 
   async deleteAttendance(id) {
     if (!id) {
-      throw new Error("Attendance ID is required");
+      throw new Error("errors.attendanceIdRequired");
     }
 
     const attendance = await Attendance.findById(id);
     if (!attendance) {
-      throw new Error("Attendance record not found");
+      throw new Error("errors.attendanceNotFound");
     }
 
     await Attendance.findByIdAndDelete(id);
     return {
-      message: "تم حذف السجل بنجاح",
+      message: "success.recordDeleted",
       deletedId: id,
     };
   }
 
   async deleteMultipleAttendance(ids) {
     if (!Array.isArray(ids) || ids.length === 0) {
-      throw new Error("Array of attendance IDs is required");
+      throw new Error("errors.attendanceIdsRequired");
     }
 
     const result = await Attendance.deleteMany({ _id: { $in: ids } });
     return {
-      message: `تم حذف ${result.deletedCount} سجل`,
+      message: "success.recordsDeleted",
+      vars: { count: result.deletedCount },
       deletedCount: result.deletedCount,
     };
   }

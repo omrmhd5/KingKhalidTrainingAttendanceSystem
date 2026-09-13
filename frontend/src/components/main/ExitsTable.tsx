@@ -1,3 +1,5 @@
+import i18n from "@/i18n";
+import { useTranslation } from "react-i18next";
 import { useEffect } from "react";
 import {
   Table,
@@ -28,7 +30,7 @@ const formatShiftTime = (startTime: string, endTime: string): string => {
     let h = parseInt(hours);
     const isAM = h < 12;
     h = h % 12 || 12;
-    const period = isAM ? "ص" : "م";
+    const period = isAM ? i18n.t("am") : i18n.t("pm");
     return `${h}:${minutes} ${period}`;
   };
 
@@ -107,6 +109,7 @@ export default function ExitsTable({
   onToggleAll,
   onClearExits,
 }: ExitsTableProps) {
+  const { t, i18n } = useTranslation();
   // Filter exits based on selected shift
   const filteredExits =
     selectedShiftFilter === "all"
@@ -138,14 +141,14 @@ export default function ExitsTable({
       <div className="flex items-center justify-between border-b-2 border-border bg-slate-50 p-2">
         <div className="flex items-center gap-2">
           <ArrowUpFromLine className="h-5 w-5 text-warning" />
-          <h3 className="text-lg font-semibold text-foreground">سجل الخروج</h3>
+          <h3 className="text-lg font-semibold text-foreground">{t("main.exitLog")}</h3>
           {selectedExits.size > 0 && (
             <Button
               size="sm"
               onClick={onClearExits}
               className="mr-2 bg-orange-600 hover:bg-orange-700 text-white">
               <Eraser className="ml-1 h-4 w-4" />
-              مسح الخروج ({selectedExits.size})
+              {t("main.clearExitSelected", { count: selectedExits.size })}
             </Button>
           )}
         </div>
@@ -165,17 +168,13 @@ export default function ExitsTable({
                 />
               </TableHead>
               <TableHead className="text-center text-white font-bold py-2 px-2 border-r-2 border-green-700 whitespace-nowrap">
-                تسجيل الخروج
+                {t("main.checkOut")}
               </TableHead>
               <TableHead className="text-center text-white font-bold py-2 px-2 border-r-2 border-green-700 whitespace-nowrap">
-                الاسم
+                {t("common.name")}
               </TableHead>
-              <TableHead className="text-center text-white font-bold py-2 px-2 border-r-2 border-green-700 whitespace-nowrap">
-                وقت الخروج
-              </TableHead>
-              <TableHead className="text-center text-white font-bold py-2 px-2 border-r-2 border-green-700 whitespace-nowrap">
-                الشفت
-              </TableHead>
+              <TableHead className="text-center text-white font-bold py-2 px-2 border-r-2 border-green-700 whitespace-nowrap">{t("main.exitTime")}</TableHead>
+              <TableHead className="text-center text-white font-bold py-2 px-2 border-r-2 border-green-700 whitespace-nowrap">{t("trainees.shift")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -183,9 +182,7 @@ export default function ExitsTable({
               <TableRow>
                 <TableCell
                   colSpan={5}
-                  className="text-center py-8 text-muted-foreground border border-border">
-                  لا توجد سجلات خروج
-                </TableCell>
+                  className="text-center py-8 text-muted-foreground border border-border">{t("main.noExits")}</TableCell>
               </TableRow>
             ) : (
               sortedExits.map((exit, index) => {

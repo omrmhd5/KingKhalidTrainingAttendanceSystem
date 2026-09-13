@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UsersManagementTab } from "@/components/settings/UsersManagementTab";
 import { ShiftsManagementTab } from "@/components/settings/ShiftsManagementTab";
@@ -10,6 +11,7 @@ import { SpecializationsManagementTab } from "@/components/settings/Specializati
 export default function SettingsPage() {
   const { role } = useAuth();
   const [activeTab, setActiveTab] = useState("users");
+  const { t } = useTranslation();
 
   // Only admins can access settings
   if (role !== "admin") {
@@ -30,33 +32,31 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="space-y-6 animate-slide-in" dir="rtl">
-      <h1 className="text-2xl font-bold text-right">الإعدادات</h1>
+    <div className="space-y-6 animate-slide-in">
+      <h1 className="text-2xl font-bold text-start">{t("settings.title")}</h1>
 
-      <Tabs value={activeTab} onValueChange={handleTabChange} dir="rtl">
+      <Tabs value={activeTab} onValueChange={handleTabChange}>
         <TabsList>
-          <TabsTrigger value="users">المستخدمون</TabsTrigger>
-          <TabsTrigger value="shifts">ادارة الشفتات</TabsTrigger>
-          <TabsTrigger value="ranks">إدارة الرتب</TabsTrigger>
-          <TabsTrigger value="specializations">إدارة التخصصات</TabsTrigger>
+          <TabsTrigger value="users">{t("settings.users")}</TabsTrigger>
+          <TabsTrigger value="shifts">{t("settings.shifts")}</TabsTrigger>
+          <TabsTrigger value="ranks">{t("settings.ranks")}</TabsTrigger>
+          <TabsTrigger value="specializations">
+            {t("settings.specializations")}
+          </TabsTrigger>
         </TabsList>
 
-        {/* Users */}
         <TabsContent value="users">
           <UsersManagementTab />
         </TabsContent>
 
-        {/* Shifts */}
         <TabsContent value="shifts">
           <ShiftsManagementTab />
         </TabsContent>
 
-        {/* Ranks */}
         <TabsContent value="ranks">
           <RanksManagementTab />
         </TabsContent>
 
-        {/* Specializations */}
         <TabsContent value="specializations">
           <SpecializationsManagementTab />
         </TabsContent>

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -47,6 +48,7 @@ export function ViolationFormModal({
   editingViolation = null,
   onEditModeChange,
 }: ViolationFormModalProps) {
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
@@ -87,8 +89,8 @@ export function ViolationFormModal({
 
     if (!form.description.trim()) {
       toast({
-        title: "تحذير",
-        description: "يرجى إدخال وصف المخالفة",
+        title: t("common.warning"),
+        description: t("violations.needDescription"),
         variant: "destructive",
         duration: 1500,
       });
@@ -121,8 +123,8 @@ export function ViolationFormModal({
       // Handle create mode - search for trainee
       if (!form.id_number.trim()) {
         toast({
-          title: "تحذير",
-          description: "يرجى إدخال الرقم",
+          title: t("common.warning"),
+          description: t("violations.needId"),
           variant: "destructive",
           duration: 1500,
         });
@@ -137,8 +139,8 @@ export function ViolationFormModal({
 
       if (!trainees || trainees.length === 0) {
         toast({
-          title: "لم يتم العثور على المتدرب",
-          description: `لا يوجد متدرب برقم ${form.id_type === "military" ? "عسكري" : "مدني"}: ${form.id_number}`,
+          title: t("violations.notFound"),
+          description: t("violations.notFoundDesc", { type: form.id_type === "military" ? t("violations.militaryType") : t("violations.civilType"), id: form.id_number }),
           variant: "destructive",
           duration: 2000,
         });
@@ -166,8 +168,8 @@ export function ViolationFormModal({
       handleOpenChange(false);
     } catch (error) {
       toast({
-        title: "خطأ",
-        description: "حدث خطأ أثناء البحث عن المتدرب",
+        title: t("common.error"),
+        description: t("common.searchTraineeFailed"),
         variant: "destructive",
         duration: 2000,
       });
@@ -180,14 +182,12 @@ export function ViolationFormModal({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button size="sm" className="bg-red-600 hover:bg-red-700">
-          <Plus className="ml-2 h-4 w-4" />
-          إضافة مخالفة
-        </Button>
+          <Plus className="ml-2 h-4 w-4" />{t("violations.addTitle")}</Button>
       </DialogTrigger>
-      <DialogContent dir="rtl" className="max-w-md border-r-4 border-r-red-600">
+      <DialogContent dir={i18n.dir()} className="max-w-md border-r-4 border-r-red-600">
         <DialogHeader>
           <DialogTitle className="text-right text-red-600">
-            {isEditMode ? "تحرير المخالفة" : "تسجيل مخالفة جديدة"}
+            {isEditMode ? t("violations.editTitle") : t("violations.newTitle")}
           </DialogTitle>
         </DialogHeader>
         <style>{`
@@ -204,19 +204,19 @@ export function ViolationFormModal({
           {isEditMode && editingViolation ? (
             <div className="space-y-2 p-3 bg-red-50 rounded-md">
               <div>
-                <p className="text-xs text-muted-foreground">الرقم العسكري</p>
+                <p className="text-xs text-muted-foreground">{t("trainees.militaryId")}</p>
                 <p className="font-medium">
                   {editingViolation.trainee_id.military_id}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">السجل المدني</p>
+                <p className="text-xs text-muted-foreground">{t("trainees.civilId")}</p>
                 <p className="font-medium">
                   {editingViolation.trainee_id.civil_id}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">الاسم</p>
+                <p className="text-xs text-muted-foreground">{t("common.name")}</p>
                 <p className="font-medium">
                   {editingViolation.trainee_id.full_name}
                 </p>
@@ -225,7 +225,7 @@ export function ViolationFormModal({
           ) : (
             <>
               <div className="space-y-3">
-                <label className="text-sm font-medium block">نوع الرقم</label>
+                <label className="text-sm font-medium block">{t("violations.idType")}</label>
                 <RadioGroup
                   value={form.id_type}
                   onValueChange={(value) =>
@@ -234,33 +234,27 @@ export function ViolationFormModal({
                   <div className="flex justify-end items-center space-x-2">
                     <Label
                       htmlFor="military"
-                      className="cursor-pointer font-normal">
-                      رقم عسكري
-                    </Label>
+                      className="cursor-pointer font-normal">{t("violations.militaryNumber")}</Label>
                     <RadioGroupItem value="military" id="military" />
                   </div>
                   <div className="flex justify-end items-center space-x-2">
                     <Label
                       htmlFor="civil"
-                      className="cursor-pointer font-normal">
-                      سجل مدني
-                    </Label>
+                      className="cursor-pointer font-normal">{t("violations.civilNumber")}</Label>
                     <RadioGroupItem value="civil" id="civil" />
                   </div>
                 </RadioGroup>
               </div>
 
               <div>
-                <Label htmlFor="id_number" className="text-sm font-medium">
-                  الرقم *
-                </Label>
+                <Label htmlFor="id_number" className="text-sm font-medium">{t("violations.idRequired")}</Label>
                 <Input
                   id="id_number"
                   type="number"
                   placeholder={
                     form.id_type === "military"
-                      ? "أدخل الرقم العسكري"
-                      : "أدخل رقم السجل المدني"
+                      ? t("violations.militaryPlaceholder")
+                      : t("violations.civilPlaceholder")
                   }
                   value={form.id_number}
                   onChange={(e) => {
@@ -270,25 +264,23 @@ export function ViolationFormModal({
                       setForm({ ...form, id_number: value });
                     }
                   }}
-                  dir="rtl"
+                 
                 />
               </div>
             </>
           )}
 
           <div>
-            <Label htmlFor="description" className="text-sm font-medium">
-              وصف المخالفة *
-            </Label>
+            <Label htmlFor="description" className="text-sm font-medium">{t("violations.descRequired")}</Label>
             <Textarea
               id="description"
-              placeholder="أدخل تفاصيل المخالفة"
+              placeholder={t("violations.descPlaceholder")}
               value={form.description}
               onChange={(e) =>
                 setForm({ ...form, description: e.target.value })
               }
               className="min-h-24"
-              dir="rtl"
+             
             />
           </div>
 
@@ -296,22 +288,20 @@ export function ViolationFormModal({
             <Button
               type="button"
               variant="outline"
-              onClick={() => handleOpenChange(false)}>
-              إلغاء
-            </Button>
+              onClick={() => handleOpenChange(false)}>{t("common.cancel")}</Button>
             <Button
               type="submit"
               disabled={isLoading || isSearching}
               className="bg-red-600 hover:bg-red-700">
               {isSearching
-                ? "جاري البحث..."
+                ? t("common.searching")
                 : isLoading
                   ? isEditMode
-                    ? "جاري التحديث..."
-                    : "جاري الحفظ..."
+                    ? t("common.updating")
+                    : t("common.saving")
                   : isEditMode
-                    ? "تحديث المخالفة"
-                    : "حفظ المخالفة"}
+                    ? t("violations.update")
+                    : t("violations.save")}
             </Button>
           </div>
         </form>

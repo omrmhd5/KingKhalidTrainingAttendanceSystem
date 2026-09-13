@@ -1,3 +1,4 @@
+import i18n from "@/i18n";
 import { Button } from "@/components/ui/button";
 import { FileDown } from "lucide-react";
 import html2pdf from "html2pdf.js";
@@ -24,16 +25,16 @@ export function ExportPDF({ data }: ExportPDFProps) {
   const generatePDF = () => {
     let html = `
       <div style="direction: rtl; text-align: right; font-family: Arial, sans-serif;">
-        <h1 style="text-align: center; margin-bottom: 5px; color: #1E3A8A;">بيان طلبات الانضباط</h1>
-        <p style="text-align: center; color: #6B7280; margin-bottom: 20px;">التاريخ: ${getGregorianDateArabic(new Date())}</p>
+        <h1 style="text-align: center; margin-bottom: 5px; color: #1E3A8A;">${i18n.t("disciplinary.sheetTitle")}</h1>
+        <p style="text-align: center; color: #6B7280; margin-bottom: 20px;">${i18n.t("common.date")}: ${getGregorianDateArabic(new Date())}</p>
         <table style="width: 100%; border-collapse: collapse; margin-top: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
           <thead>
             <tr style="background-color: #3B82F6; color: white; font-weight: bold;">
-              <th style="border: 1px solid #2563EB; padding: 12px; text-align: center;">الرقم العسكري</th>
-              <th style="border: 1px solid #2563EB; padding: 12px; text-align: center;">السجل المدني</th>
-              <th style="border: 1px solid #2563EB; padding: 12px; text-align: center;">سبب الاستدعاء</th>
-              <th style="border: 1px solid #2563EB; padding: 12px; text-align: center;">الاسم</th>
-              <th style="border: 1px solid #2563EB; padding: 12px; text-align: center;">تاريخ الطلب</th>
+              <th style="border: 1px solid #2563EB; padding: 12px; text-align: center;">${i18n.t("trainees.militaryId")}</th>
+              <th style="border: 1px solid #2563EB; padding: 12px; text-align: center;">${i18n.t("trainees.civilId")}</th>
+              <th style="border: 1px solid #2563EB; padding: 12px; text-align: center;">${i18n.t("disciplinary.reasonCol")}</th>
+              <th style="border: 1px solid #2563EB; padding: 12px; text-align: center;">${i18n.t("common.name")}</th>
+              <th style="border: 1px solid #2563EB; padding: 12px; text-align: center;">${i18n.t("disciplinary.requestDate")}</th>
             </tr>
           </thead>
           <tbody>
@@ -57,14 +58,14 @@ export function ExportPDF({ data }: ExportPDFProps) {
           </tbody>
         </table>
         <div style="margin-top: 20px; text-align: center; padding: 10px; background-color: #3B82F6; color: white; border-radius: 4px; font-weight: bold;">
-          الإجمالي: ${data.length} طلب
+          ${i18n.t("disciplinary.sheetTotal", { count: data.length })}
         </div>
       </div>
     `;
 
     const options = {
       margin: 10,
-      filename: `بيان_طلبات_الانضباط_${getTodayDateKSA()}.pdf`,
+      filename: `${i18n.t("disciplinary.filename", { date: getTodayDateKSA() })}.pdf`,
       image: { type: "jpeg" as const, quality: 0.98 },
       html2canvas: { scale: 2 },
       jsPDF: { orientation: "landscape" },
@@ -79,8 +80,6 @@ export function ExportPDF({ data }: ExportPDFProps) {
       size="sm"
       variant="default"
       className="bg-blue-600 hover:bg-blue-700 text-white">
-      <FileDown className="ml-2 h-4 w-4" />
-      تحميل PDF
-    </Button>
+      <FileDown className="ml-2 h-4 w-4" />{i18n.t("common.downloadPdf")}</Button>
   );
 }

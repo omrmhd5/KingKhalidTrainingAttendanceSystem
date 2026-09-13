@@ -41,20 +41,20 @@ class UserService {
     // Validation
     if (!username || !email || !password || !confirmPassword || !role) {
       throw new Error(
-        "جميع الحقول مطلوبة: اسم المستخدم، البريد الإلكتروني، كلمة المرور، تأكيد كلمة المرور، الدور",
+        "errors.allFieldsRequired",
       );
     }
 
     if (password.length < 6) {
-      throw new Error("يجب أن تكون كلمة المرور بطول 6 أحرف على الأقل");
+      throw new Error("errors.passwordMin");
     }
 
     if (password !== confirmPassword) {
-      throw new Error("كلمات المرور غير متطابقة");
+      throw new Error("errors.passwordMismatch");
     }
 
     if (!["admin", "operator", "teacher"].includes(role)) {
-      throw new Error("دور غير صحيح. يجب أن يكون أحد: مسؤول، مشغل، معلم");
+      throw new Error("errors.invalidRole");
     }
 
     // Check if user already exists
@@ -64,10 +64,10 @@ class UserService {
 
     if (existingUser) {
       if (existingUser.email === email) {
-        throw new Error("البريد الإلكتروني مسجل بالفعل");
+        throw new Error("errors.emailTaken");
       }
       if (existingUser.username === username) {
-        throw new Error("اسم المستخدم مأخوذ بالفعل");
+        throw new Error("errors.usernameTaken");
       }
     }
 
@@ -105,7 +105,7 @@ class UserService {
     const user = await User.findById(id).select("+password");
 
     if (!user) {
-      throw new Error("المستخدم غير موجود");
+      throw new Error("errors.userNotFound");
     }
 
     // Check if trying to change last admin's role to something else
@@ -113,27 +113,27 @@ class UserService {
       const adminCount = await User.countDocuments({ role: "admin" });
       if (adminCount <= 1) {
         throw new Error(
-          "لا يمكن تغيير دور آخر مسؤول. يجب أن يكون هناك مسؤول واحد على الأقل في النظام",
+          "errors.lastAdmin",
         );
       }
     }
 
     // Validation
     if (!username || !email || !role) {
-      throw new Error("اسم المستخدم والبريد الإلكتروني والدور مطلوبة");
+      throw new Error("errors.usernameEmailRoleRequired");
     }
 
     if (!["admin", "operator", "teacher"].includes(role)) {
-      throw new Error("دور غير صحيح. يجب أن يكون أحد: مسؤول، مشغل، معلم");
+      throw new Error("errors.invalidRole");
     }
 
     // If password is provided, validate it
     if (password) {
       if (password.length < 6) {
-        throw new Error("يجب أن تكون كلمة المرور بطول 6 أحرف على الأقل");
+        throw new Error("errors.passwordMin");
       }
       if (password !== confirmPassword) {
-        throw new Error("كلمات المرور غير متطابقة");
+        throw new Error("errors.passwordMismatch");
       }
     }
 
@@ -145,10 +145,10 @@ class UserService {
 
     if (existingUser) {
       if (existingUser.email === email) {
-        throw new Error("البريد الإلكتروني مسجل بالفعل");
+        throw new Error("errors.emailTaken");
       }
       if (existingUser.username === username) {
-        throw new Error("اسم المستخدم مأخوذ بالفعل");
+        throw new Error("errors.usernameTaken");
       }
     }
 
@@ -170,7 +170,7 @@ class UserService {
     const user = await User.findById(id);
 
     if (!user) {
-      throw new Error("المستخدم غير موجود");
+      throw new Error("errors.userNotFound");
     }
 
     // If user is admin, check if there are other admins
@@ -178,7 +178,7 @@ class UserService {
       const adminCount = await User.countDocuments({ role: "admin" });
       if (adminCount <= 1) {
         throw new Error(
-          "لا يمكن حذف آخر مسؤول. يجب أن يكون هناك مسؤول واحد على الأقل في النظام",
+          "errors.lastAdmin",
         );
       }
     }
@@ -193,18 +193,18 @@ class UserService {
     const user = await User.findById(id);
 
     if (!user) {
-      throw new Error("المستخدم غير موجود");
+      throw new Error("errors.userNotFound");
     }
 
     await User.findByIdAndDelete(id);
-    return { message: "تم حذف المستخدم بنجاح" };
+    return { message: "success.userDeleted" };
   }
 
   async toggleUserStatus(id) {
     const user = await User.findById(id);
 
     if (!user) {
-      throw new Error("المستخدم غير موجود");
+      throw new Error("errors.userNotFound");
     }
 
     user.isActive = !user.isActive;
@@ -219,16 +219,16 @@ class UserService {
     }).select("+password");
 
     if (!user) {
-      throw new Error("المستخدم غير موجود");
+      throw new Error("errors.userNotFound");
     }
 
     const isPasswordValid = await user.comparePassword(password);
     if (!isPasswordValid) {
-      throw new Error("كلمة المرور غير صحيحة");
+      throw new Error("errors.invalidPassword");
     }
 
     if (!user.isActive) {
-      throw new Error("حساب المستخدم معطل");
+      throw new Error("errors.accountDisabled");
     }
 
     // Generate JWT token
@@ -248,21 +248,21 @@ class UserService {
     const user = await User.findById(id).select("+password");
 
     if (!user) {
-      throw new Error("المستخدم غير موجود");
+      throw new Error("errors.userNotFound");
     }
 
     // Verify current password
     const isMatch = await user.comparePassword(currentPassword);
     if (!isMatch) {
-      throw new Error("كلمة المرور الحالية غير صحيحة");
+      throw new Error("errors.currentPasswordWrong");
     }
 
     if (!newPassword || newPassword.length < 6) {
-      throw new Error("يجب أن تكون كلمة المرور الجديدة بطول 6 أحرف على الأقل");
+      throw new Error("errors.newPasswordMin");
     }
 
     if (newPassword !== confirmNewPassword) {
-      throw new Error("كلمات المرور الجديدة غير متطابقة");
+      throw new Error("errors.newPasswordMismatch");
     }
 
     user.password = newPassword; // Will be hashed by pre-save hook
@@ -273,7 +273,7 @@ class UserService {
     try {
       return jwt.verify(token, JWT_SECRET);
     } catch (error) {
-      throw new Error("رمز غير صحيح");
+      throw new Error("errors.invalidCode");
     }
   }
 }

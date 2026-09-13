@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -69,6 +70,7 @@ const emptyForm: TraineeForm = {
 };
 
 export default function TraineesPage() {
+  const { t } = useTranslation();
   const { role } = useAuth();
   const { toast } = useToast();
   const [search, setSearch] = useState("");
@@ -106,8 +108,8 @@ export default function TraineesPage() {
       setTrainees(data);
     } catch (error) {
       toast({
-        title: "خطأ",
-        description: "فشل تحميل المتدربين",
+        title: t("common.error"),
+        description: t("trainees.loadFailed"),
         variant: "destructive",
       });
     } finally {
@@ -138,12 +140,12 @@ export default function TraineesPage() {
           // Update existing trainee
           const updated = await traineeApi.updateTrainee(editing, formData);
           setTrainees(trainees.map((t) => (t._id === editing ? updated : t)));
-          toast({ title: "تم تحديث المتدرب" });
+          toast({ title: t("trainees.updated") });
         } else {
           // Create new trainee
           const newTrainee = await traineeApi.createTrainee(formData);
           setTrainees([...trainees, newTrainee]);
-          toast({ title: "تم إنشاء المتدرب" });
+          toast({ title: t("trainees.created") });
         }
         setDialogOpen(false);
         setEditing(null);
@@ -151,9 +153,9 @@ export default function TraineesPage() {
       } catch (error) {
         let errorMessage =
           (error as any)?.message ||
-          (editing ? "فشل تحديث المتدرب" : "فشل إنشاء المتدرب");
+          (editing ? t("trainees.updateFailed") : t("trainees.createFailed"));
         toast({
-          title: "خطأ",
+          title: t("common.error"),
           description: errorMessage,
           variant: "destructive",
         });
@@ -215,14 +217,14 @@ export default function TraineesPage() {
       try {
         await traineeApi.deleteTrainee(deleteTargetId);
         setTrainees(trainees.filter((t) => t._id !== deleteTargetId));
-        toast({ title: "تم حذف المتدرب" });
+        toast({ title: t("trainees.deleted") });
         setDeleteOpen(false);
         setDeleteTargetId(null);
         setDeleteTargetName("");
       } catch (error) {
-        const errorMessage = (error as Error)?.message || "فشل حذف المتدرب";
+        const errorMessage = (error as Error)?.message || t("trainees.deleteFailed");
         toast({
-          title: "خطأ",
+          title: t("common.error"),
           description: errorMessage,
           variant: "destructive",
         });
@@ -265,14 +267,14 @@ export default function TraineesPage() {
       setSelectedTrainees(new Set());
       setBulkDeleteOpen(false);
       toast({
-        title: "تم الحذف",
-        description: `تم حذف ${selectedArray.length} متدرب`,
+        title: t("common.deleted"),
+        description: t("trainees.deletedMany", { count: selectedArray.length }),
       });
     } catch (error) {
       const errorMessage =
-        (error as Error)?.message || "فشل حذف المتدربين المحددين";
+        (error as Error)?.message || t("trainees.deleteManyFailed");
       toast({
-        title: "خطأ",
+        title: t("common.error"),
         description: errorMessage,
         variant: "destructive",
       });
@@ -283,18 +285,16 @@ export default function TraineesPage() {
     <div className="space-y-6 animate-slide-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">المتدربون</h1>
-          <div
-            className="mt-3 space-y-1 text-sm text-muted-foreground"
-            dir="rtl">
-            <p>إجمالي: {trainees.length} متدرب</p>
+          <h1 className="text-2xl font-bold">{t("trainees.title")}</h1>
+          <div className="mt-3 space-y-1 text-sm text-muted-foreground">
+            <p>{t("trainees.totalCount", { count: trainees.length })}</p>
             {shifts.map((shift: Shift) => {
               const count = trainees.filter(
-                (t: Trainee) => (t.shift_id as Shift)?._id === shift._id,
+                (trainee: Trainee) => (trainee.shift_id as Shift)?._id === shift._id,
               ).length;
               return (
-                <p key={shift._id} dir="ltr">
-                  {count} :{shift.name} شفت
+                <p key={shift._id}>
+                  {t("trainees.shiftCount", { name: shift.name, count })}
                 </p>
               );
             })}
@@ -310,7 +310,7 @@ export default function TraineesPage() {
                     onClick={handleBulkDelete}
                     size="sm">
                     <Trash2 className="ml-2 h-4 w-4" />
-                    حذف ({selectedTrainees.size})
+                    {t("common.deleteSelected", { count: selectedTrainees.size })}
                   </Button>
                 )}
                 <Button
@@ -318,7 +318,7 @@ export default function TraineesPage() {
                   onClick={() => setBulkImportOpen(true)}
                   size="sm">
                   <Upload className="ml-2 h-4 w-4" />
-                  استيراد Excel
+                  {t("trainees.importExcel")}
                 </Button>
                 <TraineeFormModal
                   open={dialogOpen}
@@ -341,14 +341,14 @@ export default function TraineesPage() {
                 onOpenChange={setDeleteOpen}
                 onConfirm={confirmDelete}
                 itemName={deleteTargetName}
-                itemType="المتدرب"
+                itemType={t("trainees.item")}
               />
               <ConfirmDeleteModal
                 open={bulkDeleteOpen}
                 onOpenChange={setBulkDeleteOpen}
                 onConfirm={confirmBulkDelete}
-                itemName={`${selectedTrainees.size} متدربي`}
-                itemType="المتدربين"
+                itemName={String(selectedTrainees.size)}
+                itemType={t("trainees.itemPlural")}
               />
               <TraineeBulkImportModal
                 open={bulkImportOpen}
@@ -402,29 +402,29 @@ export default function TraineesPage() {
                     </TableHead>
                   )}
                   <TableHead className="text-center py-3 px-4 text-white font-bold border-r border-gray-400">
-                    الرقم العسكري
+                    {t("trainees.militaryId")}
                   </TableHead>
                   <TableHead className="text-center py-3 px-4 text-white font-bold border-r border-gray-400">
-                    السجل المدني
+                    {t("trainees.civilId")}
                   </TableHead>
                   <TableHead className="text-center py-3 px-4 text-white font-bold border-r border-gray-400">
-                    الاسم
+                    {t("common.name")}
                   </TableHead>
                   <TableHead className="text-center py-3 px-4 text-white font-bold border-r border-gray-400">
-                    الرتبة
+                    {t("trainees.rank")}
                   </TableHead>
                   <TableHead className="text-center py-3 px-4 text-white font-bold border-r border-gray-400">
-                    التخصص
+                    {t("trainees.specialty")}
                   </TableHead>
                   <TableHead className="text-center py-3 px-4 text-white font-bold border-r border-gray-400">
-                    الشفت
+                    {t("trainees.shift")}
                   </TableHead>
                   <TableHead className="text-center py-3 px-4 text-white font-bold border-r border-gray-400">
-                    الباركود
+                    {t("common.barcode")}
                   </TableHead>
                   {canWrite && (
                     <TableHead className="text-center py-3 px-4 text-white font-bold">
-                      الإجراءات
+                      {t("common.actions")}
                     </TableHead>
                   )}
                 </TableRow>
@@ -435,7 +435,7 @@ export default function TraineesPage() {
                     <TableCell
                       colSpan={canWrite ? 9 : 8}
                       className="text-center py-8 px-4 text-muted-foreground border border-gray-300">
-                      جاري التحميل...
+                      {t("common.loading")}
                     </TableCell>
                   </TableRow>
                 ) : filtered?.length === 0 ? (
@@ -443,7 +443,7 @@ export default function TraineesPage() {
                     <TableCell
                       colSpan={canWrite ? 9 : 8}
                       className="text-center py-8 px-4 text-muted-foreground border border-gray-300">
-                      لم يتم العثور على متدربين
+                      {t("trainees.notFound")}
                     </TableCell>
                   </TableRow>
                 ) : (

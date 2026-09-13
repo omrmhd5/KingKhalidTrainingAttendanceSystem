@@ -23,46 +23,46 @@ class TraineeService {
 
   async createTrainee(data) {
     if (!data.civil_id || !data.civil_id.trim()) {
-      throw new Error("Civil ID is required");
+      throw new Error("errors.civilRequired");
     }
     if (!/^\d+$/.test(data.civil_id.trim())) {
-      throw new Error("Civil ID must contain only numbers");
+      throw new Error("errors.civilDigits");
     }
     if (!data.military_id || !data.military_id.trim()) {
-      throw new Error("Military ID is required");
+      throw new Error("errors.militaryRequired");
     }
     if (!/^\d+$/.test(data.military_id.trim())) {
-      throw new Error("Military ID must contain only numbers");
+      throw new Error("errors.militaryDigits");
     }
     if (!data.full_name || !data.full_name.trim()) {
-      throw new Error("Full name is required");
+      throw new Error("errors.nameRequired");
     }
     if (!data.rank_id) {
-      throw new Error("Rank is required");
+      throw new Error("errors.rankIdRequired");
     }
     if (!data.specialty_id) {
-      throw new Error("Specialty is required");
+      throw new Error("errors.specIdRequired");
     }
     if (!data.shift_id) {
-      throw new Error("Shift is required");
+      throw new Error("errors.shiftIdRequired");
     }
 
     // Verify shift exists
     const shift = await Shift.findById(data.shift_id);
     if (!shift) {
-      throw new Error("Shift not found");
+      throw new Error("errors.shiftNotFound");
     }
 
     // Verify rank exists
     const rank = await Rank.findById(data.rank_id);
     if (!rank) {
-      throw new Error("Rank not found");
+      throw new Error("errors.rankNotFound");
     }
 
     // Verify specialization exists
     const specialization = await Specialization.findById(data.specialty_id);
     if (!specialization) {
-      throw new Error("Specialization not found");
+      throw new Error("errors.specNotFound");
     }
 
     const trainee = new Trainee({
@@ -80,13 +80,13 @@ class TraineeService {
       if (error.code === 11000) {
         const field = Object.keys(error.keyPattern)[0];
         if (field === "military_id") {
-          throw new Error(
-            `المتدرب برقم عسكري ${data.military_id} مسجل بالفعل في النظام`,
-          );
+          const err = new Error("errors.militaryTaken");
+          err.vars = { id: data.military_id };
+          throw err;
         } else if (field === "civil_id") {
-          throw new Error(
-            `المتدرب برقم مدني ${data.civil_id} مسجل بالفعل في النظام`,
-          );
+          const err = new Error("errors.civilTaken");
+          err.vars = { id: data.civil_id };
+          throw err;
         }
       }
       throw error;
@@ -113,45 +113,45 @@ class TraineeService {
 
   async updateTrainee(id, data) {
     if (data.civil_id && !data.civil_id.trim()) {
-      throw new Error("Civil ID cannot be empty");
+      throw new Error("errors.civilEmpty");
     }
     if (data.civil_id && !/^\d+$/.test(data.civil_id.trim())) {
-      throw new Error("Civil ID must contain only numbers");
+      throw new Error("errors.civilDigits");
     }
     if (data.military_id && !data.military_id.trim()) {
-      throw new Error("Military ID cannot be empty");
+      throw new Error("errors.militaryEmpty");
     }
     if (data.military_id && !/^\d+$/.test(data.military_id.trim())) {
-      throw new Error("Military ID must contain only numbers");
+      throw new Error("errors.militaryDigits");
     }
     if (data.full_name && !data.full_name.trim()) {
-      throw new Error("Full name cannot be empty");
+      throw new Error("errors.nameEmpty");
     }
 
     // Get current trainee to check if shift is changing
     const currentTrainee = await Trainee.findById(id);
     if (!currentTrainee) {
-      throw new Error("Trainee not found");
+      throw new Error("errors.traineeNotFound");
     }
 
     if (data.rank_id) {
       const rank = await Rank.findById(data.rank_id);
       if (!rank) {
-        throw new Error("Rank not found");
+        throw new Error("errors.rankNotFound");
       }
     }
 
     if (data.specialty_id) {
       const specialization = await Specialization.findById(data.specialty_id);
       if (!specialization) {
-        throw new Error("Specialization not found");
+        throw new Error("errors.specNotFound");
       }
     }
 
     if (data.shift_id) {
       const shift = await Shift.findById(data.shift_id);
       if (!shift) {
-        throw new Error("Shift not found");
+        throw new Error("errors.shiftNotFound");
       }
 
       // If shift is changing, update both shifts
@@ -184,13 +184,13 @@ class TraineeService {
       if (error.code === 11000) {
         const field = Object.keys(error.keyPattern)[0];
         if (field === "military_id") {
-          throw new Error(
-            `الرقم العسكري ${data.military_id} مستخدم بالفعل من قبل متدرب آخر`,
-          );
+          const err = new Error("errors.militaryTaken");
+          err.vars = { id: data.military_id };
+          throw err;
         } else if (field === "civil_id") {
-          throw new Error(
-            `السجل المدني ${data.civil_id} مستخدم بالفعل من قبل متدرب آخر`,
-          );
+          const err = new Error("errors.civilTaken");
+          err.vars = { id: data.civil_id };
+          throw err;
         }
       }
       throw error;
@@ -200,7 +200,7 @@ class TraineeService {
   async deleteTrainee(id) {
     const trainee = await Trainee.findByIdAndDelete(id);
     if (!trainee) {
-      throw new Error("Trainee not found");
+      throw new Error("errors.traineeNotFound");
     }
 
     // Remove trainee from shift's trainees array
@@ -233,15 +233,15 @@ class TraineeService {
 
   async bulkUpdateShift(ids, shiftId) {
     if (!Array.isArray(ids) || ids.length === 0) {
-      throw new Error("IDs array is required");
+      throw new Error("errors.idsRequired");
     }
     if (!shiftId) {
-      throw new Error("Shift ID is required");
+      throw new Error("errors.shiftIdRequired");
     }
 
     const shift = await Shift.findById(shiftId);
     if (!shift) {
-      throw new Error("Shift not found");
+      throw new Error("errors.shiftNotFound");
     }
 
     // Get trainees to find their old shifts
@@ -280,7 +280,7 @@ class TraineeService {
 
   async bulkImportTrainees(traineesData) {
     if (!Array.isArray(traineesData) || traineesData.length === 0) {
-      throw new Error("Trainees data array is required");
+      throw new Error("errors.traineesArrayRequired");
     }
 
     const results = {
@@ -297,35 +297,35 @@ class TraineeService {
       try {
         // Validate required fields
         if (!data.military_id || !data.military_id.trim()) {
-          throw new Error("Military ID is required");
+          throw new Error("errors.militaryRequired");
         }
         if (!data.full_name || !data.full_name.trim()) {
-          throw new Error("Full name is required");
+          throw new Error("errors.nameRequired");
         }
         if (!data.rank_id) {
-          throw new Error("Rank is required");
+          throw new Error("errors.rankIdRequired");
         }
         if (!data.specialty_id) {
-          throw new Error("Specialty is required");
+          throw new Error("errors.specIdRequired");
         }
         if (!data.shift_id) {
-          throw new Error("Shift is required");
+          throw new Error("errors.shiftIdRequired");
         }
 
         // Validate that rank, specialty, shift actually exist
         const rank = await Rank.findById(data.rank_id);
         if (!rank) {
-          throw new Error(`Rank with ID ${data.rank_id} not found`);
+          throw new Error("errors.rankNotFound");
         }
 
         const specialty = await Specialization.findById(data.specialty_id);
         if (!specialty) {
-          throw new Error(`Specialty with ID ${data.specialty_id} not found`);
+          throw new Error("errors.specNotFound");
         }
 
         const shift = await Shift.findById(data.shift_id);
         if (!shift) {
-          throw new Error(`Shift with ID ${data.shift_id} not found`);
+          throw new Error("errors.shiftNotFound");
         }
 
         // Check if military ID already exists
@@ -333,9 +333,9 @@ class TraineeService {
           military_id: data.military_id.trim(),
         });
         if (existing) {
-          throw new Error(
-            `المتدرب برقم عسكري ${data.military_id.trim()} مسجل بالفعل`,
-          );
+          const err = new Error("errors.militaryTaken");
+          err.vars = { id: data.military_id.trim() };
+          throw err;
         }
 
         // Check if civil ID already exists (if provided)
@@ -344,9 +344,9 @@ class TraineeService {
             civil_id: data.civil_id.trim(),
           });
           if (civilIdExists) {
-            throw new Error(
-              `المتدرب برقم مدني ${data.civil_id.trim()} مسجل بالفعل`,
-            );
+            const err = new Error("errors.civilTaken");
+            err.vars = { id: data.civil_id.trim() };
+            throw err;
           }
         }
 
@@ -379,6 +379,7 @@ class TraineeService {
           row: rowNumber,
           militaryId: data.military_id,
           error: error.message,
+          vars: error.vars,
         });
       }
     }

@@ -15,7 +15,7 @@ class ClassTimeScheduleService {
     );
 
     if (!schedule) {
-      throw new Error("الجدول الزمني غير موجود");
+      throw new Error("errors.scheduleNotFound");
     }
 
     return schedule;
@@ -26,15 +26,15 @@ class ClassTimeScheduleService {
 
     // Validation
     if (!name || !name.trim()) {
-      throw new Error("اسم الجدول مطلوب");
+      throw new Error("errors.scheduleNameRequired");
     }
 
     if (!start_time) {
-      throw new Error("وقت البداية مطلوب");
+      throw new Error("errors.scheduleStartRequired");
     }
 
     if (!end_time) {
-      throw new Error("وقت النهاية مطلوب");
+      throw new Error("errors.scheduleEndRequired");
     }
 
     // Check if schedule name already exists
@@ -42,7 +42,7 @@ class ClassTimeScheduleService {
       name: name.trim(),
     });
     if (existingSchedule) {
-      throw new Error("هذا الجدول الزمني موجود بالفعل");
+      throw new Error("errors.scheduleExists");
     }
 
     // Create schedule
@@ -62,13 +62,13 @@ class ClassTimeScheduleService {
     const schedule = await ClassTimeSchedule.findById(id);
 
     if (!schedule) {
-      throw new Error("الجدول الزمني غير موجود");
+      throw new Error("errors.scheduleNotFound");
     }
 
     // Validation
     if (name) {
       if (!name.trim()) {
-        throw new Error("اسم الجدول مطلوب");
+        throw new Error("errors.scheduleNameRequired");
       }
 
       // Check if new name already exists (excluding current schedule)
@@ -77,7 +77,7 @@ class ClassTimeScheduleService {
         name: name.trim(),
       });
       if (existingSchedule) {
-        throw new Error("هذا الجدول الزمني موجود بالفعل");
+        throw new Error("errors.scheduleExists");
       }
 
       schedule.name = name.trim();
@@ -99,35 +99,35 @@ class ClassTimeScheduleService {
     const schedule = await ClassTimeSchedule.findById(id);
 
     if (!schedule) {
-      throw new Error("الجدول الزمني غير موجود");
+      throw new Error("errors.scheduleNotFound");
     }
 
     // Check if schedule has classes assigned
     if (schedule.classes && schedule.classes.length > 0) {
-      throw new Error(
-        `لا يمكن حذف الجدول الزمني لأنه يحتوي على ${schedule.classes.length} فصل/فصول. الرجاء إزالة جميع الفصول أولاً.`,
-      );
+      const err = new Error("errors.scheduleHasClasses");
+      err.vars = { count: schedule.classes.length };
+      throw err;
     }
 
     await ClassTimeSchedule.findByIdAndDelete(id);
-    return { message: "تم حذف الجدول الزمني بنجاح" };
+    return { message: "success.scheduleDeleted" };
   }
 
   async assignClassesToSchedule(scheduleId, classIds) {
     const schedule = await ClassTimeSchedule.findById(scheduleId);
 
     if (!schedule) {
-      throw new Error("الجدول الزمني غير موجود");
+      throw new Error("errors.scheduleNotFound");
     }
 
     if (!Array.isArray(classIds) || classIds.length === 0) {
-      throw new Error("يجب توفير قائمة بالفصول");
+      throw new Error("errors.classesRequired");
     }
 
     // Verify all classes exist
     const classes = await Class.find({ _id: { $in: classIds } });
     if (classes.length !== classIds.length) {
-      throw new Error("بعض الفصول غير موجودة");
+      throw new Error("errors.someClassesMissing");
     }
 
     // Add new classes, avoiding duplicates
@@ -145,7 +145,7 @@ class ClassTimeScheduleService {
     const schedule = await ClassTimeSchedule.findById(scheduleId);
 
     if (!schedule) {
-      throw new Error("الجدول الزمني غير موجود");
+      throw new Error("errors.scheduleNotFound");
     }
 
     schedule.classes = schedule.classes.filter(

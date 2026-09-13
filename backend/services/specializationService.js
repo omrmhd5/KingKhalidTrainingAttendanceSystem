@@ -11,7 +11,7 @@ class SpecializationService {
 
   async createSpecialization(data) {
     if (!data.name || !data.name.trim()) {
-      throw new Error("Specialization name is required");
+      throw new Error("errors.specRequired");
     }
     const specialization = new Specialization({
       name: data.name,
@@ -21,7 +21,7 @@ class SpecializationService {
 
   async updateSpecialization(id, data) {
     if (!data.name || !data.name.trim()) {
-      throw new Error("Specialization name is required");
+      throw new Error("errors.specRequired");
     }
     return await Specialization.findByIdAndUpdate(
       id,
@@ -33,7 +33,7 @@ class SpecializationService {
   async deleteSpecialization(id) {
     const specialization = await Specialization.findByIdAndDelete(id);
     if (!specialization) {
-      throw new Error("Specialization not found");
+      throw new Error("errors.specNotFound");
     }
     return specialization;
   }

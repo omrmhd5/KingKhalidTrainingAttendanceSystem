@@ -7,6 +7,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Search } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface TraineeSearchFiltersProps {
   search: string;
@@ -35,12 +36,13 @@ export function TraineeSearchFilters({
   specializations,
   shifts,
 }: TraineeSearchFiltersProps) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-4">
       <div className="relative">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder="ابحث حسب: الرقم العسكري أو السجل المدني أو الاسم"
+          placeholder={t("trainees.searchPlaceholder")}
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           className="pl-9"
@@ -48,11 +50,11 @@ export function TraineeSearchFilters({
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <Select value={filterRank} onValueChange={onRankChange}>
-          <SelectTrigger dir="rtl">
-            <SelectValue placeholder="جميع الرتب" />
+          <SelectTrigger>
+            <SelectValue placeholder={t("trainees.allRanks")} />
           </SelectTrigger>
-          <SelectContent dir="rtl">
-            <SelectItem value="all">جميع الرتب</SelectItem>
+          <SelectContent>
+            <SelectItem value="all">{t("trainees.allRanks")}</SelectItem>
             {ranks?.map((rank) => (
               <SelectItem key={rank._id} value={rank._id}>
                 {rank.name}
@@ -62,11 +64,11 @@ export function TraineeSearchFilters({
         </Select>
 
         <Select value={filterSpecialty} onValueChange={onSpecialtyChange}>
-          <SelectTrigger dir="rtl">
-            <SelectValue placeholder="جميع التخصصات" />
+          <SelectTrigger>
+            <SelectValue placeholder={t("trainees.allSpecialties")} />
           </SelectTrigger>
-          <SelectContent dir="rtl">
-            <SelectItem value="all">جميع التخصصات</SelectItem>
+          <SelectContent>
+            <SelectItem value="all">{t("trainees.allSpecialties")}</SelectItem>
             {specializations?.map((spec) => (
               <SelectItem key={spec._id} value={spec._id}>
                 {spec.name}
@@ -76,11 +78,11 @@ export function TraineeSearchFilters({
         </Select>
 
         <Select value={filterShift} onValueChange={onShiftChange}>
-          <SelectTrigger dir="rtl">
-            <SelectValue placeholder="جميع الشفتات" />
+          <SelectTrigger>
+            <SelectValue placeholder={t("trainees.allShifts")} />
           </SelectTrigger>
-          <SelectContent dir="rtl">
-            <SelectItem value="all">جميع الشفتات</SelectItem>
+          <SelectContent>
+            <SelectItem value="all">{t("trainees.allShifts")}</SelectItem>
             {shifts?.map((shift) => (
               <SelectItem key={shift._id} value={shift._id}>
                 {shift.name}

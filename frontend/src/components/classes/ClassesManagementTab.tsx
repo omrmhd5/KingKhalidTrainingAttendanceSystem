@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -43,6 +44,7 @@ interface ClassesManagementTabProps {
 export function ClassesManagementTab({
   canWrite = true,
 }: ClassesManagementTabProps) {
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const [classes, setClasses] = useState<Class[]>([]);
   const [schedules, setSchedules] = useState<ClassTimeSchedule[]>([]);
@@ -73,8 +75,8 @@ export function ClassesManagementTab({
       setClasses(data);
     } catch (error: unknown) {
       toast({
-        title: "خطأ",
-        description: "فشل في تحميل الفصول",
+        title: t("common.error"),
+        description: t("classes.loadFailed"),
         variant: "destructive",
       });
     } finally {
@@ -117,8 +119,8 @@ export function ClassesManagementTab({
   const handleAddClass = async () => {
     if (!formData.name.trim()) {
       toast({
-        title: "خطأ",
-        description: "الرجاء إدخال اسم الفصل",
+        title: t("common.error"),
+        description: t("classes.needName"),
         variant: "destructive",
       });
       return;
@@ -126,8 +128,8 @@ export function ClassesManagementTab({
 
     if (!formData.scheduleId) {
       toast({
-        title: "خطأ",
-        description: "الرجاء اختيار جدول زمني",
+        title: t("common.error"),
+        description: t("classes.needSchedule"),
         variant: "destructive",
       });
       return;
@@ -142,14 +144,14 @@ export function ClassesManagementTab({
       setClasses([...classes, response.class]);
       setIsAddOpen(false);
       toast({
-        title: "نجاح",
-        description: "تم إضافة الفصل بنجاح",
+        title: t("common.success"),
+        description: t("classes.added"),
       });
     } catch (error: unknown) {
       const errorMessage =
-        (error as any)?.response?.data?.message || "فشل في إضافة الفصل";
+        (error as any)?.response?.data?.message || t("classes.addFailed");
       toast({
-        title: "خطأ",
+        title: t("common.error"),
         description: errorMessage,
         variant: "destructive",
       });
@@ -161,8 +163,8 @@ export function ClassesManagementTab({
   const handleUpdateClass = async () => {
     if (!formData.name.trim()) {
       toast({
-        title: "خطأ",
-        description: "الرجاء إدخال اسم الفصل",
+        title: t("common.error"),
+        description: t("classes.needName"),
         variant: "destructive",
       });
       return;
@@ -170,8 +172,8 @@ export function ClassesManagementTab({
 
     if (!formData.scheduleId) {
       toast({
-        title: "خطأ",
-        description: "الرجاء اختيار جدول زمني",
+        title: t("common.error"),
+        description: t("classes.needSchedule"),
         variant: "destructive",
       });
       return;
@@ -188,14 +190,14 @@ export function ClassesManagementTab({
       );
       setIsEditOpen(false);
       toast({
-        title: "نجاح",
-        description: "تم تحديث الفصل بنجاح",
+        title: t("common.success"),
+        description: t("classes.updated"),
       });
     } catch (error: unknown) {
       const errorMessage =
-        (error as any)?.response?.data?.message || "فشل في تحديث الفصل";
+        (error as any)?.response?.data?.message || t("classes.updateFailed");
       toast({
-        title: "خطأ",
+        title: t("common.error"),
         description: errorMessage,
         variant: "destructive",
       });
@@ -213,14 +215,14 @@ export function ClassesManagementTab({
       setClasses(classes.filter((c) => c._id !== selectedClass._id));
       setIsDeleteOpen(false);
       toast({
-        title: "نجاح",
-        description: "تم حذف الفصل بنجاح",
+        title: t("common.success"),
+        description: t("classes.deleted"),
       });
     } catch (error: unknown) {
       const errorMessage =
-        (error as any)?.response?.data?.message || "فشل في حذف الفصل";
+        (error as any)?.response?.data?.message || t("classes.deleteFailed");
       toast({
-        title: "خطأ",
+        title: t("common.error"),
         description: errorMessage,
         variant: "destructive",
       });
@@ -233,13 +235,11 @@ export function ClassesManagementTab({
     <>
       <div className="flex justify-between items-center mb-4">
         <div>
-          <h3 className="text-lg font-semibold">الفصول ({classes.length})</h3>
+          <h3 className="text-lg font-semibold">{t("classes.classesCount", { count: classes.length })}</h3>
         </div>
         {canWrite && (
           <Button size="sm" onClick={handleOpenAdd} disabled={loading}>
-            <Plus className="ml-2 h-4 w-4" />
-            إضافة فصل
-          </Button>
+            <Plus className="ml-2 h-4 w-4" />{t("classes.addClass")}</Button>
         )}
       </div>
 
@@ -250,25 +250,17 @@ export function ClassesManagementTab({
       ) : (
         <div className="overflow-x-auto">
           <div className="border border-gray-300 rounded-lg overflow-hidden">
-            <Table dir="rtl" className="border-collapse">
+            <Table className="border-collapse">
               <TableHeader className="bg-indigo-600">
                 <TableRow>
                   <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                    الاسم
+                    {t("common.name")}
                   </TableHead>
-                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                    المعلم
-                  </TableHead>
-                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                    الجدول
-                  </TableHead>
-                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                    عدد الطلاب
-                  </TableHead>
+                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("common.teacher")}</TableHead>
+                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("classes.schedule")}</TableHead>
+                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("teacher.totalStudents")}</TableHead>
                   {canWrite && (
-                    <TableHead className="text-center text-white font-bold py-3 px-4">
-                      الإجراءات
-                    </TableHead>
+                    <TableHead className="text-center text-white font-bold py-3 px-4">{t("common.actions")}</TableHead>
                   )}
                 </TableRow>
               </TableHeader>
@@ -277,9 +269,7 @@ export function ClassesManagementTab({
                   <TableRow className="hover:bg-blue-50">
                     <TableCell
                       colSpan={5}
-                      className="text-center py-8 px-4 text-muted-foreground border border-gray-300">
-                      لا توجد فصول
-                    </TableCell>
+                      className="text-center py-8 px-4 text-muted-foreground border border-gray-300">{t("classes.empty")}</TableCell>
                   </TableRow>
                 ) : (
                   classes
@@ -354,7 +344,7 @@ export function ClassesManagementTab({
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                title="إضافة طلاب"
+                                title={t("classes.addStudents")}
                                 onClick={() => {
                                   setSelectedClass(classItem);
                                   setShowAssignModal(true);
@@ -389,41 +379,37 @@ export function ClassesManagementTab({
       {canWrite && (
         <>
           <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-            <DialogContent dir="rtl" className="max-w-md">
+            <DialogContent dir={i18n.dir()} className="max-w-md">
               <DialogHeader>
-                <DialogTitle className="text-right">إضافة فصل جديد</DialogTitle>
+                <DialogTitle className="text-right">{t("classes.addClassTitle")}</DialogTitle>
               </DialogHeader>
 
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="class-name" className="text-right block mb-2">
-                    اسم الفصل
-                  </Label>
+                  <Label htmlFor="class-name" className="text-right block mb-2">{t("classes.className")}</Label>
                   <Input
                     id="class-name"
-                    placeholder="مثال: الفصل الأول"
+                    placeholder={t("classes.periodPlaceholder")}
                     value={formData.name}
                     onChange={(e) =>
                       setFormData({ ...formData, name: e.target.value })
                     }
-                    dir="rtl"
+                   
                   />
                 </div>
                 <div>
                   <Label
                     htmlFor="add-schedule"
-                    className="text-right block mb-2">
-                    الجدول الزمني
-                  </Label>
+                    className="text-right block mb-2">{t("classes.timeSchedule")}</Label>
                   <Select
                     value={formData.scheduleId}
                     onValueChange={(value) =>
                       setFormData({ ...formData, scheduleId: value })
                     }>
-                    <SelectTrigger id="add-schedule" dir="rtl">
-                      <SelectValue placeholder="اختر جدول" />
+                    <SelectTrigger id="add-schedule">
+                      <SelectValue placeholder={t("classes.selectScheduleShort")} />
                     </SelectTrigger>
-                    <SelectContent dir="rtl">
+                    <SelectContent>
                       {[...schedules]
                         .sort((a, b) =>
                           a.start_time.localeCompare(b.start_time),
@@ -442,17 +428,13 @@ export function ClassesManagementTab({
                 <Button
                   variant="outline"
                   onClick={() => setIsAddOpen(false)}
-                  disabled={submitting}>
-                  إلغاء
-                </Button>
+                  disabled={submitting}>{t("common.cancel")}</Button>
                 <Button onClick={handleAddClass} disabled={submitting}>
                   {submitting ? (
                     <>
-                      <Loader2 className="ml-2 h-4 w-4 animate-spin" />
-                      جاري الإضافة...
-                    </>
+                      <Loader2 className="ml-2 h-4 w-4 animate-spin" />{t("common.adding")}</>
                   ) : (
-                    "إضافة"
+                    t("common.add")
                   )}
                 </Button>
               </DialogFooter>
@@ -461,43 +443,39 @@ export function ClassesManagementTab({
 
           {/* Edit Class Modal */}
           <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-            <DialogContent dir="rtl" className="max-w-md">
+            <DialogContent dir={i18n.dir()} className="max-w-md">
               <DialogHeader>
-                <DialogTitle className="text-right">تعديل الفصل</DialogTitle>
+                <DialogTitle className="text-right">{t("classes.editClass")}</DialogTitle>
               </DialogHeader>
 
               <div className="space-y-4">
                 <div>
                   <Label
                     htmlFor="edit-class-name"
-                    className="text-right block mb-2">
-                    اسم الفصل
-                  </Label>
+                    className="text-right block mb-2">{t("classes.className")}</Label>
                   <Input
                     id="edit-class-name"
-                    placeholder="مثال: الفصل الأول"
+                    placeholder={t("classes.periodPlaceholder")}
                     value={formData.name}
                     onChange={(e) =>
                       setFormData({ ...formData, name: e.target.value })
                     }
-                    dir="rtl"
+                   
                   />
                 </div>
                 <div>
                   <Label
                     htmlFor="edit-schedule"
-                    className="text-right block mb-2">
-                    الجدول الزمني
-                  </Label>
+                    className="text-right block mb-2">{t("classes.timeSchedule")}</Label>
                   <Select
                     value={formData.scheduleId}
                     onValueChange={(value) =>
                       setFormData({ ...formData, scheduleId: value })
                     }>
-                    <SelectTrigger id="edit-schedule" dir="rtl">
-                      <SelectValue placeholder="اختر جدول" />
+                    <SelectTrigger id="edit-schedule">
+                      <SelectValue placeholder={t("classes.selectScheduleShort")} />
                     </SelectTrigger>
-                    <SelectContent dir="rtl">
+                    <SelectContent>
                       {[...schedules]
                         .sort((a, b) =>
                           a.start_time.localeCompare(b.start_time),
@@ -516,17 +494,13 @@ export function ClassesManagementTab({
                 <Button
                   variant="outline"
                   onClick={() => setIsEditOpen(false)}
-                  disabled={submitting}>
-                  إلغاء
-                </Button>
+                  disabled={submitting}>{t("common.cancel")}</Button>
                 <Button onClick={handleUpdateClass} disabled={submitting}>
                   {submitting ? (
                     <>
-                      <Loader2 className="ml-2 h-4 w-4 animate-spin" />
-                      جاري التحديث...
-                    </>
+                      <Loader2 className="ml-2 h-4 w-4 animate-spin" />{t("common.updating")}</>
                   ) : (
-                    "تحديث"
+                    t("common.update")
                   )}
                 </Button>
               </DialogFooter>
@@ -539,7 +513,7 @@ export function ClassesManagementTab({
             onOpenChange={setIsDeleteOpen}
             onConfirm={handleDeleteClass}
             itemName={deleteTargetName}
-            itemType="الفصل"
+            itemType={t("common.class")}
           />
         </>
       )}

@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import EntriesTable, { type EntryRecord } from "@/components/main/EntriesTable";
 import ExitsTable, { type ExitRecord } from "@/components/main/ExitsTable";
 import MainStatsBar from "@/components/main/MainStatsBar";
@@ -64,6 +65,7 @@ const getShiftColor = (
 };
 
 export default function MainPage() {
+  const { t } = useTranslation();
   const todayKSA = getTodayDateKSA();
   const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState<string>(todayKSA);
@@ -280,7 +282,7 @@ export default function MainPage() {
         } else {
           // User selected entry mode - record entry
           if (!activeShiftId) {
-            throw new Error("لا يوجد شفت نشط حالياً");
+            throw new Error(t("main.noActiveShiftNow"));
           }
           await attendanceApi.recordEntry(
             barcode.trim(),
@@ -381,14 +383,14 @@ export default function MainPage() {
       // Refetch attendance data to sync with backend
       await fetchAttendanceData();
       toast({
-        title: "تم المسح",
-        description: `تم مسح بيانات الخروج لـ ${selectedArray.length} سجل`,
+        title: t("main.scanned"),
+        description: t("main.clearedExits", { count: selectedArray.length }),
       });
     } catch (error) {
       const errorMessage =
-        (error as any)?.message || "فشل مسح بيانات الخروج المحددة";
+        (error as any)?.message || t("main.clearExitsFailed");
       toast({
-        title: "خطأ",
+        title: t("common.error"),
         description: errorMessage,
         variant: "destructive",
       });
@@ -404,13 +406,13 @@ export default function MainPage() {
       setSelectedEntries(new Set());
       setDeleteOpen(false);
       toast({
-        title: "تم الحذف",
-        description: `تم حذف ${selectedArray.length} سجل دخول`,
+        title: t("common.deleted"),
+        description: t("main.deletedEntries", { count: selectedArray.length }),
       });
     } catch (error) {
-      const errorMessage = (error as any)?.message || "فشل حذف السجلات المحددة";
+      const errorMessage = (error as any)?.message || t("main.deleteRecordsFailed");
       toast({
-        title: "خطأ",
+        title: t("common.error"),
         description: errorMessage,
         variant: "destructive",
       });
@@ -425,10 +427,10 @@ export default function MainPage() {
       {/* Header */}
       <div className="text-center space-y-1">
         <div className="mx-auto flex items-center justify-center">
-          <img src="/Logo.png" alt="Logo" className="h-48 w-56" />
+          <img src="/Logo.png" alt={t("brand.logoAlt")} className="h-48 w-56" />
         </div>
         <h1 className="text-xl font-bold text-foreground">
-          نظام إدارة الحضور و الانصراف و الفصول الدراسية
+          {t("brand.tagline")}
         </h1>
       </div>
 
@@ -444,7 +446,7 @@ export default function MainPage() {
               <Badge
                 variant="outline"
                 className={`${colors.bg} ${colors.text} border ${colors.border}`}>
-                الشفت الحالي: {selectedShift.name}
+                {t("main.currentShift", { name: selectedShift.name })}
               </Badge>
             </div>
           );
@@ -454,7 +456,7 @@ export default function MainPage() {
           <Badge
             variant="outline"
             className="bg-gray-50 text-gray-700 border-gray-200">
-            لا يوجد شفت نشط
+            {t("main.noActiveShift")}
           </Badge>
         </div>
       )}
@@ -486,7 +488,7 @@ export default function MainPage() {
           size="sm"
           className="w-fit">
           <Trash2 className="ml-2 h-4 w-4" />
-          حذف ({selectedEntries.size})
+          {t("common.deleteSelected", { count: selectedEntries.size })}
         </Button>
       )}
 
@@ -520,16 +522,16 @@ export default function MainPage() {
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
         onConfirm={confirmDeleteEntries}
-        itemName={`${selectedEntries.size} سجل دخول`}
-        itemType="السجلات"
+        itemName={t("main.entryRecords", { count: selectedEntries.size })}
+        itemType={t("main.records")}
       />
 
       <ConfirmDeleteModal
         open={clearExitOpen}
         onOpenChange={setClearExitOpen}
         onConfirm={confirmClearExits}
-        itemName={`${selectedExits.size} سجل خروج`}
-        itemType="بيانات الخروج"
+        itemName={t("main.exitRecords", { count: selectedExits.size })}
+        itemType={t("main.exitData")}
       />
     </div>
   );

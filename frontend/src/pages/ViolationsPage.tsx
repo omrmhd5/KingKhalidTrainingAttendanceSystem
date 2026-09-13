@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { getGregorianDateArabic } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,6 +43,7 @@ interface Violation {
 }
 
 export default function ViolationsPage() {
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const [violations, setViolations] = useState<Violation[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -64,8 +66,8 @@ export default function ViolationsPage() {
       setViolations(data || []);
     } catch (error) {
       toast({
-        title: "خطأ",
-        description: "فشل تحميل المخالفات",
+        title: t("common.error"),
+        description: t("violations.loadFailed"),
         variant: "destructive",
         duration: 2000,
       });
@@ -94,8 +96,8 @@ export default function ViolationsPage() {
         );
 
         toast({
-          title: "تم التحديث",
-          description: "تم تحديث المخالفة بنجاح",
+          title: t("violations.updated"),
+          description: t("violations.updatedDesc"),
           duration: 1500,
         });
 
@@ -111,17 +113,17 @@ export default function ViolationsPage() {
         setViolations([newViolation, ...violations]);
 
         toast({
-          title: "تم إضافة المخالفة",
-          description: `تم تسجيل مخالفة جديدة لـ ${data.full_name}`,
+          title: t("violations.added"),
+          description: t("violations.addedDesc", { name: data.full_name }),
           duration: 1500,
         });
       }
     } catch (error) {
       toast({
-        title: "خطأ",
+        title: t("common.error"),
         description: editingViolation
-          ? "فشل تحديث المخالفة"
-          : "فشل تسجيل المخالفة",
+          ? t("violations.updateFailed")
+          : t("violations.createFailed"),
         variant: "destructive",
         duration: 2000,
       });
@@ -138,14 +140,14 @@ export default function ViolationsPage() {
       await violationApi.deleteViolation(deleteConfirm);
       setViolations(violations.filter((v) => v._id !== deleteConfirm));
       toast({
-        title: "تم الحذف",
-        description: "تم حذف المخالفة بنجاح",
+        title: t("violations.deleted"),
+        description: t("violations.deletedDesc"),
         duration: 1500,
       });
     } catch (error) {
       toast({
-        title: "خطأ",
-        description: "فشل حذف المخالفة",
+        title: t("common.error"),
+        description: t("violations.deleteFailed"),
         variant: "destructive",
         duration: 2000,
       });
@@ -163,14 +165,14 @@ export default function ViolationsPage() {
         <div>
           <div className="flex items-center gap-2">
             <AlertTriangle className="h-8 w-8 text-red-600" />
-            <h1 className="text-2xl font-bold text-red-600">تسجيل المخالفين</h1>
+            <h1 className="text-2xl font-bold text-red-600">{t("violations.title")}</h1>
           </div>
           <p className="text-sm text-muted-foreground">
-            قم بتسجيل مخالفات المتدربين ومتابعتها
+            {t("violations.subtitle")}
           </p>
           {visibleViolations.length > 0 && (
             <p className="text-sm text-red-600 font-medium mt-2">
-              إجمالي المخالفات: {visibleViolations.length}
+              {t("violations.totalCount", { count: visibleViolations.length })}
             </p>
           )}
         </div>
@@ -179,7 +181,7 @@ export default function ViolationsPage() {
       <Card className="border-r-4 border-r-red-600">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg">المخالفات المسجلة</CardTitle>
+            <CardTitle className="text-lg">{t("violations.registered")}</CardTitle>
             <div className="flex gap-2">
               <ExportExcel data={visibleViolations} />
               <ExportPDF data={visibleViolations} />
@@ -199,11 +201,11 @@ export default function ViolationsPage() {
         <CardContent className="p-0">
           {isLoadingViolations ? (
             <div className="text-center py-8 text-muted-foreground p-4">
-              جاري تحميل المخالفات...
+              {t("violations.loadingList")}
             </div>
           ) : visibleViolations.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground p-4">
-              لا توجد مخالفات مسجلة حتى الآن
+              {t("violations.empty")}
             </div>
           ) : (
             <div className="border border-gray-300 rounded-lg overflow-hidden">
@@ -211,22 +213,22 @@ export default function ViolationsPage() {
                 <TableHeader className="bg-red-600">
                   <TableRow>
                     <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                      الرقم العسكري
+                      {t("trainees.militaryId")}
                     </TableHead>
                     <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                      السجل المدني
+                      {t("trainees.civilId")}
                     </TableHead>
                     <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                      الاسم
+                      {t("common.name")}
                     </TableHead>
                     <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                      وصف المخالفة
+                      {t("violations.descCol")}
                     </TableHead>
                     <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                      تاريخ التسجيل
+                      {t("violations.registeredAt")}
                     </TableHead>
                     <TableHead className="text-center text-white font-bold py-3 px-4">
-                      الإجراءات
+                      {t("common.actions")}
                     </TableHead>
                   </TableRow>
                 </TableHeader>
@@ -278,22 +280,22 @@ export default function ViolationsPage() {
       <AlertDialog
         open={!!deleteConfirm}
         onOpenChange={(open) => !open && setDeleteConfirm(null)}>
-        <AlertDialogContent dir="rtl">
+        <AlertDialogContent dir={i18n.dir()}>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-right text-red-600">
-              تأكيد الحذف
+            <AlertDialogTitle className="text-start text-red-600">
+              {t("common.confirmDelete")}
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-right">
-              هل أنت متأكد من حذف هذه المخالفة؟ لا يمكن التراجع عن هذا الإجراء.
+            <AlertDialogDescription className="text-start">
+              {t("violations.confirmDelete")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="flex gap-2 justify-end">
-            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteViolation}
               disabled={isDeleting}
               className="bg-red-600 hover:bg-red-700">
-              {isDeleting ? "جاري الحذف..." : "حذف"}
+              {isDeleting ? t("common.deleting") : t("common.delete")}
             </AlertDialogAction>
           </div>
         </AlertDialogContent>

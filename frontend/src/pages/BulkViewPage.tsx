@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,6 +28,7 @@ import {
 } from "@/components/bulkview";
 
 export default function BulkViewPage() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [input, setInput] = useState("");
   const [results, setResults] = useState<any[]>(() => {
@@ -76,8 +78,8 @@ export default function BulkViewPage() {
   const handleSearch = async () => {
     if (!input.trim()) {
       toast({
-        title: "خطأ",
-        description: "يرجى إدخال أرقام عسكرية أو سجلات مدنية",
+        title: t("common.error"),
+        description: t("bulk.needIds"),
         variant: "destructive",
         duration: 1500,
       });
@@ -94,8 +96,8 @@ export default function BulkViewPage() {
 
       if (ids.length === 0) {
         toast({
-          title: "خطأ",
-          description: "لم يتم العثور على أرقام صالحة",
+          title: t("common.error"),
+          description: t("bulk.noValidIds"),
           variant: "destructive",
           duration: 1500,
         });
@@ -107,8 +109,8 @@ export default function BulkViewPage() {
 
       if (filtered.length === 0) {
         toast({
-          title: "لم يتم العثور على نتائج",
-          description: `لم يتم العثور على متدربين بالأرقام المدخلة (${ids.join(", ")})`,
+          title: t("bulk.noResultsTitle"),
+          description: t("bulk.noResultsDesc", { ids: ids.join(", ") }),
           variant: "destructive",
           duration: 1500,
         });
@@ -119,16 +121,16 @@ export default function BulkViewPage() {
           ...filtered.filter((f) => !prevResults.find((p) => p._id === f._id)),
         ]);
         toast({
-          title: "تم البحث بنجاح",
-          description: `تم العثور على ${filtered.length} متدرب إضافي`,
+          title: t("bulk.searchOk"),
+          description: t("bulk.searchOkDesc", { count: filtered.length }),
           duration: 1500,
         });
       }
     } catch (error) {
       const errorMessage =
-        (error as Error)?.message || "فشل البحث عن المتدربين";
+        (error as Error)?.message || t("bulk.searchFailed");
       toast({
-        title: "خطأ",
+        title: t("common.error"),
         description: errorMessage,
         variant: "destructive",
         duration: 1500,
@@ -161,9 +163,9 @@ export default function BulkViewPage() {
   });
 
   const shiftBreakdown = filtered.reduce(
-    (acc: Record<string, { name: string; count: number }>, t: any) => {
-      const id = t.shift_id?._id ?? "unknown";
-      const name = t.shift_id?.name ?? "غير محدد";
+    (acc: Record<string, { name: string; count: number }>, row: any) => {
+      const id = row.shift_id?._id ?? "unknown";
+      const name = row.shift_id?.name ?? t("common.unspecified");
       if (!acc[id]) acc[id] = { name, count: 0 };
       acc[id].count++;
       return acc;
@@ -187,14 +189,17 @@ export default function BulkViewPage() {
       setChangeShiftOpen(false);
       setTargetShiftId("");
       toast({
-        title: "تم تغيير الشفت",
-        description: `تم تحديث ${result.updatedCount} متدرب إلى شفت ${result.shiftName}`,
+        title: t("bulk.shiftChanged"),
+        description: t("bulk.shiftChangedDesc", {
+          count: result.updatedCount,
+          name: result.shiftName,
+        }),
         duration: 2000,
       });
     } catch (error) {
       toast({
-        title: "خطأ",
-        description: (error as Error)?.message || "فشل تغيير الشفت",
+        title: t("common.error"),
+        description: (error as Error)?.message || t("bulk.shiftChangeFailed"),
         variant: "destructive",
         duration: 2000,
       });
@@ -206,19 +211,17 @@ export default function BulkViewPage() {
   return (
     <div className="space-y-6 animate-slide-in">
       <div>
-        <h1 className="text-2xl font-bold">تحرير بيان</h1>
-        <p className="text-sm text-muted-foreground">
-          ابحث عن متدربين بالأرقام العسكرية أو السجلات المدنية
-        </p>
+        <h1 className="text-2xl font-bold">{t("bulk.title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("bulk.subtitle")}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">إدخال الأرقام</CardTitle>
+          <CardTitle className="text-lg">{t("bulk.enterIds")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-3">
-            <label className="text-sm font-medium block">نوع البحث</label>
+            <label className="text-sm font-medium block">{t("bulk.searchType")}</label>
             <RadioGroup
               value={searchType}
               onValueChange={(value) =>
@@ -228,45 +231,41 @@ export default function BulkViewPage() {
                 <Label
                   htmlFor="military"
                   className="cursor-pointer font-normal">
-                  البحث برقم عسكري
+                  {t("bulk.searchMilitary")}
                 </Label>
                 <RadioGroupItem value="military" id="military" />
               </div>
               <div className="flex justify-end items-center space-x-2">
                 <Label htmlFor="civil" className="cursor-pointer font-normal">
-                  البحث برقم سجل مدني
+                  {t("bulk.searchCivil")}
                 </Label>
                 <RadioGroupItem value="civil" id="civil" />
               </div>
             </RadioGroup>
           </div>
           <div>
-            <label className="text-sm font-medium block mb-2">الأرقام</label>
+            <label className="text-sm font-medium block mb-2">{t("bulk.ids")}</label>
             <Textarea
-              placeholder={`أدخل الأرقام على أسطر منفصلة
-مثال:
+              placeholder={`${t("bulk.idsPlaceholder")}
 12345
 67890
 54321`}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               className="min-h-32"
-              dir="rtl"
             />
           </div>
-          <p className="text-xs text-muted-foreground">
-            أدخل الأرقام على أسطر جديدة
-          </p>
+          <p className="text-xs text-muted-foreground">{t("bulk.idsHint")}</p>
           <div className="flex gap-2">
             <Button onClick={handleSearch} disabled={isLoading}>
               <Search className="ml-2 h-4 w-4" />
-              {isLoading ? "جاري البحث..." : "بحث"}
+              {isLoading ? t("common.searching") : t("common.search")}
             </Button>
             <Button
               variant="outline"
               onClick={handleClear}
               disabled={isLoading}>
-              مسح النتائج
+              {t("bulk.clearResults")}
             </Button>
           </div>
         </CardContent>
@@ -277,8 +276,10 @@ export default function BulkViewPage() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg">
-                النتائج ({filtered.length}
-                {filtered.length !== results.length && ` من ${results.length}`})
+                {t("bulk.results", { filtered: filtered.length })}
+                {filtered.length !== results.length &&
+                  t("bulk.resultsOf", { total: results.length })}
+                )
               </CardTitle>
               <div className="flex gap-2">
                 <Button
@@ -286,7 +287,7 @@ export default function BulkViewPage() {
                   onClick={() => setChangeShiftOpen(true)}
                   disabled={filtered.length === 0}>
                   <ArrowLeftRight className="ml-2 h-4 w-4" />
-                  تغيير الشفت
+                  {t("bulk.changeShift")}
                 </Button>
                 <ExportExcel data={filtered} />
                 <ExportPDF data={filtered} />
@@ -295,7 +296,7 @@ export default function BulkViewPage() {
           </CardHeader>
           <CardContent>
             <div className="mb-6 pb-6 border-b">
-              <h3 className="text-sm font-medium mb-4">تصفية النتائج</h3>
+              <h3 className="text-sm font-medium mb-4">{t("bulk.filterResults")}</h3>
               <TraineeSearchFilters
                 search={search}
                 onSearchChange={setSearch}
@@ -316,25 +317,25 @@ export default function BulkViewPage() {
                   <TableHeader className="bg-blue-600">
                     <TableRow>
                       <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                        الرقم العسكري
+                        {t("trainees.militaryId")}
                       </TableHead>
                       <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                        السجل المدني
+                        {t("trainees.civilId")}
                       </TableHead>
                       <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                        الاسم
+                        {t("common.name")}
                       </TableHead>
                       <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                        الرتبة
+                        {t("trainees.rank")}
                       </TableHead>
                       <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                        التخصص
+                        {t("trainees.specialty")}
                       </TableHead>
                       <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                        الشفت
+                        {t("trainees.shift")}
                       </TableHead>
                       <TableHead className="text-center text-white font-bold py-3 px-4">
-                        الباركود
+                        {t("common.barcode")}
                       </TableHead>
                     </TableRow>
                   </TableHeader>
@@ -378,7 +379,7 @@ export default function BulkViewPage() {
               </div>
             ) : (
               <div className="py-8 text-center text-muted-foreground">
-                لا توجد نتائج تطابق معايير البحث الحالية
+                {t("bulk.noMatch")}
               </div>
             )}
           </CardContent>

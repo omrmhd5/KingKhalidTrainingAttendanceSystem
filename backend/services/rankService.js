@@ -11,7 +11,7 @@ class RankService {
 
   async createRank(data) {
     if (!data.name || !data.name.trim()) {
-      throw new Error("Rank name is required");
+      throw new Error("errors.rankRequired");
     }
     const rank = new Rank({
       name: data.name,
@@ -21,7 +21,7 @@ class RankService {
 
   async updateRank(id, data) {
     if (!data.name || !data.name.trim()) {
-      throw new Error("Rank name is required");
+      throw new Error("errors.rankRequired");
     }
     return await Rank.findByIdAndUpdate(id, { name: data.name }, { new: true });
   }
@@ -29,7 +29,7 @@ class RankService {
   async deleteRank(id) {
     const rank = await Rank.findByIdAndDelete(id);
     if (!rank) {
-      throw new Error("Rank not found");
+      throw new Error("errors.rankNotFound");
     }
     return rank;
   }

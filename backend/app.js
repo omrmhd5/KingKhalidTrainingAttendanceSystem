@@ -11,28 +11,33 @@ const {
 } = require("./middleware/authMiddleware");
 const PORT = process.env.PORT || 5000;
 const MONGODB_URI =
-  process.env.MONGODB_URI || "mongodb://localhost:27017/king-khalid-training";
+  process.env.MONGODB_URI ||
+  process.env.MONGO_URI_LOCAL ||
+  "mongodb://127.0.0.1:27017/king-khalid-training-attendance-system-demo";
 
 const app = express();
 
-// CORS configuration
-if (process.env.NODE_ENV === "production") {
-  // Production: frontend and backend on same origin
-  app.use(
-    cors({
-      origin: true, // Reflects the request origin (same-origin requests pass through)
-      credentials: true,
-    }),
-  );
-} else {
-  // Development: allow multiple localhost variants with credentials
-  app.use(
-    cors({
-      origin: process.env.FRONTEND_URL || "http://localhost:5173",
-      credentials: true, // Allow credentials (cookies, auth headers)
-    }),
-  );
-}
+const corsOrigins = (
+  process.env.CORS_ORIGIN ||
+  process.env.FRONTEND_URL ||
+  "http://localhost:5173"
+)
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+app.use(
+  cors({
+    origin: corsOrigins,
+    credentials: true,
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "Accept-Language",
+      "X-Language",
+    ],
+  }),
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -86,13 +91,10 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
-// Serve frontend build in production
-if (process.env.NODE_ENV === "production") {
+// Optional same-host SPA (not used on the split Vercel + Render demo)
+if (process.env.SERVE_FRONTEND === "true") {
   const frontendDistPath = join(__dirname, "../frontend/dist");
-
   app.use(express.static(frontendDistPath));
-
-  // SPA fallback (must be AFTER /api routes)
   app.get("*", (req, res) => {
     res.sendFile(join(frontendDistPath, "index.html"));
   });

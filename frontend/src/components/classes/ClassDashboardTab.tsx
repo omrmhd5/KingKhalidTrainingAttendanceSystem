@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { getGregorianDateArabic } from "@/lib/utils";
@@ -35,6 +36,7 @@ interface ClassDashboardTabProps {
 }
 
 export function ClassDashboardTab({ canWrite = true }: ClassDashboardTabProps) {
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [reportType, setReportType] = useState<"absence" | "escape">("absence");
@@ -79,7 +81,7 @@ export function ClassDashboardTab({ canWrite = true }: ClassDashboardTabProps) {
           teacherName: "معلم1",
           type: "absence",
           date: "2026-03-23",
-          notes: "غياب بدون عذر",
+          notes: t("teacher.absentUnexcused"),
         },
         {
           _id: "r2",
@@ -89,7 +91,7 @@ export function ClassDashboardTab({ canWrite = true }: ClassDashboardTabProps) {
           teacherName: "معلم1",
           type: "escape",
           date: "2026-03-23",
-          notes: "لم يسجل خروج من الفصل",
+          notes: t("teacher.noExitFromClass"),
         },
         {
           _id: "r3",
@@ -99,7 +101,7 @@ export function ClassDashboardTab({ canWrite = true }: ClassDashboardTabProps) {
           teacherName: "معلم1",
           type: "absence",
           date: "2026-03-22",
-          notes: "غياب بعذر طبي",
+          notes: t("teacher.absentExcuse"),
         },
       ];
 
@@ -112,8 +114,8 @@ export function ClassDashboardTab({ canWrite = true }: ClassDashboardTabProps) {
       setReports(filtered);
     } catch (error: unknown) {
       toast({
-        title: "خطأ",
-        description: "فشل في تحميل التقارير",
+        title: t("common.error"),
+        description: t("classes.loadReportsFailed"),
         variant: "destructive",
       });
     } finally {
@@ -122,7 +124,7 @@ export function ClassDashboardTab({ canWrite = true }: ClassDashboardTabProps) {
   };
 
   const getTypeLabel = (type: "absence" | "escape") => {
-    return type === "absence" ? "الغياب" : "عدم تسجيل خروج";
+    return type === "absence" ? t("reports.absence") : t("reports.noExit");
   };
 
   const getTypeColor = (type: "absence" | "escape") => {
@@ -134,35 +136,31 @@ export function ClassDashboardTab({ canWrite = true }: ClassDashboardTabProps) {
   return (
     <div className="space-y-6">
       {/* Filters */}
-      <div className="flex gap-4 items-end" dir="rtl">
+      <div className="flex gap-4 items-end">
         <div className="flex-1">
-          <label className="text-sm font-medium text-right block mb-2">
-            نوع التقرير
-          </label>
+          <label className="text-sm font-medium text-right block mb-2">{t("classes.reportType")}</label>
           <Select
             value={reportType}
             onValueChange={(v: string) =>
               setReportType(v as "absence" | "escape")
             }>
-            <SelectTrigger dir="rtl">
+            <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
-            <SelectContent dir="rtl" className="flex-row-reverse">
-              <SelectItem value="absence">الغياب</SelectItem>
-              <SelectItem value="escape">عدم تسجيل خروج</SelectItem>
+            <SelectContent className="flex-row-reverse">
+              <SelectItem value="absence">{t("reports.absence")}</SelectItem>
+              <SelectItem value="escape">{t("reports.noExit")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div className="flex-1">
-          <label className="text-sm font-medium text-right block mb-2">
-            الفصل
-          </label>
+          <label className="text-sm font-medium text-right block mb-2">{t("common.class")}</label>
           <Select value={selectedClass} onValueChange={setSelectedClass}>
-            <SelectTrigger dir="rtl">
+            <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
-            <SelectContent dir="rtl" className="flex-row-reverse">
+            <SelectContent className="flex-row-reverse">
               {classes.map((cls) => (
                 <SelectItem key={cls._id} value={cls._id}>
                   {cls.name}
@@ -177,9 +175,7 @@ export function ClassDashboardTab({ canWrite = true }: ClassDashboardTabProps) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-right">
-              إجمالي التقارير
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-right">{t("classes.totalReports")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{reports.length}</div>
@@ -189,9 +185,7 @@ export function ClassDashboardTab({ canWrite = true }: ClassDashboardTabProps) {
         {reportType === "absence" && (
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-right text-yellow-800">
-                عدد الغيابات
-              </CardTitle>
+              <CardTitle className="text-sm font-medium text-right text-yellow-800">{t("teacher.absentCount")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-yellow-800">
@@ -204,9 +198,7 @@ export function ClassDashboardTab({ canWrite = true }: ClassDashboardTabProps) {
         {reportType === "escape" && (
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-right text-red-800">
-                عدد عدم تسجيل خروج
-              </CardTitle>
+              <CardTitle className="text-sm font-medium text-right text-red-800">{t("teacher.noExitCount")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-red-800">
@@ -218,9 +210,7 @@ export function ClassDashboardTab({ canWrite = true }: ClassDashboardTabProps) {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-right">
-              الطلاب المتأثرين
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-right">{t("classes.affectedStudents")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -237,7 +227,7 @@ export function ClassDashboardTab({ canWrite = true }: ClassDashboardTabProps) {
             {getTypeLabel(reportType)} -{" "}
             {selectedClass
               ? classes.find((c) => c._id === selectedClass)?.name
-              : "الكل"}
+              : t("common.all")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -247,15 +237,15 @@ export function ClassDashboardTab({ canWrite = true }: ClassDashboardTabProps) {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <Table dir="rtl">
+              <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="text-right">اسم الطالب</TableHead>
-                    <TableHead className="text-right">رقم الطالب</TableHead>
-                    <TableHead className="text-right">الفصل</TableHead>
-                    <TableHead className="text-right">المعلم</TableHead>
-                    <TableHead className="text-right">التاريخ</TableHead>
-                    <TableHead className="text-right">الملاحظات</TableHead>
+                    <TableHead className="text-right">{t("teacher.studentName")}</TableHead>
+                    <TableHead className="text-right">{t("teacher.studentNumber")}</TableHead>
+                    <TableHead className="text-right">{t("common.class")}</TableHead>
+                    <TableHead className="text-right">{t("common.teacher")}</TableHead>
+                    <TableHead className="text-right">{t("common.date")}</TableHead>
+                    <TableHead className="text-right">{t("common.notes")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -263,9 +253,7 @@ export function ClassDashboardTab({ canWrite = true }: ClassDashboardTabProps) {
                     <TableRow>
                       <TableCell
                         colSpan={6}
-                        className="text-center py-8 text-muted-foreground">
-                        لا توجد تقارير
-                      </TableCell>
+                        className="text-center py-8 text-muted-foreground">{t("classes.emptyReports")}</TableCell>
                     </TableRow>
                   ) : (
                     reports.map((report) => (

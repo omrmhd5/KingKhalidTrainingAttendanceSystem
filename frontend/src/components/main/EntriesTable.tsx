@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import {
   Table,
@@ -86,6 +87,7 @@ export default function EntriesTable({
   onToggleEntry,
   onToggleAll,
 }: EntriesTableProps) {
+  const { t, i18n } = useTranslation();
   const [apiShifts, setApiShifts] = useState<
     Array<{ _id: string; name: string }>
   >([]);
@@ -139,7 +141,7 @@ export default function EntriesTable({
           <div className="flex items-center gap-2">
             <ArrowDownToLine className="h-5 w-5 text-success" />
             <h3 className="text-lg font-semibold text-foreground">
-              سجل الدخول
+              {t("main.entryLog")}
             </h3>
           </div>
           <Input
@@ -153,12 +155,10 @@ export default function EntriesTable({
             value={selectedShiftFilter}
             onValueChange={onShiftFilterChange}>
             <SelectTrigger className="w-40 h-9 text-sm border-border flex-row-reverse">
-              <SelectValue placeholder="اختر الشفت" />
+              <SelectValue placeholder={t("bulk.selectShift")} />
             </SelectTrigger>
-            <SelectContent dir="rtl">
-              <SelectItem value="all" className="text-sm">
-                الكل
-              </SelectItem>
+            <SelectContent>
+              <SelectItem value="all" className="text-sm">{t("common.all")}</SelectItem>
               {apiShifts.map((shift) => (
                 <SelectItem
                   key={shift._id}
@@ -185,20 +185,14 @@ export default function EntriesTable({
                 />
               </TableHead>
               <TableHead className="text-center text-white font-bold py-2 px-2 border-r-2 border-blue-700 whitespace-nowrap">
-                تسجيل الدخول
+                {t("main.checkIn")}
               </TableHead>
               <TableHead className="text-center text-white font-bold py-2 px-2 border-r-2 border-blue-700 whitespace-nowrap">
-                الاسم
+                {t("common.name")}
               </TableHead>
-              <TableHead className="text-center text-white font-bold py-2 px-2 border-r-2 border-blue-700 whitespace-nowrap">
-                وقت الوصول
-              </TableHead>
-              <TableHead className="text-center text-white font-bold py-2 px-2 border-r-2 border-blue-700 whitespace-nowrap">
-                الحالة
-              </TableHead>
-              <TableHead className="text-center text-white font-bold py-2 px-2 border-r-2 border-blue-700 whitespace-nowrap">
-                الشفت
-              </TableHead>
+              <TableHead className="text-center text-white font-bold py-2 px-2 border-r-2 border-blue-700 whitespace-nowrap">{t("main.arrivalTime")}</TableHead>
+              <TableHead className="text-center text-white font-bold py-2 px-2 border-r-2 border-blue-700 whitespace-nowrap">{t("common.status")}</TableHead>
+              <TableHead className="text-center text-white font-bold py-2 px-2 border-r-2 border-blue-700 whitespace-nowrap">{t("trainees.shift")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -206,9 +200,7 @@ export default function EntriesTable({
               <TableRow>
                 <TableCell
                   colSpan={6}
-                  className="text-center py-8 text-muted-foreground border border-border">
-                  لا توجد سجلات دخول
-                </TableCell>
+                  className="text-center py-8 text-muted-foreground border border-border">{t("main.noEntries")}</TableCell>
               </TableRow>
             ) : (
               filteredEntries.map((entry, index) => (
@@ -235,13 +227,9 @@ export default function EntriesTable({
                   </TableCell>
                   <TableCell className="text-center font-semibold text-base py-3 px-2 border-r-2 border-gray-300 whitespace-nowrap">
                     {entry.status === "on-time" ? (
-                      <Badge className="bg-green-100 text-green-700 border-green-300 text-sm font-semibold px-3 py-1">
-                        في الموعد
-                      </Badge>
+                      <Badge className="bg-green-100 text-green-700 border-green-300 text-sm font-semibold px-3 py-1">{t("main.onTime")}</Badge>
                     ) : entry.status === "late" ? (
-                      <Badge className="bg-red-100 text-red-700 border-red-300 text-sm font-semibold px-3 py-1">
-                        متأخر
-                      </Badge>
+                      <Badge className="bg-red-100 text-red-700 border-red-300 text-sm font-semibold px-3 py-1">{t("main.late")}</Badge>
                     ) : (
                       <Badge className="bg-gray-100 text-gray-700 border-gray-300 text-sm font-semibold px-3 py-1">
                         {entry.status}

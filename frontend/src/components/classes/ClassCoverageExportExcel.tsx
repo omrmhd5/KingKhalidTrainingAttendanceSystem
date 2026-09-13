@@ -1,3 +1,4 @@
+import i18n from "@/i18n";
 import { Button } from "@/components/ui/button";
 import { FileSpreadsheet } from "lucide-react";
 import ExcelJS from "exceljs";
@@ -38,7 +39,7 @@ export function ClassCoverageExportExcel({
     const total = sentClasses.length + missingClasses.length;
 
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("تغطية التقارير");
+    const worksheet = workbook.addWorksheet(i18n.t("classes.coverage"));
 
     worksheet.columns = [
       { width: 3 },
@@ -50,7 +51,7 @@ export function ClassCoverageExportExcel({
     const COLS = 3;
 
     // ── Title row ────────────────────────────────────────────────────────
-    const titleRow = worksheet.addRow(["", "بيان تغطية تقارير الفصول", "", ""]);
+    const titleRow = worksheet.addRow(["", i18n.t("classes.coverageSheet"), "", ""]);
     titleRow.height = 40;
     worksheet.mergeCells(1, 2, 1, 2 + COLS - 1);
     const titleCell = worksheet.getCell("B1");
@@ -60,7 +61,7 @@ export function ClassCoverageExportExcel({
     titleCell.border = thinBorder("FF1E3A8A");
 
     // ── Date subtitle ─────────────────────────────────────────────────────
-    const subRow = worksheet.addRow(["", `التاريخ: ${displayDate}`, "", ""]);
+    const subRow = worksheet.addRow(["", `${i18n.t("common.date")}: ${displayDate}`, "", ""]);
     subRow.height = 24;
     worksheet.mergeCells(2, 2, 2, 2 + COLS - 1);
     const subCell = worksheet.getCell("B2");
@@ -73,7 +74,7 @@ export function ClassCoverageExportExcel({
     worksheet.addRow([]).height = 6;
     const summaryRow = worksheet.addRow([
       "",
-      `الإجمالي: ${total}   |   أرسلوا: ${sentClasses.length}   |   لم يرسلوا: ${missingClasses.length}`,
+      i18n.t("classes.coverageTotal", { total, sent: sentClasses.length, missing: missingClasses.length }),
       "",
       "",
     ]);
@@ -96,7 +97,7 @@ export function ClassCoverageExportExcel({
     // ════════════════════════════════════
     const sentTitleRow = worksheet.addRow([
       "",
-      `✓ الفصول التي أرسلت التقارير (${sentClasses.length})`,
+      i18n.t("classes.sentTitle", { count: sentClasses.length }),
       "",
       "",
     ]);
@@ -117,8 +118,8 @@ export function ClassCoverageExportExcel({
     const sentHeaderRow = worksheet.addRow([
       "",
       "#",
-      "اسم الفصل",
-      "المعلم المسؤول",
+      i18n.t("classes.className"),
+      i18n.t("classes.responsibleTeacher"),
     ]);
     sentHeaderRow.height = 28;
     sentHeaderRow.eachCell((cell, col) => {
@@ -136,7 +137,7 @@ export function ClassCoverageExportExcel({
 
     // Sent data
     if (sentClasses.length === 0) {
-      const emptyRow = worksheet.addRow(["", "—", "لا توجد فصول", ""]);
+      const emptyRow = worksheet.addRow(["", "—", i18n.t("classes.empty"), ""]);
       emptyRow.height = 24;
       worksheet.mergeCells(worksheet.rowCount, 3, worksheet.rowCount, 4);
       emptyRow.eachCell((cell, col) => {
@@ -179,7 +180,7 @@ export function ClassCoverageExportExcel({
     // ════════════════════════════════════
     const missingTitleRow = worksheet.addRow([
       "",
-      `✗ الفصول التي لم ترسل التقارير (${missingClasses.length})`,
+      i18n.t("classes.missingTitle", { count: missingClasses.length }),
       "",
       "",
     ]);
@@ -204,8 +205,8 @@ export function ClassCoverageExportExcel({
     const missingHeaderRow = worksheet.addRow([
       "",
       "#",
-      "اسم الفصل",
-      "المعلم المسؤول",
+      i18n.t("classes.className"),
+      i18n.t("classes.responsibleTeacher"),
     ]);
     missingHeaderRow.height = 28;
     missingHeaderRow.eachCell((cell, col) => {
@@ -223,7 +224,7 @@ export function ClassCoverageExportExcel({
 
     // Missing data
     if (missingClasses.length === 0) {
-      const emptyRow = worksheet.addRow(["", "—", "جميع الفصول أرسلت", ""]);
+      const emptyRow = worksheet.addRow(["", "—", i18n.t("classes.allSent"), ""]);
       emptyRow.height = 24;
       worksheet.mergeCells(worksheet.rowCount, 3, worksheet.rowCount, 4);
       emptyRow.eachCell((cell, col) => {
@@ -267,7 +268,7 @@ export function ClassCoverageExportExcel({
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `بيان_تغطية_الفصول_${getTodayDateKSA()}.xlsx`;
+    a.download = `${i18n.t("classes.coverageFilename", { date: getTodayDateKSA() })}.xlsx`;
     a.click();
     window.URL.revokeObjectURL(url);
   };
@@ -278,8 +279,6 @@ export function ClassCoverageExportExcel({
       size="sm"
       variant="default"
       className="bg-green-700 hover:bg-green-800 text-white gap-2">
-      <FileSpreadsheet className="h-4 w-4" />
-      تحميل Excel
-    </Button>
+      <FileSpreadsheet className="h-4 w-4" />{i18n.t("common.downloadExcel")}</Button>
   );
 }

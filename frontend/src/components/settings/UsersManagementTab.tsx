@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,9 +34,9 @@ import { userApi, User, UserCreateInput, UserUpdateInput } from "@/lib/userApi";
 import { classApi, Class } from "@/lib/classApi";
 
 const ROLES = [
-  { value: "admin", label: "مسؤول" },
-  { value: "operator", label: "مشغل" },
-  { value: "teacher", label: "معلم" },
+  { value: "admin", label: t("roles.admin") },
+  { value: "operator", label: t("roles.operator") },
+  { value: "teacher", label: t("roles.teacher") },
 ];
 
 const ROLE_COLORS: Record<string, { bg: string; text: string }> = {
@@ -49,6 +50,7 @@ const getRoleColor = (role: string) => {
 };
 
 export function UsersManagementTab() {
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const [users, setUsers] = useState<User[]>([]);
   const [classes, setClasses] = useState<Class[]>([]);
@@ -101,8 +103,8 @@ export function UsersManagementTab() {
       setUsers(sortedData);
     } catch (error: any) {
       toast({
-        title: "خطأ",
-        description: error.response?.data?.message || "فشل في تحميل المستخدمين",
+        title: t("common.error"),
+        description: error.response?.data?.message || t("settings.loadUsersFailed"),
         variant: "destructive",
       });
     } finally {
@@ -144,8 +146,8 @@ export function UsersManagementTab() {
   const handleAddUser = async () => {
     if (!formData.username || !formData.email || !formData.password) {
       toast({
-        title: "خطأ",
-        description: "الرجاء ملء جميع الحقول",
+        title: t("common.error"),
+        description: t("common.required"),
         variant: "destructive",
       });
       return;
@@ -153,8 +155,8 @@ export function UsersManagementTab() {
 
     if (formData.password !== formData.confirmPassword) {
       toast({
-        title: "خطأ",
-        description: "كلمات المرور غير متطابقة",
+        title: t("common.error"),
+        description: t("settings.passwordsMismatch"),
         variant: "destructive",
       });
       return;
@@ -162,8 +164,8 @@ export function UsersManagementTab() {
 
     if (formData.role === "teacher" && !formData.class) {
       toast({
-        title: "خطأ",
-        description: "الرجاء إدخال الفصل للمعلمين",
+        title: t("common.error"),
+        description: t("classes.needTeacherClass"),
         variant: "destructive",
       });
       return;
@@ -184,13 +186,13 @@ export function UsersManagementTab() {
       setUsers([...users, response.user]);
       setIsAddOpen(false);
       toast({
-        title: "نجاح",
-        description: "تم إضافة المستخدم بنجاح",
+        title: t("common.success"),
+        description: t("settings.addedUser"),
       });
     } catch (error: any) {
       toast({
-        title: "خطأ",
-        description: error.response?.data?.message || "فشل في إضافة المستخدم",
+        title: t("common.error"),
+        description: error.response?.data?.message || t("settings.addUserFailed"),
         variant: "destructive",
       });
     } finally {
@@ -201,8 +203,8 @@ export function UsersManagementTab() {
   const handleUpdateUser = async () => {
     if (!formData.username || !formData.email) {
       toast({
-        title: "خطأ",
-        description: "الرجاء ملء جميع الحقول",
+        title: t("common.error"),
+        description: t("common.required"),
         variant: "destructive",
       });
       return;
@@ -210,8 +212,8 @@ export function UsersManagementTab() {
 
     if (formData.password && formData.password !== formData.confirmPassword) {
       toast({
-        title: "خطأ",
-        description: "كلمات المرور غير متطابقة",
+        title: t("common.error"),
+        description: t("settings.passwordsMismatch"),
         variant: "destructive",
       });
       return;
@@ -219,8 +221,8 @@ export function UsersManagementTab() {
 
     if (formData.role === "teacher" && !formData.class) {
       toast({
-        title: "خطأ",
-        description: "الرجاء إدخال الفصل للمعلمين",
+        title: t("common.error"),
+        description: t("classes.needTeacherClass"),
         variant: "destructive",
       });
       return;
@@ -246,13 +248,13 @@ export function UsersManagementTab() {
       );
       setIsEditOpen(false);
       toast({
-        title: "نجاح",
-        description: "تم تحديث المستخدم بنجاح",
+        title: t("common.success"),
+        description: t("settings.updatedUser"),
       });
     } catch (error: any) {
       toast({
-        title: "خطأ",
-        description: error.response?.data?.message || "فشل في تحديث المستخدم",
+        title: t("common.error"),
+        description: error.response?.data?.message || t("settings.updateUserFailed"),
         variant: "destructive",
       });
     } finally {
@@ -269,15 +271,15 @@ export function UsersManagementTab() {
       setUsers(users.filter((u) => u._id !== selectedUser._id));
       setIsDeleteOpen(false);
       toast({
-        title: "نجاح",
-        description: "تم حذف المستخدم بنجاح",
+        title: t("common.success"),
+        description: t("settings.deletedUser"),
       });
       setSelectedUser(null);
       setDeleteTargetName("");
     } catch (error: any) {
       toast({
-        title: "خطأ",
-        description: error.response?.data?.message || "فشل في حذف المستخدم",
+        title: t("common.error"),
+        description: error.response?.data?.message || t("settings.deleteUserFailed"),
         variant: "destructive",
       });
     } finally {
@@ -289,12 +291,10 @@ export function UsersManagementTab() {
     <Card>
       <CardHeader
         className="flex flex-row items-center justify-between"
-        dir="rtl">
-        <CardTitle>المستخدمون ({users.length})</CardTitle>
+       >
+        <CardTitle>{t("settings.usersCount", { count: users.length })}</CardTitle>
         <Button size="sm" onClick={handleOpenAdd} disabled={loading}>
-          <Plus className="ml-2 h-4 w-4" />
-          إضافة مستخدم
-        </Button>
+          <Plus className="ml-2 h-4 w-4" />{t("settings.addUser")}</Button>
       </CardHeader>
       <CardContent className="p-0">
         {loading ? (
@@ -303,27 +303,15 @@ export function UsersManagementTab() {
           </div>
         ) : (
           <div className="border border-gray-300 rounded-lg overflow-hidden">
-            <Table dir="rtl" className="border-collapse">
+            <Table className="border-collapse">
               <TableHeader className="bg-amber-600">
                 <TableRow>
-                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                    اسم المستخدم
-                  </TableHead>
-                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                    البريد الإلكتروني
-                  </TableHead>
-                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                    الدور
-                  </TableHead>
-                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                    الفصل
-                  </TableHead>
-                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                    تاريخ الإنشاء
-                  </TableHead>
-                  <TableHead className="text-center text-white font-bold py-3 px-4">
-                    الإجراءات
-                  </TableHead>
+                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("settings.username")}</TableHead>
+                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("common.email")}</TableHead>
+                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("common.role")}</TableHead>
+                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("common.class")}</TableHead>
+                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("common.createdAt")}</TableHead>
+                  <TableHead className="text-center text-white font-bold py-3 px-4">{t("common.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -331,9 +319,7 @@ export function UsersManagementTab() {
                   <TableRow className="hover:bg-blue-50">
                     <TableCell
                       colSpan={6}
-                      className="text-center py-4 px-4 border border-gray-300">
-                      لا توجد مستخدمون
-                    </TableCell>
+                      className="text-center py-4 px-4 border border-gray-300">{t("settings.emptyUsers")}</TableCell>
                   </TableRow>
                 ) : (
                   users.map((user, index) => (
@@ -389,90 +375,82 @@ export function UsersManagementTab() {
 
       {/* Add User Modal */}
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-        <DialogContent dir="rtl" className="max-w-md">
+        <DialogContent dir={i18n.dir()} className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-right">إضافة مستخدم جديد</DialogTitle>
+            <DialogTitle className="text-right">{t("settings.addUserTitle")}</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4">
             <div>
-              <Label htmlFor="add-username" className="text-right block mb-2">
-                اسم المستخدم
-              </Label>
+              <Label htmlFor="add-username" className="text-right block mb-2">{t("settings.username")}</Label>
               <Input
                 id="add-username"
-                placeholder="أدخل اسم المستخدم"
+                placeholder={t("settings.usernamePlaceholder")}
                 value={formData.username}
                 onChange={(e) =>
                   setFormData({ ...formData, username: e.target.value })
                 }
-                dir="rtl"
+               
               />
             </div>
 
             <div>
-              <Label htmlFor="add-email" className="text-right block mb-2">
-                البريد الإلكتروني
-              </Label>
+              <Label htmlFor="add-email" className="text-right block mb-2">{t("common.email")}</Label>
               <Input
                 id="add-email"
                 type="email"
-                placeholder="أدخل البريد الإلكتروني"
+                placeholder={t("login.emailPlaceholder")}
                 value={formData.email}
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })
                 }
-                dir="rtl"
+               
               />
             </div>
 
             <div>
               <Label htmlFor="add-password" className="text-right block mb-2">
-                كلمة المرور
+                {t("common.password")}
               </Label>
               <Input
                 id="add-password"
                 type="password"
-                placeholder="أدخل كلمة المرور"
+                placeholder={t("login.passwordPlaceholder")}
                 value={formData.password}
                 onChange={(e) =>
                   setFormData({ ...formData, password: e.target.value })
                 }
-                dir="rtl"
+               
               />
             </div>
 
             <div>
               <Label
                 htmlFor="add-confirm-password"
-                className="text-right block mb-2">
-                تأكيد كلمة المرور
-              </Label>
+                className="text-right block mb-2">{t("settings.confirmPassword")}</Label>
               <Input
                 id="add-confirm-password"
                 type="password"
-                placeholder="أكد كلمة المرور"
+                placeholder={t("common.confirmPasswordPlaceholder")}
                 value={formData.confirmPassword}
                 onChange={(e) =>
                   setFormData({ ...formData, confirmPassword: e.target.value })
                 }
-                dir="rtl"
+               
               />
             </div>
 
             <div>
-              <Label htmlFor="add-role" className="text-right block mb-2">
-                الدور
-              </Label>
+              <Label htmlFor="add-role" className="text-right block mb-2">{t("common.role")}</Label>
               <Select
                 value={formData.role}
                 onValueChange={(value: "admin" | "operator" | "teacher") =>
                   setFormData({ ...formData, role: value })
                 }>
-                <SelectTrigger id="add-role" dir="rtl">
+                <SelectTrigger id="add-role">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent dir="rtl">
+                <SelectContent>
                   {ROLES.map((role) => (
                     <SelectItem key={role.value} value={role.value}>
                       {role.label}
@@ -484,18 +462,16 @@ export function UsersManagementTab() {
 
             {formData.role === "teacher" && (
               <div>
-                <Label htmlFor="add-class" className="text-right block mb-2">
-                  الفصل
-                </Label>
+                <Label htmlFor="add-class" className="text-right block mb-2">{t("common.class")}</Label>
                 <Select
                   value={formData.class}
                   onValueChange={(value) =>
                     setFormData({ ...formData, class: value })
                   }>
-                  <SelectTrigger id="add-class" dir="rtl">
-                    <SelectValue placeholder="اختر الفصل" />
+                  <SelectTrigger id="add-class">
+                    <SelectValue placeholder={t("classes.selectClass")} />
                   </SelectTrigger>
-                  <SelectContent dir="rtl">
+                  <SelectContent>
                     {classes.map((classItem) => (
                       <SelectItem key={classItem._id} value={classItem._id}>
                         {classItem.name}
@@ -511,17 +487,13 @@ export function UsersManagementTab() {
             <Button
               variant="outline"
               onClick={() => setIsAddOpen(false)}
-              disabled={submitting}>
-              إلغاء
-            </Button>
+              disabled={submitting}>{t("common.cancel")}</Button>
             <Button onClick={handleAddUser} disabled={submitting}>
               {submitting ? (
                 <>
-                  <Loader2 className="ml-2 h-4 w-4 animate-spin" />
-                  جاري الإضافة...
-                </>
+                  <Loader2 className="ml-2 h-4 w-4 animate-spin" />{t("common.adding")}</>
               ) : (
-                "إضافة"
+                t("common.add")
               )}
             </Button>
           </DialogFooter>
@@ -530,90 +502,80 @@ export function UsersManagementTab() {
 
       {/* Edit User Modal */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent dir="rtl" className="max-w-md">
+        <DialogContent dir={i18n.dir()} className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-right">تعديل المستخدم</DialogTitle>
+            <DialogTitle className="text-right">{t("settings.editUser")}</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4">
             <div>
-              <Label htmlFor="edit-username" className="text-right block mb-2">
-                اسم المستخدم
-              </Label>
+              <Label htmlFor="edit-username" className="text-right block mb-2">{t("settings.username")}</Label>
               <Input
                 id="edit-username"
-                placeholder="أدخل اسم المستخدم"
+                placeholder={t("settings.usernamePlaceholder")}
                 value={formData.username}
                 onChange={(e) =>
                   setFormData({ ...formData, username: e.target.value })
                 }
-                dir="rtl"
+               
               />
             </div>
 
             <div>
-              <Label htmlFor="edit-email" className="text-right block mb-2">
-                البريد الإلكتروني
-              </Label>
+              <Label htmlFor="edit-email" className="text-right block mb-2">{t("common.email")}</Label>
               <Input
                 id="edit-email"
                 type="email"
-                placeholder="أدخل البريد الإلكتروني"
+                placeholder={t("login.emailPlaceholder")}
                 value={formData.email}
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })
                 }
-                dir="rtl"
+               
               />
             </div>
 
             <div>
-              <Label htmlFor="edit-password" className="text-right block mb-2">
-                كلمة المرور (اتركها فارغة إذا لم تريد تغييرها)
-              </Label>
+              <Label htmlFor="edit-password" className="text-right block mb-2">{t("settings.passwordLeaveHint")}</Label>
               <Input
                 id="edit-password"
                 type="password"
-                placeholder="أدخل كلمة المرور الجديدة"
+                placeholder={t("password.new")}
                 value={formData.password}
                 onChange={(e) =>
                   setFormData({ ...formData, password: e.target.value })
                 }
-                dir="rtl"
+               
               />
             </div>
 
             <div>
               <Label
                 htmlFor="edit-confirm-password"
-                className="text-right block mb-2">
-                تأكيد كلمة المرور
-              </Label>
+                className="text-right block mb-2">{t("settings.confirmPassword")}</Label>
               <Input
                 id="edit-confirm-password"
                 type="password"
-                placeholder="أكد كلمة المرور"
+                placeholder={t("common.confirmPasswordPlaceholder")}
                 value={formData.confirmPassword}
                 onChange={(e) =>
                   setFormData({ ...formData, confirmPassword: e.target.value })
                 }
-                dir="rtl"
+               
               />
             </div>
 
             <div>
-              <Label htmlFor="edit-role" className="text-right block mb-2">
-                الدور
-              </Label>
+              <Label htmlFor="edit-role" className="text-right block mb-2">{t("common.role")}</Label>
               <Select
                 value={formData.role}
                 onValueChange={(value: "admin" | "operator" | "teacher") =>
                   setFormData({ ...formData, role: value })
                 }>
-                <SelectTrigger id="edit-role" dir="rtl">
+                <SelectTrigger id="edit-role">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent dir="rtl">
+                <SelectContent>
                   {ROLES.map((role) => (
                     <SelectItem key={role.value} value={role.value}>
                       {role.label}
@@ -625,18 +587,16 @@ export function UsersManagementTab() {
 
             {formData.role === "teacher" && (
               <div>
-                <Label htmlFor="edit-class" className="text-right block mb-2">
-                  الفصل
-                </Label>
+                <Label htmlFor="edit-class" className="text-right block mb-2">{t("common.class")}</Label>
                 <Select
                   value={formData.class}
                   onValueChange={(value) =>
                     setFormData({ ...formData, class: value })
                   }>
-                  <SelectTrigger id="edit-class" dir="rtl">
-                    <SelectValue placeholder="اختر الفصل" />
+                  <SelectTrigger id="edit-class">
+                    <SelectValue placeholder={t("classes.selectClass")} />
                   </SelectTrigger>
-                  <SelectContent dir="rtl">
+                  <SelectContent>
                     {classes.map((classItem) => (
                       <SelectItem key={classItem._id} value={classItem._id}>
                         {classItem.name}
@@ -652,17 +612,13 @@ export function UsersManagementTab() {
             <Button
               variant="outline"
               onClick={() => setIsEditOpen(false)}
-              disabled={submitting}>
-              إلغاء
-            </Button>
+              disabled={submitting}>{t("common.cancel")}</Button>
             <Button onClick={handleUpdateUser} disabled={submitting}>
               {submitting ? (
                 <>
-                  <Loader2 className="ml-2 h-4 w-4 animate-spin" />
-                  جاري التحديث...
-                </>
+                  <Loader2 className="ml-2 h-4 w-4 animate-spin" />{t("common.updating")}</>
               ) : (
-                "تحديث"
+                t("common.update")
               )}
             </Button>
           </DialogFooter>
@@ -675,7 +631,7 @@ export function UsersManagementTab() {
         onOpenChange={setIsDeleteOpen}
         onConfirm={handleDeleteUser}
         itemName={deleteTargetName}
-        itemType="المستخدم"
+        itemType={t("settings.userItem")}
       />
     </Card>
   );

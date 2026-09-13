@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Users, TrendingUp } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface EntryRecord {
   id: string;
@@ -32,14 +33,19 @@ interface AttendanceStatsDisplayProps {
   currentShift?: Shift | null;
 }
 
-const formatShiftTime = (startTime: string, endTime: string): string => {
+const formatShiftTime = (
+  startTime: string,
+  endTime: string,
+  am: string,
+  pm: string,
+): string => {
   const formatTime = (timeStr: string): string => {
     if (!timeStr) return "";
     const [hours, minutes] = timeStr.split(":");
     let h = parseInt(hours);
     const isAM = h < 12;
     h = h % 12 || 12;
-    const period = isAM ? "ص" : "م";
+    const period = isAM ? am : pm;
     return `${h}:${minutes} ${period}`;
   };
 
@@ -82,7 +88,7 @@ export default function AttendanceStatsDisplay({
   shifts,
   currentShift,
 }: AttendanceStatsDisplayProps) {
-  // Get entries with data
+  const { t } = useTranslation();
   const entriesWithData = entries.filter((e) => e.militaryId);
 
   // Calculate total trainees in system
@@ -94,7 +100,7 @@ export default function AttendanceStatsDisplay({
   // Get shift breakdown by actual shift attended (shift_id)
   const shiftBreakdown: Record<string, number> = {};
   entriesWithData.forEach((entry) => {
-    const shiftName = entry.actualShift || "غير محدد";
+    const shiftName = entry.actualShift || t("common.unspecified");
     shiftBreakdown[shiftName] = (shiftBreakdown[shiftName] || 0) + 1;
   });
 
@@ -108,7 +114,7 @@ export default function AttendanceStatsDisplay({
       <div className="flex items-center gap-2 mb-3">
         <TrendingUp className="h-5 w-5 text-primary" />
         <h3 className="text-sm font-semibold text-foreground flex-1">
-          إحصائيات الحضور
+          {t("main.stats")}
         </h3>
         {currentShift ? (
           (() => {
@@ -117,7 +123,7 @@ export default function AttendanceStatsDisplay({
               <Badge
                 variant="outline"
                 className={`ml-auto ${colors.bg} ${colors.text} border ${colors.border}`}>
-                الشفت الحالي: {currentShift.name}
+                {t("main.currentShift", { name: currentShift.name })}
               </Badge>
             );
           })()
@@ -125,7 +131,7 @@ export default function AttendanceStatsDisplay({
           <Badge
             variant="outline"
             className="ml-auto bg-gray-50 text-gray-700 border-gray-200">
-            لا يوجد شفت نشط
+            {t("main.noActiveShift")}
           </Badge>
         )}
       </div>
@@ -136,11 +142,11 @@ export default function AttendanceStatsDisplay({
           <div className="flex items-center gap-2">
             <Users className="h-4 w-4 text-blue-600" />
             <span className="text-sm text-foreground font-medium">
-              الحضور الكلي
+              {t("classes.totalAttendance")}
             </span>
           </div>
           <Badge className="bg-blue-500/20 text-blue-700">
-            {entriesWithData.length} من {totalTraineesInSystem}
+            {entriesWithData.length} / {totalTraineesInSystem}
           </Badge>
         </div>
 
@@ -148,7 +154,7 @@ export default function AttendanceStatsDisplay({
         {sortedShifts.length > 0 && (
           <div className="space-y-2 pt-2 border-t border-border">
             <p className="text-xs font-medium text-muted-foreground">
-              توزيع حسب الشفت
+              {t("classes.shiftDistribution")}
             </p>
             {sortedShifts.map(([shift, count]) => {
               const colors = getShiftColor(shift);
@@ -163,6 +169,8 @@ export default function AttendanceStatsDisplay({
                   ? formatShiftTime(
                       shiftEntry.actualShiftStartTime,
                       shiftEntry.actualShiftEndTime,
+                      t("am"),
+                      t("pm"),
                     )
                   : "";
               // Get assigned count from shift data

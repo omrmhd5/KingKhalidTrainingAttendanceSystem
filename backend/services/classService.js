@@ -26,7 +26,7 @@ class ClassService {
       .populate("students", "full_name civil_id military_id");
 
     if (!classItem) {
-      throw new Error("الفصل غير موجود");
+      throw new Error("errors.classNotFound");
     }
 
     return classItem;
@@ -37,35 +37,35 @@ class ClassService {
 
     // Validation
     if (!name || !name.trim()) {
-      throw new Error("اسم الفصل مطلوب");
+      throw new Error("errors.classNameRequired");
     }
 
     // Schedule is required
     if (!schedule) {
-      throw new Error("الجدول الزمني مطلوب");
+      throw new Error("errors.classScheduleRequired");
     }
 
     // Check if class name already exists
     const existingClass = await Class.findOne({ name: name.trim() });
     if (existingClass) {
-      throw new Error("هذا الفصل موجود بالفعل");
+      throw new Error("errors.classExists");
     }
 
     // Validate teacher if provided
     if (assignedTeacherId) {
       const teacher = await User.findById(assignedTeacherId);
       if (!teacher) {
-        throw new Error("المعلم غير موجود");
+        throw new Error("errors.teacherNotFound");
       }
       if (teacher.role !== "teacher") {
-        throw new Error("يجب أن يكون المستخدم معلماً");
+        throw new Error("errors.mustBeTeacher");
       }
     }
 
     // Validate schedule - it's required
     const scheduleItem = await ClassTimeSchedule.findById(schedule);
     if (!scheduleItem) {
-      throw new Error("الجدول غير موجود");
+      throw new Error("errors.scheduleNotFound");
     }
 
     // Create class
@@ -95,13 +95,13 @@ class ClassService {
     const classItem = await Class.findById(id);
 
     if (!classItem) {
-      throw new Error("الفصل غير موجود");
+      throw new Error("errors.classNotFound");
     }
 
     // Validation
     if (name) {
       if (!name.trim()) {
-        throw new Error("اسم الفصل مطلوب");
+        throw new Error("errors.classNameRequired");
       }
 
       // Check if new name already exists (excluding current class)
@@ -110,7 +110,7 @@ class ClassService {
         name: name.trim(),
       });
       if (existingClass) {
-        throw new Error("هذا الفصل موجود بالفعل");
+        throw new Error("errors.classExists");
       }
 
       classItem.name = name.trim();
@@ -121,10 +121,10 @@ class ClassService {
       if (assignedTeacherId) {
         const teacher = await User.findById(assignedTeacherId);
         if (!teacher) {
-          throw new Error("المعلم غير موجود");
+          throw new Error("errors.teacherNotFound");
         }
         if (teacher.role !== "teacher") {
-          throw new Error("يجب أن يكون المستخدم معلماً");
+          throw new Error("errors.mustBeTeacher");
         }
         classItem.assignedTeacherId = assignedTeacherId;
       } else {
@@ -137,7 +137,7 @@ class ClassService {
       // Validate that schedule exists
       const scheduleItem = await ClassTimeSchedule.findById(schedule);
       if (!scheduleItem) {
-        throw new Error("الجدول غير موجود");
+        throw new Error("errors.scheduleNotFound");
       }
 
       // Remove class from old schedule
@@ -170,14 +170,14 @@ class ClassService {
     const classItem = await Class.findById(id);
 
     if (!classItem) {
-      throw new Error("الفصل غير موجود");
+      throw new Error("errors.classNotFound");
     }
 
     // Check if class has students
     if (classItem.students && classItem.students.length > 0) {
-      throw new Error(
-        `لا يمكن حذف الفصل لأنه يحتوي على ${classItem.students.length} طالب/طالبة. الرجاء إزالة جميع الطلاب أولاً.`,
-      );
+      const err = new Error("errors.classHasStudents");
+      err.vars = { count: classItem.students.length };
+      throw err;
     }
 
     // Remove teacher from this class
@@ -197,18 +197,18 @@ class ClassService {
     }
 
     await Class.findByIdAndDelete(id);
-    return { message: "تم حذف الفصل بنجاح" };
+    return { message: "success.classDeleted" };
   }
 
   async assignStudentsToClass(classId, studentIds) {
     const classItem = await Class.findById(classId);
 
     if (!classItem) {
-      throw new Error("الفصل غير موجود");
+      throw new Error("errors.classNotFound");
     }
 
     if (!Array.isArray(studentIds) || studentIds.length === 0) {
-      throw new Error("يجب توفير قائمة بالطلاب");
+      throw new Error("errors.studentsRequired");
     }
 
     // Add new students, avoiding duplicates
@@ -232,7 +232,7 @@ class ClassService {
     const classItem = await Class.findById(classId);
 
     if (!classItem) {
-      throw new Error("الفصل غير موجود");
+      throw new Error("errors.classNotFound");
     }
 
     classItem.students = classItem.students.filter(
@@ -253,7 +253,7 @@ class ClassService {
     const classItem = await Class.findById(classId);
 
     if (!classItem) {
-      throw new Error("الفصل غير موجود");
+      throw new Error("errors.classNotFound");
     }
 
     if (stats.present !== undefined) classItem.stats.present = stats.present;
@@ -270,11 +270,11 @@ class ClassService {
     const classItem = await Class.findById(classId);
 
     if (!classItem) {
-      throw new Error("الفصل غير موجود");
+      throw new Error("errors.classNotFound");
     }
 
     if (!["present", "absence", "escapes", "violations"].includes(statName)) {
-      throw new Error("إحصائية غير صحيحة");
+      throw new Error("errors.invalidStat");
     }
 
     classItem.stats[statName] += 1;
@@ -286,10 +286,10 @@ class ClassService {
     // Validate teacher exists and is a teacher
     const teacher = await User.findById(teacherId);
     if (!teacher) {
-      throw new Error("المعلم غير موجود");
+      throw new Error("errors.teacherNotFound");
     }
     if (teacher.role !== "teacher") {
-      throw new Error("يجب أن يكون المستخدم معلماً");
+      throw new Error("errors.mustBeTeacher");
     }
 
     // Find and unassign teacher from any previous class
@@ -301,7 +301,7 @@ class ClassService {
     // Assign teacher to new class
     const classItem = await Class.findById(classId);
     if (!classItem) {
-      throw new Error("الفصل غير موجود");
+      throw new Error("errors.classNotFound");
     }
 
     classItem.assignedTeacherId = teacherId;
@@ -313,7 +313,7 @@ class ClassService {
     const classItem = await Class.findById(classId);
 
     if (!classItem) {
-      throw new Error("الفصل غير موجود");
+      throw new Error("errors.classNotFound");
     }
 
     classItem.assignedTeacherId = null;

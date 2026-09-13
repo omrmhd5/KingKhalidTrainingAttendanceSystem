@@ -48,7 +48,7 @@ class DisciplinaryService {
     const disciplinary = await Disciplinary.findById(disciplinaryId);
 
     if (!disciplinary) {
-      throw new Error("Disciplinary request not found");
+      throw new Error("errors.disciplinaryNotFound");
     }
 
     // Remove disciplinary from trainee's disciplinary array and get updated trainee

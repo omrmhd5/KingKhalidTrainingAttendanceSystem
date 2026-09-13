@@ -77,7 +77,7 @@ class ClassReportService {
       .populate("violationReports.studentId", "full_name military_id civil_id");
 
     if (!report) {
-      throw new Error("التقرير غير موجود");
+      throw new Error("errors.reportNotFound");
     }
 
     return report;
@@ -101,19 +101,19 @@ class ClassReportService {
 
     // Validation
     if (!date) {
-      throw new Error("التاريخ مطلوب");
+      throw new Error("errors.dateRequired");
     }
 
     if (!teacherId) {
-      throw new Error("معرف المعلم مطلوب");
+      throw new Error("errors.teacherIdRequired");
     }
 
     if (!classId) {
-      throw new Error("معرف الفصل مطلوب");
+      throw new Error("errors.classIdRequired");
     }
 
     if (!schedule) {
-      throw new Error("معرف الجدول الزمني مطلوب");
+      throw new Error("errors.scheduleIdRequired");
     }
 
     // All required report arrays must be provided (can be empty)
@@ -123,25 +123,25 @@ class ClassReportService {
       escapeReports === undefined ||
       violationReports === undefined
     ) {
-      throw new Error("جميع تقارير الطلاب مطلوبة");
+      throw new Error("errors.studentReportsRequired");
     }
 
     // Validate teacher exists
     const teacher = await User.findById(teacherId);
     if (!teacher) {
-      throw new Error("المعلم غير موجود");
+      throw new Error("errors.teacherNotFound");
     }
 
     // Validate class exists
     const classItem = await Class.findById(classId);
     if (!classItem) {
-      throw new Error("الفصل غير موجود");
+      throw new Error("errors.classNotFound");
     }
 
     // Validate schedule exists
     const scheduleItem = await ClassTimeSchedule.findById(schedule);
     if (!scheduleItem) {
-      throw new Error("الجدول الزمني غير موجود");
+      throw new Error("errors.scheduleNotFound");
     }
 
     // Collect all unique student IDs from all report types
@@ -159,7 +159,7 @@ class ClassReportService {
     if (uniqueStudentIds.length > 0) {
       const students = await Trainee.find({ _id: { $in: uniqueStudentIds } });
       if (students.length !== uniqueStudentIds.length) {
-        throw new Error("بعض الطلاب غير موجودين");
+        throw new Error("errors.someStudentsMissing");
       }
     }
 
@@ -215,14 +215,14 @@ class ClassReportService {
 
     const report = await ClassReport.findById(id);
     if (!report) {
-      throw new Error("التقرير غير موجود");
+      throw new Error("errors.reportNotFound");
     }
 
     // Validate if updating teacherId
     if (teacherId && teacherId !== report.teacherId.toString()) {
       const teacher = await User.findById(teacherId);
       if (!teacher) {
-        throw new Error("المعلم غير موجود");
+        throw new Error("errors.teacherNotFound");
       }
       report.teacherId = teacherId;
     }
@@ -231,7 +231,7 @@ class ClassReportService {
     if (classId && classId !== report.classId.toString()) {
       const classItem = await Class.findById(classId);
       if (!classItem) {
-        throw new Error("الفصل غير موجود");
+        throw new Error("errors.classNotFound");
       }
       report.classId = classId;
     }
@@ -240,7 +240,7 @@ class ClassReportService {
     if (schedule && schedule !== report.schedule.toString()) {
       const scheduleItem = await ClassTimeSchedule.findById(schedule);
       if (!scheduleItem) {
-        throw new Error("الجدول الزمني غير موجود");
+        throw new Error("errors.scheduleNotFound");
       }
       report.schedule = schedule;
     }
@@ -282,7 +282,7 @@ class ClassReportService {
       if (uniqueStudentIds.length > 0) {
         const students = await Trainee.find({ _id: { $in: uniqueStudentIds } });
         if (students.length !== uniqueStudentIds.length) {
-          throw new Error("بعض الطلاب غير موجودين");
+          throw new Error("errors.someStudentsMissing");
         }
       }
 
@@ -325,13 +325,13 @@ class ClassReportService {
     const report = await ClassReport.findById(id);
 
     if (!report) {
-      throw new Error("التقرير غير موجود");
+      throw new Error("errors.reportNotFound");
     }
 
     await ClassReport.findByIdAndDelete(id);
 
     return {
-      message: "تم حذف التقرير بنجاح",
+      message: "success.reportDeleted",
       deletedId: id,
     };
   }

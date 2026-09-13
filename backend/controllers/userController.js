@@ -1,7 +1,8 @@
 const userService = require("../services/userService");
 const classService = require("../services/classService");
+const { t } = require("../lib/i18n");
+const { sendError, sendCaught, cookieOpts } = require("../lib/http");
 
-// Get all users
 exports.getAllUsers = async (req, res) => {
   try {
     const filters = {
@@ -14,66 +15,58 @@ exports.getAllUsers = async (req, res) => {
     const users = await userService.getAllUsers(filters);
     res.json(users);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendCaught(req, res, error, 500);
   }
 };
 
-// Get user by ID
 exports.getUserById = async (req, res) => {
   try {
     const user = await userService.getUserById(req.params.id);
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return sendError(req, res, 404, "errors.userNotFound");
     }
     res.json(user);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendCaught(req, res, error, 500);
   }
 };
 
-// Create user
 exports.createUser = async (req, res) => {
   try {
     const result = await userService.createUser(req.body);
     const { plainTextPassword, ...user } = result;
 
-    // If teacher role and class provided, assign teacher to class
     if (user.role === "teacher" && req.body.class) {
       try {
         await classService.assignTeacherToClass(user._id, req.body.class);
       } catch (classError) {
         console.error("Failed to assign teacher to class:", classError.message);
-        // Don't fail the user creation if class assignment fails
       }
     }
 
     res.status(201).json({
-      message: "User created successfully",
+      message: t(req, "success.userCreated"),
       user,
       plainTextPassword,
     });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    sendCaught(req, res, error, 400);
   }
 };
 
-// Update user
 exports.updateUser = async (req, res) => {
   try {
     const oldUser = await userService.getUserById(req.params.id);
     const user = await userService.updateUser(req.params.id, req.body);
 
-    // Handle class assignment for teachers
     if (user.role === "teacher" && req.body.class) {
       try {
-        // assignTeacherToClass handles moving from old class to new class
         await classService.assignTeacherToClass(user._id, req.body.class);
       } catch (classError) {
         console.error("Failed to update class assignment:", classError.message);
       }
     }
 
-    // If teacher's class was removed, unassign from old class
     if (
       user.role === "teacher" &&
       !req.body.class &&
@@ -91,20 +84,18 @@ exports.updateUser = async (req, res) => {
     }
 
     res.json({
-      message: "User updated successfully",
+      message: t(req, "success.userUpdated"),
       user,
     });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    sendCaught(req, res, error, 400);
   }
 };
 
-// Delete user
 exports.deleteUser = async (req, res) => {
   try {
     const user = await userService.getUserById(req.params.id);
 
-    // If teacher, unassign from class
     if (user && user.role === "teacher" && user.class) {
       try {
         await classService.unassignTeacherFromClass(user.class);
@@ -117,31 +108,32 @@ exports.deleteUser = async (req, res) => {
     }
 
     await userService.deleteUser(req.params.id);
-    res.json({ message: "User deleted successfully" });
+    res.json({ message: t(req, "success.userDeleted") });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendCaught(req, res, error, 500);
   }
 };
 
-// Toggle user status (activate/deactivate)
 exports.toggleUserStatus = async (req, res) => {
   try {
     const user = await userService.toggleUserStatus(req.params.id);
     res.json({
-      message: `User ${user.isActive ? "activated" : "deactivated"} successfully`,
+      message: t(
+        req,
+        user.isActive ? "success.userActivated" : "success.userDeactivated",
+      ),
       user,
     });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    sendCaught(req, res, error, 400);
   }
 };
 
-// Change own password
 exports.changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword, confirmNewPassword } = req.body;
     if (!currentPassword || !newPassword || !confirmNewPassword) {
-      return res.status(400).json({ message: "جميع حقول كلمة المرور مطلوبة" });
+      return sendError(req, res, 400, "errors.passwordFieldsRequired");
     }
     await userService.changePassword(
       req.user.userId,
@@ -149,62 +141,47 @@ exports.changePassword = async (req, res) => {
       newPassword,
       confirmNewPassword,
     );
-    res.json({ message: "تم تغيير كلمة المرور بنجاح" });
+    res.json({ message: t(req, "success.passwordChanged") });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    sendCaught(req, res, error, 400);
   }
 };
 
-// Login user
 exports.login = async (req, res) => {
   try {
     const { username, password } = req.body;
 
     if (!username || !password) {
-      return res
-        .status(400)
-        .json({ message: "Username and password are required" });
+      return sendError(req, res, 400, "errors.usernamePasswordRequired");
     }
 
     const { token, user } = await userService.login(username, password);
 
-    // Set token in httpOnly cookie
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: false, // Must be false for HTTP local networks
-      sameSite: "lax", // Lax is perfect because the frontend and backend share the same IP
-      maxAge: 24 * 60 * 60 * 1000,
-    });
+    res.cookie("token", token, cookieOpts());
 
     res.json({
-      message: "Login successful",
+      message: t(req, "success.login"),
       token,
       user,
     });
   } catch (error) {
-    res.status(401).json({ message: error.message });
+    sendCaught(req, res, error, 401);
   }
 };
 
-// Logout user
 exports.logout = async (req, res) => {
-  res.clearCookie("token", {
-    httpOnly: true,
-    secure: false,
-    sameSite: "lax",
-  });
-  res.json({ message: "Logout successful" });
+  res.clearCookie("token", cookieOpts());
+  res.json({ message: t(req, "success.logout") });
 };
 
-// Get current user (from token)
 exports.getCurrentUser = async (req, res) => {
   try {
     const user = await userService.getUserById(req.user.userId);
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return sendError(req, res, 404, "errors.userNotFound");
     }
     res.json(user);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    sendCaught(req, res, error, 500);
   }
 };

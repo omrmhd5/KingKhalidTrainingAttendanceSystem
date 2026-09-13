@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -55,6 +56,7 @@ const getShiftCellColor = (shift: string): string => {
 };
 
 export function HoursTab({ date, onFilteredDataChange }: HoursTabProps) {
+  const { t, i18n } = useTranslation();
   const [attendanceData, setAttendanceData] = useState<AttendanceRecord[]>([]);
   const [search, setSearch] = useState("");
   const [filterShift, setFilterShift] = useState("all");
@@ -128,7 +130,7 @@ export function HoursTab({ date, onFilteredDataChange }: HoursTabProps) {
   });
 
   return (
-    <Card dir="rtl" className="bg-gray-50 border-gray-300">
+    <Card className="bg-gray-50 border-gray-300">
       <CardContent className="p-6">
         <HoursReportFilters
           search={search}
@@ -138,36 +140,18 @@ export function HoursTab({ date, onFilteredDataChange }: HoursTabProps) {
           shifts={shifts}
         />
         <div className="border border-gray-300 rounded-lg overflow-hidden">
-          <Table dir="rtl" className="border-collapse">
+          <Table className="border-collapse">
             <TableHeader className="bg-green-600">
               <TableRow>
-                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                  الرقم العسكري
-                </TableHead>
-                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                  الإسم
-                </TableHead>
-                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                  الشفت
-                </TableHead>
-                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                  الحضور
-                </TableHead>
-                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                  الخروج
-                </TableHead>
-                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                  الساعات المجدولة
-                </TableHead>
-                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                  الساعات المفقودة
-                </TableHead>
-                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                  الساعات الفعلية
-                </TableHead>
-                <TableHead className="text-center text-white font-bold py-3 px-4">
-                  الباركود
-                </TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("trainees.militaryId")}</TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("common.name")}</TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("trainees.shift")}</TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("summary.attended")}</TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("main.exit")}</TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("reports.scheduledHours")}</TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("reports.missingHours")}</TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("reports.actualHours")}</TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4">{t("common.barcode")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -175,17 +159,13 @@ export function HoursTab({ date, onFilteredDataChange }: HoursTabProps) {
                 <TableRow className="hover:bg-blue-50">
                   <TableCell
                     colSpan={9}
-                    className="text-center py-8 px-4 text-muted-foreground border border-gray-300">
-                    جاري التحميل...
-                  </TableCell>
+                    className="text-center py-8 px-4 text-muted-foreground border border-gray-300">{t("common.loading")}</TableCell>
                 </TableRow>
               ) : hoursData?.length === 0 ? (
                 <TableRow className="hover:bg-blue-50">
                   <TableCell
                     colSpan={9}
-                    className="text-center py-8 px-4 text-muted-foreground border border-gray-300">
-                    لا توجد سجلات
-                  </TableCell>
+                    className="text-center py-8 px-4 text-muted-foreground border border-gray-300">{t("reports.noHours")}</TableCell>
                 </TableRow>
               ) : (
                 hoursData?.map((h: HourRow, index) => (

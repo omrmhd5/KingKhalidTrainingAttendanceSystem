@@ -1,3 +1,5 @@
+import i18n from "@/i18n";
+import { useTranslation } from "react-i18next";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,12 +21,13 @@ import { shiftApi } from "@/lib/shiftApi";
 const convertTo12HourArabic = (time24: string): string => {
   if (!time24) return "";
   const [hours, minutes] = time24.split(":").map(Number);
-  const period = hours >= 12 ? "م" : "ص";
+  const period = hours >= 12 ? i18n.t("pm") : i18n.t("am");
   const hours12 = hours % 12 || 12;
   return `${String(hours12).padStart(2, "0")}:${String(minutes).padStart(2, "0")} ${period}`;
 };
 
 export function ShiftsManagementTab() {
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
 
@@ -62,8 +65,8 @@ export function ShiftsManagementTab() {
       setShifts(data);
     } catch (error) {
       toast({
-        title: "خطأ",
-        description: "فشل تحميل الشفتات",
+        title: t("common.error"),
+        description: t("shifts.loadFailed"),
         variant: "destructive",
       });
     } finally {
@@ -74,8 +77,8 @@ export function ShiftsManagementTab() {
   const handleAddShift = async () => {
     if (!shiftName.trim() || !shiftStart || !shiftEnd) {
       toast({
-        title: "خطأ",
-        description: "الرجاء ملء جميع الحقول",
+        title: t("common.error"),
+        description: t("common.required"),
         variant: "destructive",
       });
       return;
@@ -93,11 +96,11 @@ export function ShiftsManagementTab() {
       setShiftStart("");
       setShiftEnd("");
       setShiftGrace("10");
-      toast({ title: "تم إنشاء الشفت" });
+      toast({ title: t("shifts.created") });
     } catch (error) {
       toast({
-        title: "خطأ",
-        description: "فشل إنشاء الشفت",
+        title: t("common.error"),
+        description: t("shifts.createFailed"),
         variant: "destructive",
       });
     }
@@ -114,13 +117,13 @@ export function ShiftsManagementTab() {
       try {
         await shiftApi.deleteShift(deleteTargetId);
         setShifts(shifts.filter((s) => s._id !== deleteTargetId));
-        toast({ title: "تم حذف الشفت" });
+        toast({ title: t("shifts.deleted") });
         setDeleteTargetId(null);
         setDeleteTargetName("");
       } catch (error) {
         toast({
-          title: "خطأ",
-          description: "فشل حذف الشفت",
+          title: t("common.error"),
+          description: t("shifts.deleteFailed"),
           variant: "destructive",
         });
       }
@@ -144,8 +147,8 @@ export function ShiftsManagementTab() {
       !editingShiftId
     ) {
       toast({
-        title: "خطأ",
-        description: "الرجاء ملء جميع الحقول",
+        title: t("common.error"),
+        description: t("common.required"),
         variant: "destructive",
       });
       return;
@@ -166,11 +169,11 @@ export function ShiftsManagementTab() {
       setEditingShiftStart("");
       setEditingShiftEnd("");
       setEditingShiftGrace("10");
-      toast({ title: "تم تحديث الشفت" });
+      toast({ title: t("shifts.updated") });
     } catch (error) {
       toast({
-        title: "خطأ",
-        description: "فشل تحديث الشفت",
+        title: t("common.error"),
+        description: t("shifts.updateFailed"),
         variant: "destructive",
       });
     }
@@ -180,8 +183,8 @@ export function ShiftsManagementTab() {
     <Card>
       <CardHeader
         className="flex flex-row items-center justify-between"
-        dir="rtl">
-        <CardTitle>ادارة الشفتات ({shifts.length})</CardTitle>
+       >
+        <CardTitle>{t("shifts.countTitle", { count: shifts.length })}</CardTitle>
         <Button
           size="sm"
           onClick={() => {
@@ -191,9 +194,7 @@ export function ShiftsManagementTab() {
             setShiftGrace("10");
             setShiftDialogOpen(true);
           }}>
-          <Plus className="ml-2 h-4 w-4" />
-          اضافة شفت
-        </Button>
+          <Plus className="ml-2 h-4 w-4" />{t("shifts.add")}</Button>
       </CardHeader>
       <CardContent className="p-0">
         <ShiftTimeModal
@@ -228,30 +229,20 @@ export function ShiftsManagementTab() {
           onOpenChange={setDeleteConfirmOpen}
           onConfirm={confirmDelete}
           itemName={deleteTargetName}
-          itemType="الشفت"
+          itemType={t("trainees.shift")}
         />
         <div className="border border-gray-300 rounded-lg overflow-hidden">
-          <Table dir="rtl" className="border-collapse">
+          <Table className="border-collapse">
             <TableHeader className="bg-sky-600">
               <TableRow>
                 <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                  الاسم
+                  {t("common.name")}
                 </TableHead>
-                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                  البداية
-                </TableHead>
-                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                  النهاية
-                </TableHead>
-                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                  السماح
-                </TableHead>
-                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                  المتدربون
-                </TableHead>
-                <TableHead className="text-center text-white font-bold py-3 px-4">
-                  الإجراءات
-                </TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("common.start")}</TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("common.end")}</TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("common.allowance")}</TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("trainees.title")}</TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4">{t("common.actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -259,17 +250,13 @@ export function ShiftsManagementTab() {
                 <TableRow className="hover:bg-blue-50">
                   <TableCell
                     colSpan={6}
-                    className="text-center py-4 px-4 border border-gray-300">
-                    جاري التحميل...
-                  </TableCell>
+                    className="text-center py-4 px-4 border border-gray-300">{t("common.loading")}</TableCell>
                 </TableRow>
               ) : shifts.length === 0 ? (
                 <TableRow className="hover:bg-blue-50">
                   <TableCell
                     colSpan={6}
-                    className="text-center py-4 px-4 border border-gray-300">
-                    لا توجد شفتات
-                  </TableCell>
+                    className="text-center py-4 px-4 border border-gray-300">{t("shifts.empty")}</TableCell>
                 </TableRow>
               ) : (
                 shifts.map((s: any, index) => {
@@ -299,7 +286,7 @@ export function ShiftsManagementTab() {
                         </span>
                       </TableCell>
                       <TableCell className="text-center py-2 px-4 border border-gray-300">
-                        {s.grace_minutes} دقائق
+                        {t("common.minutesCount", { count: s.grace_minutes })}
                       </TableCell>
                       <TableCell className="text-center py-2 px-4 border border-gray-300">
                         {s.trainees_count || 0}

@@ -3,14 +3,17 @@ import { useAuth } from "@/contexts/AuthContext";
 import { AppSidebar } from "@/components/AppSidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import KSADateTime from "@/components/KSADateTime";
+import LanguageSwitch from "@/components/LanguageSwitch";
 import { LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 export default function DashboardLayout() {
   const { user, role, loading, signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   // Redirect teachers to their main page if accessing root
   useEffect(() => {
@@ -22,10 +25,12 @@ export default function DashboardLayout() {
   if (loading)
     return (
       <div className="flex h-screen items-center justify-center text-muted-foreground">
-        جاري التحميل...
+        {t("common.loading")}
       </div>
     );
   if (!user) return <Navigate to="/auth" state={{ from: location }} replace />;
+
+  const roleLabel = role ? t(`roles.${role}`, { defaultValue: role }) : t("nav.noRole");
 
   return (
     <SidebarProvider>
@@ -36,11 +41,12 @@ export default function DashboardLayout() {
             <div className="flex items-center gap-4">
               <SidebarTrigger />
               <span className="text-sm font-medium text-muted-foreground capitalize">
-                {role ?? "بدون رتبة"}
+                {roleLabel}
               </span>
             </div>
             <KSADateTime />
             <div className="flex items-center gap-3">
+              <LanguageSwitch />
               <span className="text-sm text-muted-foreground flex items-center gap-1">
                 <User className="h-3.5 w-3.5" />
                 {user.email}

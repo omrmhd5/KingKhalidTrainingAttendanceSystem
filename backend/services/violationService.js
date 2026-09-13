@@ -42,7 +42,7 @@ class ViolationService {
     ).populate("trainee_id");
 
     if (!violation) {
-      throw new Error("Violation not found");
+      throw new Error("errors.violationNotFound");
     }
 
     return violation;
@@ -52,7 +52,7 @@ class ViolationService {
     const violation = await Violation.findById(violationId);
 
     if (!violation) {
-      throw new Error("Violation not found");
+      throw new Error("errors.violationNotFound");
     }
 
     // Remove violation from trainee's violations array and get updated trainee

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
 import { ScanBarcode } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -23,6 +24,7 @@ export default function ScanInput({
   const [success, setSuccess] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -65,14 +67,14 @@ export default function ScanInput({
     try {
       await onScan(barcode.trim(), mode);
       setSuccess(
-        mode === "IN" ? "تم تسجيل الدخول بنجاح" : "تم تسجيل الخروج بنجاح",
+        mode === "IN" ? t("main.scanSuccessIn") : t("main.scanSuccessOut"),
       );
     } catch (err: any) {
       const errorMessage =
-        err.response?.data?.message || err.message || "حدث خطأ ما";
+        err.response?.data?.message || err.message || t("common.somethingWentWrong");
       setError(errorMessage);
       toast({
-        title: "خطأ",
+        title: t("common.error"),
         description: errorMessage,
         variant: "destructive",
       });
@@ -97,12 +99,11 @@ export default function ScanInput({
             value={barcode}
             onChange={(e) => setBarcode(e.target.value)}
             onBlur={handleBlur}
-            placeholder="امسح الباركود هنا..."
+            placeholder={t("main.scanPlaceholder")}
             className="h-12 border-2 border-gray-700 bg-background pr-10 text-center text-lg font-mono text-foreground"
             autoFocus
             autoComplete="off"
             disabled={isScanning}
-            dir="rtl"
           />
         </div>
         {error && (

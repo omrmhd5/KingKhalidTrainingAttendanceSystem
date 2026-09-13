@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -28,10 +29,10 @@ interface StudentReportRowProps {
 }
 
 const violationLabels: Record<1 | 2 | 3 | 4, string> = {
-  1: "نوم",
-  2: "جوال",
-  3: "عدم احترام",
-  4: "مخالفة أنظمة",
+  1: t("teacher.sleep"),
+  2: t("teacher.phone"),
+  3: t("teacher.disrespect"),
+  4: t("teacher.rules"),
 };
 
 export default function StudentReportRow({
@@ -40,6 +41,7 @@ export default function StudentReportRow({
   onViolationAdd,
   onViolationRemove,
 }: StudentReportRowProps) {
+  const { t, i18n } = useTranslation();
   const [violationModalOpen, setViolationModalOpen] = useState(false);
 
   const getStatusColor = (status: string | null) => {
@@ -61,7 +63,7 @@ export default function StudentReportRow({
     <>
       <div
         className={`p-3 rounded-lg border-2 transition-colors ${getStatusColor(report.status)}`}
-        dir="rtl">
+       >
         {/* Student Info */}
         <div className="flex items-center justify-between mb-2">
           <div className="flex-1">
@@ -84,12 +86,12 @@ export default function StudentReportRow({
                       : "bg-orange-600"
               }`}>
               {report.status === "present"
-                ? "حاضر"
+                ? t("teacher.present")
                 : report.status === "absent"
-                  ? "غايب"
+                  ? t("teacher.absent")
                   : report.status === "course"
-                    ? "دورة"
-                    : "لم يسجل خروج"}
+                    ? t("classes.course")
+                    : t("reports.noExit")}
             </Badge>
           )}
         </div>
@@ -126,7 +128,7 @@ export default function StudentReportRow({
             }
             onClick={() => onStatusChange(report.studentId, "present")}>
             <CheckCircle className="h-4 w-4" />
-            <span className="hidden sm:inline">حاضر</span>
+            <span className="hidden sm:inline">{t("teacher.present")}</span>
           </Button>
 
           {/* Absent */}
@@ -138,7 +140,7 @@ export default function StudentReportRow({
             }
             onClick={() => onStatusChange(report.studentId, "absent")}>
             <XCircle className="h-4 w-4" />
-            <span className="hidden sm:inline">غايب</span>
+            <span className="hidden sm:inline">{t("teacher.absent")}</span>
           </Button>
 
           {/* Escape */}
@@ -152,7 +154,7 @@ export default function StudentReportRow({
             }
             onClick={() => onStatusChange(report.studentId, "escape")}>
             <ArrowRight className="h-4 w-4" />
-            <span className="hidden sm:inline">لم يسجل خروج</span>
+            <span className="hidden sm:inline">{t("reports.noExit")}</span>
           </Button>
 
           {/* Course */}
@@ -166,7 +168,7 @@ export default function StudentReportRow({
             }
             onClick={() => onStatusChange(report.studentId, "course")}>
             <GraduationCap className="h-4 w-4" />
-            <span className="hidden sm:inline">دورة</span>
+            <span className="hidden sm:inline">{t("classes.course")}</span>
           </Button>
 
           {/* Violation */}
@@ -180,7 +182,7 @@ export default function StudentReportRow({
             }
             onClick={() => setViolationModalOpen(true)}>
             <AlertCircle className="h-4 w-4" />
-            <span className="hidden sm:inline">مخالفة</span>
+            <span className="hidden sm:inline">{t("teacher.violation")}</span>
           </Button>
         </div>
       </div>

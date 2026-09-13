@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +25,7 @@ import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
 import { specializationApi } from "@/lib/specializationApi";
 
 export function SpecializationsManagementTab() {
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const [specializations, setSpecializations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,8 +55,8 @@ export function SpecializationsManagementTab() {
       setSpecializations(data);
     } catch (error) {
       toast({
-        title: "خطأ",
-        description: "فشل تحميل التخصصات",
+        title: t("common.error"),
+        description: t("specializations.loadFailed"),
         variant: "destructive",
       });
     } finally {
@@ -65,8 +67,8 @@ export function SpecializationsManagementTab() {
   const handleAddSpecialization = async () => {
     if (!specializationName.trim()) {
       toast({
-        title: "خطأ",
-        description: "الرجاء إدخال اسم التخصص",
+        title: t("common.error"),
+        description: t("specializations.needName"),
         variant: "destructive",
       });
       return;
@@ -78,11 +80,11 @@ export function SpecializationsManagementTab() {
       setSpecializations([...specializations, newSpecialization]);
       setSpecializationName("");
       setDialogOpen(false);
-      toast({ title: "تم إضافة التخصص" });
+      toast({ title: t("specializations.added") });
     } catch (error) {
       toast({
-        title: "خطأ",
-        description: "فشل إضافة التخصص",
+        title: t("common.error"),
+        description: t("specializations.addFailed"),
         variant: "destructive",
       });
     }
@@ -101,13 +103,13 @@ export function SpecializationsManagementTab() {
         setSpecializations(
           specializations.filter((s) => s._id !== deleteTargetId),
         );
-        toast({ title: "تم حذف التخصص" });
+        toast({ title: t("specializations.deleted") });
         setDeleteTargetId(null);
         setDeleteTargetName("");
       } catch (error) {
         toast({
-          title: "خطأ",
-          description: "فشل حذف التخصص",
+          title: t("common.error"),
+          description: t("specializations.deleteFailed"),
           variant: "destructive",
         });
       }
@@ -123,8 +125,8 @@ export function SpecializationsManagementTab() {
   const handleUpdateSpecialization = async () => {
     if (!editingSpecializationName.trim() || !editingSpecializationId) {
       toast({
-        title: "خطأ",
-        description: "الرجاء إدخال اسم التخصص",
+        title: t("common.error"),
+        description: t("specializations.needName"),
         variant: "destructive",
       });
       return;
@@ -142,11 +144,11 @@ export function SpecializationsManagementTab() {
       setEditDialogOpen(false);
       setEditingSpecializationId(null);
       setEditingSpecializationName("");
-      toast({ title: "تم تحديث التخصص" });
+      toast({ title: t("specializations.updated") });
     } catch (error) {
       toast({
-        title: "خطأ",
-        description: "فشل تحديث التخصص",
+        title: t("common.error"),
+        description: t("specializations.updateFailed"),
         variant: "destructive",
       });
     }
@@ -156,32 +158,28 @@ export function SpecializationsManagementTab() {
     <Card>
       <CardHeader
         className="flex flex-row items-center justify-between"
-        dir="rtl">
-        <CardTitle>إدارة التخصصات ({specializations.length})</CardTitle>
+       >
+        <CardTitle>{t("specializations.count", { count: specializations.length })}</CardTitle>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button size="sm">
-              <Plus className="ml-2 h-4 w-4" />
-              إضافة تخصص
-            </Button>
+              <Plus className="ml-2 h-4 w-4" />{t("specializations.add")}</Button>
           </DialogTrigger>
           <DialogContent className="max-w-sm">
             <DialogHeader>
-              <DialogTitle className="text-right">تخصص جديد</DialogTitle>
+              <DialogTitle className="text-right">{t("specializations.newSpec")}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-1">
-                <Label>الاسم</Label>
+                <Label>{t("common.name")}</Label>
                 <Input
                   value={specializationName}
                   onChange={(e) => setSpecializationName(e.target.value)}
-                  placeholder="أدخل اسم التخصص"
+                  placeholder={t("specializations.namePlaceholder")}
                   required
                 />
               </div>
-              <Button className="w-full" onClick={handleAddSpecialization}>
-                إضافة
-              </Button>
+              <Button className="w-full" onClick={handleAddSpecialization}>{t("common.add")}</Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -192,39 +190,35 @@ export function SpecializationsManagementTab() {
           onOpenChange={setDeleteConfirmOpen}
           onConfirm={confirmDelete}
           itemName={deleteTargetName}
-          itemType="التخصص"
+          itemType={t("trainees.specialty")}
         />
         <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
           <DialogContent className="max-w-sm">
             <DialogHeader>
-              <DialogTitle className="text-right">تعديل التخصص</DialogTitle>
+              <DialogTitle className="text-right">{t("specializations.edit")}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-1">
-                <Label>الاسم</Label>
+                <Label>{t("common.name")}</Label>
                 <Input
                   value={editingSpecializationName}
                   onChange={(e) => setEditingSpecializationName(e.target.value)}
-                  placeholder="أدخل اسم التخصص"
+                  placeholder={t("specializations.namePlaceholder")}
                   required
                 />
               </div>
-              <Button className="w-full" onClick={handleUpdateSpecialization}>
-                تحديث
-              </Button>
+              <Button className="w-full" onClick={handleUpdateSpecialization}>{t("common.update")}</Button>
             </div>
           </DialogContent>
         </Dialog>
         <div className="border border-gray-300 rounded-lg overflow-hidden">
-          <Table dir="rtl" className="border-collapse">
+          <Table className="border-collapse">
             <TableHeader className="bg-fuchsia-600">
               <TableRow>
                 <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
-                  الاسم
+                  {t("common.name")}
                 </TableHead>
-                <TableHead className="text-center text-white font-bold py-3 px-4">
-                  الإجراءات
-                </TableHead>
+                <TableHead className="text-center text-white font-bold py-3 px-4">{t("common.actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -232,17 +226,13 @@ export function SpecializationsManagementTab() {
                 <TableRow className="hover:bg-blue-50">
                   <TableCell
                     colSpan={2}
-                    className="text-center py-4 px-4 border border-gray-300">
-                    جاري التحميل...
-                  </TableCell>
+                    className="text-center py-4 px-4 border border-gray-300">{t("common.loading")}</TableCell>
                 </TableRow>
               ) : specializations.length === 0 ? (
                 <TableRow className="hover:bg-blue-50">
                   <TableCell
                     colSpan={2}
-                    className="text-center py-4 px-4 border border-gray-300">
-                    لا توجد تخصصات
-                  </TableCell>
+                    className="text-center py-4 px-4 border border-gray-300">{t("specializations.empty")}</TableCell>
                 </TableRow>
               ) : (
                 specializations.map((s, index) => (

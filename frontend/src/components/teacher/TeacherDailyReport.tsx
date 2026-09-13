@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -39,6 +40,7 @@ interface TeacherDailyReportProps {
 export default function TeacherDailyReport({
   classData,
 }: TeacherDailyReportProps) {
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const { user } = useAuth();
   const today = getTodayDateKSA();
@@ -270,8 +272,8 @@ export default function TeacherDailyReport({
     );
     setQuickClearOpen(false);
     toast({
-      title: "تم",
-      description: "تم تعليم الجميع حاضرون بدون مشاكل",
+      title: t("common.done"),
+      description: t("teacher.allPresentDone"),
     });
   };
 
@@ -285,8 +287,8 @@ export default function TeacherDailyReport({
     );
     setShowSummary(false);
     toast({
-      title: "تم",
-      description: "تم إعادة تعيين التقرير",
+      title: t("common.done"),
+      description: t("teacher.reportReset"),
     });
   };
 
@@ -295,8 +297,8 @@ export default function TeacherDailyReport({
     const incomplete = studentReports.some((r) => r.status === null);
     if (incomplete) {
       toast({
-        title: "خطأ",
-        description: "الرجاء تحديد حالة جميع الطلاب",
+        title: t("common.error"),
+        description: t("teacher.selectAllStatuses"),
         variant: "destructive",
       });
       return;
@@ -373,25 +375,25 @@ export default function TeacherDailyReport({
         await classReportApi.updateClassReport(existingReportId, reportData);
         console.log("✅ Report updated successfully");
         toast({
-          title: "نجاح",
-          description: "تم تحديث التقرير بنجاح",
+          title: t("common.success"),
+          description: t("teacher.reportUpdated"),
         });
       } else {
         const response = await classReportApi.createClassReport(reportData);
         console.log("✅ Report created successfully:", response);
         setExistingReportId(response.report._id);
         toast({
-          title: "نجاح",
-          description: "تم إرسال التقرير بنجاح",
+          title: t("common.success"),
+          description: t("teacher.reportSent"),
         });
       }
 
       // Don't reset - keep showing submitted data
     } catch (error: any) {
       const errorMessage =
-        error?.response?.data?.message || "فشل إرسال التقرير";
+        error?.response?.data?.message || t("teacher.reportSendFailed");
       toast({
-        title: "خطأ",
+        title: t("common.error"),
         description: errorMessage,
         variant: "destructive",
       });
@@ -440,7 +442,7 @@ export default function TeacherDailyReport({
   });
 
   return (
-    <div className="space-y-4 p-4" dir="rtl">
+    <div className="space-y-4 p-4">
       {/* Class and Schedule Info Cards */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <TeacherClassCard
@@ -460,12 +462,8 @@ export default function TeacherDailyReport({
         <CardContent className="pt-6">
           <Button
             onClick={() => setQuickClearOpen(true)}
-            className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-lg font-semibold">
-            ✓ الجميع حاضرون - لا توجد مشاكل
-          </Button>
-          <p className="text-xs text-muted-foreground text-center mt-2">
-            اضغط إذا كان جميع الطلاب حاضرين وبدون أي مشاكل
-          </p>
+            className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-lg font-semibold">{t("teacher.allClear")}</Button>
+          <p className="text-xs text-muted-foreground text-center mt-2">{t("teacher.allPresentNoIssues")}</p>
         </CardContent>
       </Card>
 
@@ -474,21 +472,19 @@ export default function TeacherDailyReport({
         <CardHeader className="text-right space-y-4">
           <div className="flex items-center justify-between">
             <CardTitle>
-              الطلاب ({filteredStudents.length}/{studentReports.length})
+              {t("teacher.studentsTab", { filtered: filteredStudents.length, total: studentReports.length })}
             </CardTitle>
             {loading && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                جاري التحميل...
-              </div>
+                <Loader2 className="h-4 w-4 animate-spin" />{t("common.loading")}</div>
             )}
           </div>
           <Input
-            placeholder="ابحث باسم الطالب أو رقم عسكري أو هوية..."
+            placeholder={t("teacher.searchStudent")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="text-right"
-            dir="rtl"
+           
             disabled={loading}
           />
         </CardHeader>
@@ -505,9 +501,7 @@ export default function TeacherDailyReport({
                 />
               ))
             ) : (
-              <p className="text-center text-sm text-muted-foreground py-8">
-                لا توجد نتائج تطابق البحث
-              </p>
+              <p className="text-center text-sm text-muted-foreground py-8">{t("common.noResults")}</p>
             )}
           </div>
         </CardContent>
@@ -528,16 +522,12 @@ export default function TeacherDailyReport({
           variant="outline"
           className="flex-1"
           disabled={submitting || loading}>
-          <RotateCcw className="ml-2 h-4 w-4" />
-          إعادة تعيين
-        </Button>
+          <RotateCcw className="ml-2 h-4 w-4" />{t("common.reset")}</Button>
         <Button
           onClick={() => setShowSummary(!showSummary)}
           variant="outline"
           className="flex-1"
-          disabled={!isComplete || submitting || loading}>
-          عرض الملخص
-        </Button>
+          disabled={!isComplete || submitting || loading}>{t("teacher.showSummary")}</Button>
         <Button
           onClick={handleSubmit}
           className="flex-1 bg-blue-600 hover:bg-blue-700"
@@ -545,12 +535,12 @@ export default function TeacherDailyReport({
           {submitting ? (
             <>
               <Loader2 className="ml-2 h-4 w-4 animate-spin" />
-              جاري {existingReportId ? "التحديث" : "الإرسال"}...
+              {t("teacher.savingAction", { action: existingReportId ? t("teacher.updating") : t("teacher.submitting") })}
             </>
           ) : (
             <>
               <Send className="ml-2 h-4 w-4" />
-              {existingReportId ? "تحديث التقرير" : "إرسال التقرير"}
+              {existingReportId ? t("teacher.updateReport") : t("teacher.sendReport")}
             </>
           )}
         </Button>

@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const { sendError } = require("../lib/http");
 
 const JWT_SECRET =
   process.env.JWT_SECRET || "your-secret-key-change-in-production";
@@ -9,7 +10,7 @@ const authenticateToken = (req, res, next) => {
     const token = req.cookies?.token;
 
     if (!token) {
-      return res.status(401).json({ message: "Authentication required" });
+      return sendError(req, res, 401, "errors.authRequired");
     }
 
     const decoded = jwt.verify(token, JWT_SECRET);
@@ -17,19 +18,19 @@ const authenticateToken = (req, res, next) => {
     next();
   } catch (error) {
     if (error.name === "JsonWebTokenError") {
-      return res.status(401).json({ message: "Invalid token" });
+      return sendError(req, res, 401, "errors.invalidToken");
     }
     if (error.name === "TokenExpiredError") {
-      return res.status(401).json({ message: "Token expired" });
+      return sendError(req, res, 401, "errors.tokenExpired");
     }
-    return res.status(500).json({ message: "Authentication error" });
+    return sendError(req, res, 500, "errors.authError");
   }
 };
 
 // Check if user is admin
 const requireAdmin = (req, res, next) => {
   if (req.user?.role !== "admin") {
-    return res.status(403).json({ message: "Access denied. Admin only." });
+    return sendError(req, res, 403, "errors.adminOnly");
   }
   next();
 };
@@ -37,9 +38,7 @@ const requireAdmin = (req, res, next) => {
 // Check if user is admin or operator
 const requireAdminOrOperator = (req, res, next) => {
   if (!["admin", "operator"].includes(req.user?.role)) {
-    return res
-      .status(403)
-      .json({ message: "Access denied. Admin or Operator only." });
+    return sendError(req, res, 403, "errors.adminOrOperatorOnly");
   }
   next();
 };

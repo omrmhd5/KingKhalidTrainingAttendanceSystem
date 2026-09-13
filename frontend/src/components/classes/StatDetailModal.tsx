@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import {
   Dialog,
   DialogContent,
@@ -47,10 +48,10 @@ const colorTextStyles = {
 };
 
 const violationTypes: Record<number | string, string> = {
-  1: "النوم في الفصل",
-  2: "استخدام الجوال في الفصل",
-  3: "عدم احترام المسؤول",
-  4: "مخالفة الأنظمة والتعليمات",
+  1: t("teacher.sleeping"),
+  2: t("teacher.phoneUse"),
+  3: t("teacher.disrespectOfficial"),
+  4: t("teacher.rulesViolation"),
 };
 
 export default function StatDetailModal({
@@ -60,6 +61,7 @@ export default function StatDetailModal({
   students,
   color,
 }: StatDetailModalProps) {
+  const { t, i18n } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
 
   // Filter students based on search query (name, military_id, civil_id)
@@ -75,19 +77,19 @@ export default function StatDetailModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl" dir="rtl">
+      <DialogContent className="max-w-2xl" dir={i18n.dir()}>
         <DialogHeader>
           <DialogTitle className="text-right">{title}</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4" dir="rtl">
+        <div className="space-y-4">
           {/* Search Bar */}
           <Input
-            placeholder="ابحث باسم الطالب أو رقم عسكري أو هوية..."
+            placeholder={t("teacher.searchStudent")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="text-right"
-            dir="rtl"
+           
           />
 
           {/* Students List */}
@@ -103,27 +105,21 @@ export default function StatDetailModal({
                     }`}>
                     <div>
                       <p className="text-xs text-muted-foreground mb-1">
-                        الاسم
+                        {t("common.name")}
                       </p>
                       <p className="font-medium">{item.student.full_name}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground mb-1">
-                        الرقم العسكري
-                      </p>
+                      <p className="text-xs text-muted-foreground mb-1">{t("trainees.militaryId")}</p>
                       <p className="font-medium">{item.student.military_id}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground mb-1">
-                        السجل المدني
-                      </p>
+                      <p className="text-xs text-muted-foreground mb-1">{t("trainees.civilId")}</p>
                       <p className="font-medium">{item.student.civil_id}</p>
                     </div>
                     {item.violationType && (
                       <div>
-                        <p className="text-xs text-muted-foreground mb-1">
-                          المخالفة
-                        </p>
+                        <p className="text-xs text-muted-foreground mb-1">{t("classes.violation")}</p>
                         <div className="font-medium">
                           <p>
                             {violationTypes[item.violationType] ||
@@ -142,22 +138,18 @@ export default function StatDetailModal({
               ))}
             </div>
           ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              لا يوجد طلاب
-            </div>
+            <div className="text-center py-8 text-muted-foreground">{t("classes.emptyStudents")}</div>
           )}
 
           {/* Count */}
           <div
             className={`text-center py-2 rounded-lg font-semibold ${colorTextStyles[color]}`}>
-            إجمالي: {filteredStudents.length}
+            {t("classes.totalLabelCount", { count: filteredStudents.length })}
           </div>
         </div>
 
         <DialogFooter className="pt-4 gap-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            إغلاق
-          </Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>{t("common.close")}</Button>
           <ExportPDF data={filteredStudents} title={title} />
           <ExportExcel data={filteredStudents} title={title} />
         </DialogFooter>
