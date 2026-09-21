@@ -47,13 +47,6 @@ const colorTextStyles = {
   violet: "text-violet-700",
 };
 
-const violationTypes: Record<number | string, string> = {
-  1: t("teacher.sleeping"),
-  2: t("teacher.phoneUse"),
-  3: t("teacher.disrespectOfficial"),
-  4: t("teacher.rulesViolation"),
-};
-
 export default function StatDetailModal({
   open,
   onOpenChange,
@@ -63,6 +56,12 @@ export default function StatDetailModal({
 }: StatDetailModalProps) {
   const { t, i18n } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
+  const violationTypes: Record<number | string, string> = {
+    1: t("teacher.sleeping"),
+    2: t("teacher.phoneUse"),
+    3: t("teacher.disrespectOfficial"),
+    4: t("teacher.rulesViolation"),
+  };
 
   // Filter students based on search query (name, military_id, civil_id)
   const filteredStudents = students.filter((item) => {
@@ -89,7 +88,6 @@ export default function StatDetailModal({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="text-right"
-           
           />
 
           {/* Students List */}
@@ -110,16 +108,22 @@ export default function StatDetailModal({
                       <p className="font-medium">{item.student.full_name}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground mb-1">{t("trainees.militaryId")}</p>
+                      <p className="text-xs text-muted-foreground mb-1">
+                        {t("trainees.militaryId")}
+                      </p>
                       <p className="font-medium">{item.student.military_id}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground mb-1">{t("trainees.civilId")}</p>
+                      <p className="text-xs text-muted-foreground mb-1">
+                        {t("trainees.civilId")}
+                      </p>
                       <p className="font-medium">{item.student.civil_id}</p>
                     </div>
                     {item.violationType && (
                       <div>
-                        <p className="text-xs text-muted-foreground mb-1">{t("classes.violation")}</p>
+                        <p className="text-xs text-muted-foreground mb-1">
+                          {t("classes.violation")}
+                        </p>
                         <div className="font-medium">
                           <p>
                             {violationTypes[item.violationType] ||
@@ -138,7 +142,9 @@ export default function StatDetailModal({
               ))}
             </div>
           ) : (
-            <div className="text-center py-8 text-muted-foreground">{t("classes.emptyStudents")}</div>
+            <div className="text-center py-8 text-muted-foreground">
+              {t("classes.emptyStudents")}
+            </div>
           )}
 
           {/* Count */}
@@ -149,7 +155,9 @@ export default function StatDetailModal({
         </div>
 
         <DialogFooter className="pt-4 gap-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>{t("common.close")}</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            {t("common.close")}
+          </Button>
           <ExportPDF data={filteredStudents} title={title} />
           <ExportExcel data={filteredStudents} title={title} />
         </DialogFooter>

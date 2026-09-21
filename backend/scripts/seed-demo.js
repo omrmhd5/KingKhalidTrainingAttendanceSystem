@@ -17,28 +17,54 @@ const LOCAL_URI =
   "mongodb://127.0.0.1:27017/king-khalid-training-attendance-system-demo";
 
 const RANKS = [
-  "طالب فني",
-  "وكيل رقيب فني",
-  "رقيب فني",
-  "رقيب أول فني",
-  "رئيس رقباء فني",
+  "Technical Student",
+  "Technical Corporal",
+  "Technical Sergeant",
+  "Senior Technical Sergeant",
+  "Technical Master Sergeant",
 ];
 
 const SPECIALIZATIONS = [
-  "إلكترونيات",
-  "محطات",
-  "حساسات",
-  "تسليح",
-  "محركات",
-  "صيانة عامة",
-  "كهرباء وهوائيات",
-  "كراسي إنقاذ",
-  "هيدروليك",
-  "وقود",
-  "معدات أرضية",
-  "مظلات",
-  "وسائل إنقاذ",
+  "Electronics",
+  "Stations",
+  "Sensors",
+  "Armament",
+  "Engines",
+  "General Maintenance",
+  "Electrical and Antennas",
+  "Ejection Seats",
+  "Hydraulics",
+  "Fuel",
+  "Ground Equipment",
+  "Parachutes",
+  "Rescue Equipment",
 ];
+
+/** Calendar day in Asia/Riyadh, recomputed every time the seed runs. */
+function getKSAToday() {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Riyadh",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour12: false,
+  }).formatToParts(new Date());
+  const get = (type) => parts.find((p) => p.type === type).value;
+  const year = Number(get("year"));
+  const month = Number(get("month"));
+  const day = Number(get("day"));
+  const iso = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+  return {
+    iso,
+    // Attendance queries use local midnight of this calendar day.
+    attendanceDate: new Date(year, month - 1, day, 0, 0, 0, 0),
+    // Class reports are matched with new Date("yyyy-MM-dd") (UTC midnight).
+    reportDate: new Date(iso),
+    at(hours, minutes) {
+      return new Date(year, month - 1, day, hours, minutes, 0, 0);
+    },
+  };
+}
 
 function pickUri() {
   const mode = process.argv.includes("--remote") ? "remote" : "local";
@@ -86,17 +112,17 @@ async function seed() {
 
   const shiftA = await Shift.create({
     name: "A",
-    start_time: "06:00",
+    start_time: "00:00",
     end_time: "12:00",
     grace_minutes: 60,
-    effective_start_time: calculateEffectiveStartTime("06:00", 60),
+    effective_start_time: calculateEffectiveStartTime("00:00", 60),
     trainees: [],
     trainees_count: 0,
   });
   const shiftB = await Shift.create({
     name: "B",
     start_time: "12:00",
-    end_time: "19:00",
+    end_time: "23:59",
     grace_minutes: 60,
     effective_start_time: calculateEffectiveStartTime("12:00", 60),
     trainees: [],
@@ -104,14 +130,14 @@ async function seed() {
   });
 
   const classSchedule = await ClassTimeSchedule.create({
-    name: "جدول الفصل الصباحي",
+    name: "Morning class schedule",
     start_time: "08:00",
     end_time: "14:00",
     classes: [],
   });
 
   const klass = await Class.create({
-    name: "فصل 1",
+    name: "Class 1",
     assignedTeacherId: null,
     students: [],
     schedule: classSchedule._id,
@@ -143,7 +169,7 @@ async function seed() {
     {
       civil_id: "1010000001",
       military_id: "2010000001",
-      full_name: "أحمد محمد",
+      full_name: "Ahmed Mohammed",
       rank_id: ranks[0]._id,
       specialty_id: specs[0]._id,
       shift_id: shiftA._id,
@@ -152,7 +178,7 @@ async function seed() {
     {
       civil_id: "1010000002",
       military_id: "2010000002",
-      full_name: "خالد العتيبي",
+      full_name: "Khalid Al-Otaibi",
       rank_id: ranks[2]._id,
       specialty_id: specs[4]._id,
       shift_id: shiftA._id,
@@ -161,7 +187,7 @@ async function seed() {
     {
       civil_id: "1010000003",
       military_id: "2010000003",
-      full_name: "سالم القرشي",
+      full_name: "Salem Al-Qurashi",
       rank_id: ranks[1]._id,
       specialty_id: specs[5]._id,
       shift_id: shiftB._id,
@@ -182,7 +208,7 @@ async function seed() {
 
   const violation = await Violation.create({
     trainee_id: trainees[0]._id,
-    description: "تأخير عن الطابور الصباحي",
+    description: "Late for the morning formation",
   });
   trainees[0].hasViolation = true;
   trainees[0].violations = [violation._id];
@@ -190,11 +216,68 @@ async function seed() {
 
   const disciplinary = await Disciplinary.create({
     trainee_id: trainees[1]._id,
-    reason: "طلب متابعة انضباط للغياب المتكرر",
+    reason: "Discipline follow-up for repeated absence",
   });
   trainees[1].hasDisciplinary = true;
   trainees[1].disciplinary = [disciplinary._id];
   await trainees[1].save();
+
+  const today = getKSAToday();
+  const onTimeEntry = today.at(6, 20);
+  const onTimeExit = today.at(12, 0);
+  const lateEntry = today.at(8, 15);
+
+  await Attendance.insertMany([
+    {
+      trainee_id: trainees[0]._id,
+      civil_id: trainees[0].civil_id,
+      military_id: trainees[0].military_id,
+      trainee_assigned_shift_id: shiftA._id,
+      shift_id: shiftA._id,
+      date: today.attendanceDate,
+      entry_time: onTimeEntry,
+      exit_time: onTimeExit,
+      status: "on-time",
+      duration_minutes: Math.round((onTimeExit - onTimeEntry) / 60000),
+    },
+    {
+      trainee_id: trainees[1]._id,
+      civil_id: trainees[1].civil_id,
+      military_id: trainees[1].military_id,
+      trainee_assigned_shift_id: shiftA._id,
+      shift_id: shiftA._id,
+      date: today.attendanceDate,
+      entry_time: lateEntry,
+      status: "late",
+      duration_minutes: 0,
+    },
+  ]);
+
+  await ClassReport.create({
+    date: today.reportDate,
+    teacherId: teacher._id,
+    classId: klass._id,
+    schedule: classSchedule._id,
+    presentReports: [{ studentId: trainees[0]._id }],
+    absenceReports: [{ studentId: trainees[2]._id }],
+    escapeReports: [{ studentId: trainees[1]._id }],
+    courseReports: [],
+    violationReports: [
+      {
+        studentId: trainees[0]._id,
+        violationType: 1,
+        violationDescription: "Late for the morning formation",
+      },
+    ],
+    submittedAt: today.at(9, 0),
+    stats: {
+      present: 1,
+      absence: 1,
+      escapes: 1,
+      course: 0,
+      violations: 1,
+    },
+  });
 
   console.log(`Seeded ${mode}:`);
   console.log("  admin@admin.com / admin123");
@@ -202,6 +285,9 @@ async function seed() {
   console.log(`  ranks ${ranks.length}, specializations ${specs.length}`);
   console.log("  shifts A + B, 1 class, 3 trainees");
   console.log("  1 violation, 1 disciplinary request");
+  console.log(
+    `  today ${today.iso}: 1 on-time (with exit), 1 late (no exit), 1 absent, 1 class report`,
+  );
 
   await mongoose.disconnect();
 }

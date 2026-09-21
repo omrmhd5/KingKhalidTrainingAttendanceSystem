@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { getGregorianDateArabic } from "@/lib/utils";
+import { getGregorianDateArabic, getTodayDateKSA } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
@@ -72,6 +72,7 @@ export function ClassDashboardTab({ canWrite = true }: ClassDashboardTabProps) {
     try {
       setLoading(true);
       // TODO: Replace with actual API call
+      const today = getTodayDateKSA();
       const mockReports: ReportedItem[] = [
         {
           _id: "r1",
@@ -80,7 +81,7 @@ export function ClassDashboardTab({ canWrite = true }: ClassDashboardTabProps) {
           className: "الفصل الأول",
           teacherName: "معلم1",
           type: "absence",
-          date: "2026-03-23",
+          date: today,
           notes: t("teacher.absentUnexcused"),
         },
         {
@@ -90,7 +91,7 @@ export function ClassDashboardTab({ canWrite = true }: ClassDashboardTabProps) {
           className: "الفصل الأول",
           teacherName: "معلم1",
           type: "escape",
-          date: "2026-03-23",
+          date: today,
           notes: t("teacher.noExitFromClass"),
         },
         {
@@ -100,7 +101,7 @@ export function ClassDashboardTab({ canWrite = true }: ClassDashboardTabProps) {
           className: "الفصل الأول",
           teacherName: "معلم1",
           type: "absence",
-          date: "2026-03-22",
+          date: today,
           notes: t("teacher.absentExcuse"),
         },
       ];
@@ -138,7 +139,9 @@ export function ClassDashboardTab({ canWrite = true }: ClassDashboardTabProps) {
       {/* Filters */}
       <div className="flex gap-4 items-end">
         <div className="flex-1">
-          <label className="text-sm font-medium text-right block mb-2">{t("classes.reportType")}</label>
+          <label className="text-sm font-medium text-right block mb-2">
+            {t("classes.reportType")}
+          </label>
           <Select
             value={reportType}
             onValueChange={(v: string) =>
@@ -155,7 +158,9 @@ export function ClassDashboardTab({ canWrite = true }: ClassDashboardTabProps) {
         </div>
 
         <div className="flex-1">
-          <label className="text-sm font-medium text-right block mb-2">{t("common.class")}</label>
+          <label className="text-sm font-medium text-right block mb-2">
+            {t("common.class")}
+          </label>
           <Select value={selectedClass} onValueChange={setSelectedClass}>
             <SelectTrigger>
               <SelectValue />
@@ -175,7 +180,9 @@ export function ClassDashboardTab({ canWrite = true }: ClassDashboardTabProps) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-right">{t("classes.totalReports")}</CardTitle>
+            <CardTitle className="text-sm font-medium text-right">
+              {t("classes.totalReports")}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{reports.length}</div>
@@ -185,7 +192,9 @@ export function ClassDashboardTab({ canWrite = true }: ClassDashboardTabProps) {
         {reportType === "absence" && (
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-right text-yellow-800">{t("teacher.absentCount")}</CardTitle>
+              <CardTitle className="text-sm font-medium text-right text-yellow-800">
+                {t("teacher.absentCount")}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-yellow-800">
@@ -198,7 +207,9 @@ export function ClassDashboardTab({ canWrite = true }: ClassDashboardTabProps) {
         {reportType === "escape" && (
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-right text-red-800">{t("teacher.noExitCount")}</CardTitle>
+              <CardTitle className="text-sm font-medium text-right text-red-800">
+                {t("teacher.noExitCount")}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-red-800">
@@ -210,7 +221,9 @@ export function ClassDashboardTab({ canWrite = true }: ClassDashboardTabProps) {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-right">{t("classes.affectedStudents")}</CardTitle>
+            <CardTitle className="text-sm font-medium text-right">
+              {t("classes.affectedStudents")}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -240,12 +253,24 @@ export function ClassDashboardTab({ canWrite = true }: ClassDashboardTabProps) {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="text-right">{t("teacher.studentName")}</TableHead>
-                    <TableHead className="text-right">{t("teacher.studentNumber")}</TableHead>
-                    <TableHead className="text-right">{t("common.class")}</TableHead>
-                    <TableHead className="text-right">{t("common.teacher")}</TableHead>
-                    <TableHead className="text-right">{t("common.date")}</TableHead>
-                    <TableHead className="text-right">{t("common.notes")}</TableHead>
+                    <TableHead className="text-right">
+                      {t("teacher.studentName")}
+                    </TableHead>
+                    <TableHead className="text-right">
+                      {t("teacher.studentNumber")}
+                    </TableHead>
+                    <TableHead className="text-right">
+                      {t("common.class")}
+                    </TableHead>
+                    <TableHead className="text-right">
+                      {t("common.teacher")}
+                    </TableHead>
+                    <TableHead className="text-right">
+                      {t("common.date")}
+                    </TableHead>
+                    <TableHead className="text-right">
+                      {t("common.notes")}
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -253,7 +278,9 @@ export function ClassDashboardTab({ canWrite = true }: ClassDashboardTabProps) {
                     <TableRow>
                       <TableCell
                         colSpan={6}
-                        className="text-center py-8 text-muted-foreground">{t("classes.emptyReports")}</TableCell>
+                        className="text-center py-8 text-muted-foreground">
+                        {t("classes.emptyReports")}
+                      </TableCell>
                     </TableRow>
                   ) : (
                     reports.map((report) => (

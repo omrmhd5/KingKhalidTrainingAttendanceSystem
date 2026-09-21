@@ -33,11 +33,7 @@ import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
 import { userApi, User, UserCreateInput, UserUpdateInput } from "@/lib/userApi";
 import { classApi, Class } from "@/lib/classApi";
 
-const ROLES = [
-  { value: "admin", label: t("roles.admin") },
-  { value: "operator", label: t("roles.operator") },
-  { value: "teacher", label: t("roles.teacher") },
-];
+const ROLE_VALUES = ["admin", "operator", "teacher"] as const;
 
 const ROLE_COLORS: Record<string, { bg: string; text: string }> = {
   admin: { bg: "bg-red-100", text: "text-red-800" },
@@ -52,6 +48,10 @@ const getRoleColor = (role: string) => {
 export function UsersManagementTab() {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
+  const roles = ROLE_VALUES.map((value) => ({
+    value,
+    label: t(`roles.${value}`),
+  }));
   const [users, setUsers] = useState<User[]>([]);
   const [classes, setClasses] = useState<Class[]>([]);
   const [loading, setLoading] = useState(true);
@@ -104,7 +104,8 @@ export function UsersManagementTab() {
     } catch (error: any) {
       toast({
         title: t("common.error"),
-        description: error.response?.data?.message || t("settings.loadUsersFailed"),
+        description:
+          error.response?.data?.message || t("settings.loadUsersFailed"),
         variant: "destructive",
       });
     } finally {
@@ -192,7 +193,8 @@ export function UsersManagementTab() {
     } catch (error: any) {
       toast({
         title: t("common.error"),
-        description: error.response?.data?.message || t("settings.addUserFailed"),
+        description:
+          error.response?.data?.message || t("settings.addUserFailed"),
         variant: "destructive",
       });
     } finally {
@@ -254,7 +256,8 @@ export function UsersManagementTab() {
     } catch (error: any) {
       toast({
         title: t("common.error"),
-        description: error.response?.data?.message || t("settings.updateUserFailed"),
+        description:
+          error.response?.data?.message || t("settings.updateUserFailed"),
         variant: "destructive",
       });
     } finally {
@@ -279,7 +282,8 @@ export function UsersManagementTab() {
     } catch (error: any) {
       toast({
         title: t("common.error"),
-        description: error.response?.data?.message || t("settings.deleteUserFailed"),
+        description:
+          error.response?.data?.message || t("settings.deleteUserFailed"),
         variant: "destructive",
       });
     } finally {
@@ -289,12 +293,14 @@ export function UsersManagementTab() {
 
   return (
     <Card>
-      <CardHeader
-        className="flex flex-row items-center justify-between"
-       >
-        <CardTitle>{t("settings.usersCount", { count: users.length })}</CardTitle>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle>
+          {t("settings.usersCount", { count: users.length })}
+        </CardTitle>
         <Button size="sm" onClick={handleOpenAdd} disabled={loading}>
-          <Plus className="ml-2 h-4 w-4" />{t("settings.addUser")}</Button>
+          <Plus className="ml-2 h-4 w-4" />
+          {t("settings.addUser")}
+        </Button>
       </CardHeader>
       <CardContent className="p-0">
         {loading ? (
@@ -306,12 +312,24 @@ export function UsersManagementTab() {
             <Table className="border-collapse">
               <TableHeader className="bg-amber-600">
                 <TableRow>
-                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("settings.username")}</TableHead>
-                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("common.email")}</TableHead>
-                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("common.role")}</TableHead>
-                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("common.class")}</TableHead>
-                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">{t("common.createdAt")}</TableHead>
-                  <TableHead className="text-center text-white font-bold py-3 px-4">{t("common.actions")}</TableHead>
+                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                    {t("settings.username")}
+                  </TableHead>
+                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                    {t("common.email")}
+                  </TableHead>
+                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                    {t("common.role")}
+                  </TableHead>
+                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                    {t("common.class")}
+                  </TableHead>
+                  <TableHead className="text-center text-white font-bold py-3 px-4 border-r border-gray-400">
+                    {t("common.createdAt")}
+                  </TableHead>
+                  <TableHead className="text-center text-white font-bold py-3 px-4">
+                    {t("common.actions")}
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -319,7 +337,9 @@ export function UsersManagementTab() {
                   <TableRow className="hover:bg-blue-50">
                     <TableCell
                       colSpan={6}
-                      className="text-center py-4 px-4 border border-gray-300">{t("settings.emptyUsers")}</TableCell>
+                      className="text-center py-4 px-4 border border-gray-300">
+                      {t("settings.emptyUsers")}
+                    </TableCell>
                   </TableRow>
                 ) : (
                   users.map((user, index) => (
@@ -337,7 +357,7 @@ export function UsersManagementTab() {
                           className={`inline-block px-3 py-1 rounded-full text-sm ${
                             getRoleColor(user.role).bg
                           } ${getRoleColor(user.role).text}`}>
-                          {ROLES.find((r) => r.value === user.role)?.label}
+                          {roles.find((r) => r.value === user.role)?.label}
                         </span>
                       </TableCell>
                       <TableCell className="text-center py-2 px-4 border border-gray-300">
@@ -377,12 +397,16 @@ export function UsersManagementTab() {
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
         <DialogContent dir={i18n.dir()} className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-right">{t("settings.addUserTitle")}</DialogTitle>
+            <DialogTitle className="text-right">
+              {t("settings.addUserTitle")}
+            </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4">
             <div>
-              <Label htmlFor="add-username" className="text-right block mb-2">{t("settings.username")}</Label>
+              <Label htmlFor="add-username" className="text-right block mb-2">
+                {t("settings.username")}
+              </Label>
               <Input
                 id="add-username"
                 placeholder={t("settings.usernamePlaceholder")}
@@ -390,12 +414,13 @@ export function UsersManagementTab() {
                 onChange={(e) =>
                   setFormData({ ...formData, username: e.target.value })
                 }
-               
               />
             </div>
 
             <div>
-              <Label htmlFor="add-email" className="text-right block mb-2">{t("common.email")}</Label>
+              <Label htmlFor="add-email" className="text-right block mb-2">
+                {t("common.email")}
+              </Label>
               <Input
                 id="add-email"
                 type="email"
@@ -404,7 +429,6 @@ export function UsersManagementTab() {
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })
                 }
-               
               />
             </div>
 
@@ -420,14 +444,15 @@ export function UsersManagementTab() {
                 onChange={(e) =>
                   setFormData({ ...formData, password: e.target.value })
                 }
-               
               />
             </div>
 
             <div>
               <Label
                 htmlFor="add-confirm-password"
-                className="text-right block mb-2">{t("settings.confirmPassword")}</Label>
+                className="text-right block mb-2">
+                {t("settings.confirmPassword")}
+              </Label>
               <Input
                 id="add-confirm-password"
                 type="password"
@@ -436,12 +461,13 @@ export function UsersManagementTab() {
                 onChange={(e) =>
                   setFormData({ ...formData, confirmPassword: e.target.value })
                 }
-               
               />
             </div>
 
             <div>
-              <Label htmlFor="add-role" className="text-right block mb-2">{t("common.role")}</Label>
+              <Label htmlFor="add-role" className="text-right block mb-2">
+                {t("common.role")}
+              </Label>
               <Select
                 value={formData.role}
                 onValueChange={(value: "admin" | "operator" | "teacher") =>
@@ -451,7 +477,7 @@ export function UsersManagementTab() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {ROLES.map((role) => (
+                  {roles.map((role) => (
                     <SelectItem key={role.value} value={role.value}>
                       {role.label}
                     </SelectItem>
@@ -462,7 +488,9 @@ export function UsersManagementTab() {
 
             {formData.role === "teacher" && (
               <div>
-                <Label htmlFor="add-class" className="text-right block mb-2">{t("common.class")}</Label>
+                <Label htmlFor="add-class" className="text-right block mb-2">
+                  {t("common.class")}
+                </Label>
                 <Select
                   value={formData.class}
                   onValueChange={(value) =>
@@ -487,11 +515,15 @@ export function UsersManagementTab() {
             <Button
               variant="outline"
               onClick={() => setIsAddOpen(false)}
-              disabled={submitting}>{t("common.cancel")}</Button>
+              disabled={submitting}>
+              {t("common.cancel")}
+            </Button>
             <Button onClick={handleAddUser} disabled={submitting}>
               {submitting ? (
                 <>
-                  <Loader2 className="ml-2 h-4 w-4 animate-spin" />{t("common.adding")}</>
+                  <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                  {t("common.adding")}
+                </>
               ) : (
                 t("common.add")
               )}
@@ -504,12 +536,16 @@ export function UsersManagementTab() {
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogContent dir={i18n.dir()} className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-right">{t("settings.editUser")}</DialogTitle>
+            <DialogTitle className="text-right">
+              {t("settings.editUser")}
+            </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4">
             <div>
-              <Label htmlFor="edit-username" className="text-right block mb-2">{t("settings.username")}</Label>
+              <Label htmlFor="edit-username" className="text-right block mb-2">
+                {t("settings.username")}
+              </Label>
               <Input
                 id="edit-username"
                 placeholder={t("settings.usernamePlaceholder")}
@@ -517,12 +553,13 @@ export function UsersManagementTab() {
                 onChange={(e) =>
                   setFormData({ ...formData, username: e.target.value })
                 }
-               
               />
             </div>
 
             <div>
-              <Label htmlFor="edit-email" className="text-right block mb-2">{t("common.email")}</Label>
+              <Label htmlFor="edit-email" className="text-right block mb-2">
+                {t("common.email")}
+              </Label>
               <Input
                 id="edit-email"
                 type="email"
@@ -531,12 +568,13 @@ export function UsersManagementTab() {
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })
                 }
-               
               />
             </div>
 
             <div>
-              <Label htmlFor="edit-password" className="text-right block mb-2">{t("settings.passwordLeaveHint")}</Label>
+              <Label htmlFor="edit-password" className="text-right block mb-2">
+                {t("settings.passwordLeaveHint")}
+              </Label>
               <Input
                 id="edit-password"
                 type="password"
@@ -545,14 +583,15 @@ export function UsersManagementTab() {
                 onChange={(e) =>
                   setFormData({ ...formData, password: e.target.value })
                 }
-               
               />
             </div>
 
             <div>
               <Label
                 htmlFor="edit-confirm-password"
-                className="text-right block mb-2">{t("settings.confirmPassword")}</Label>
+                className="text-right block mb-2">
+                {t("settings.confirmPassword")}
+              </Label>
               <Input
                 id="edit-confirm-password"
                 type="password"
@@ -561,12 +600,13 @@ export function UsersManagementTab() {
                 onChange={(e) =>
                   setFormData({ ...formData, confirmPassword: e.target.value })
                 }
-               
               />
             </div>
 
             <div>
-              <Label htmlFor="edit-role" className="text-right block mb-2">{t("common.role")}</Label>
+              <Label htmlFor="edit-role" className="text-right block mb-2">
+                {t("common.role")}
+              </Label>
               <Select
                 value={formData.role}
                 onValueChange={(value: "admin" | "operator" | "teacher") =>
@@ -576,7 +616,7 @@ export function UsersManagementTab() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {ROLES.map((role) => (
+                  {roles.map((role) => (
                     <SelectItem key={role.value} value={role.value}>
                       {role.label}
                     </SelectItem>
@@ -587,7 +627,9 @@ export function UsersManagementTab() {
 
             {formData.role === "teacher" && (
               <div>
-                <Label htmlFor="edit-class" className="text-right block mb-2">{t("common.class")}</Label>
+                <Label htmlFor="edit-class" className="text-right block mb-2">
+                  {t("common.class")}
+                </Label>
                 <Select
                   value={formData.class}
                   onValueChange={(value) =>
@@ -612,11 +654,15 @@ export function UsersManagementTab() {
             <Button
               variant="outline"
               onClick={() => setIsEditOpen(false)}
-              disabled={submitting}>{t("common.cancel")}</Button>
+              disabled={submitting}>
+              {t("common.cancel")}
+            </Button>
             <Button onClick={handleUpdateUser} disabled={submitting}>
               {submitting ? (
                 <>
-                  <Loader2 className="ml-2 h-4 w-4 animate-spin" />{t("common.updating")}</>
+                  <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                  {t("common.updating")}
+                </>
               ) : (
                 t("common.update")
               )}

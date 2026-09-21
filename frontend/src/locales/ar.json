@@ -207,7 +207,8 @@
     "exitTime": "وقت الخروج",
     "arrivalTime": "وقت الوصول",
     "scanSuccessIn": "تم تسجيل الدخول بنجاح",
-    "scanSuccessOut": "تم تسجيل الخروج بنجاح"
+    "scanSuccessOut": "تم تسجيل الخروج بنجاح",
+    "scanPlaceholder": "امسح الباركود هنا..."
   },
   "teacher": {
     "welcome": "مرحباً بك",

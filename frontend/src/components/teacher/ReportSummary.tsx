@@ -37,13 +37,6 @@ interface ReportSummaryProps {
   }>;
 }
 
-const violationLabels: Record<1 | 2 | 3 | 4, string> = {
-  1: t("teacher.sleeping"),
-  2: t("classes.usePhone"),
-  3: t("teacher.disrespectOfficial"),
-  4: t("teacher.rulesViolation"),
-};
-
 // Transform report data to export format
 const transformDataForExport = (
   data: Array<{
@@ -115,6 +108,12 @@ export default function ReportSummary({
   studentReports,
 }: ReportSummaryProps) {
   const { t, i18n } = useTranslation();
+  const violationLabels: Record<1 | 2 | 3 | 4, string> = {
+    1: t("teacher.sleeping"),
+    2: t("classes.usePhone"),
+    3: t("teacher.disrespectOfficial"),
+    4: t("teacher.rulesViolation"),
+  };
   const [activeTab, setActiveTab] = useState("present");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -150,7 +149,9 @@ export default function ReportSummary({
         <DialogHeader>
           <div className="flex items-center gap-2">
             <CheckCircle className="h-5 w-5 text-blue-600" />
-            <DialogTitle className="text-right">{t("teacher.reportSummary")}</DialogTitle>
+            <DialogTitle className="text-right">
+              {t("teacher.reportSummary")}
+            </DialogTitle>
           </div>
         </DialogHeader>
 
@@ -161,29 +162,39 @@ export default function ReportSummary({
               <p className="text-2xl font-bold text-green-600">
                 {stats.present}
               </p>
-              <p className="text-xs text-muted-foreground">{t("teacher.presentCount")}</p>
+              <p className="text-xs text-muted-foreground">
+                {t("teacher.presentCount")}
+              </p>
             </div>
             <div className="text-center space-y-1 bg-red-100 border-2 border-red-300 rounded-lg p-3">
               <p className="text-2xl font-bold text-red-600">{stats.absent}</p>
-              <p className="text-xs text-muted-foreground">{t("reports.absence")}</p>
+              <p className="text-xs text-muted-foreground">
+                {t("reports.absence")}
+              </p>
             </div>
             <div className="text-center space-y-1 bg-orange-100 border-2 border-orange-300 rounded-lg p-3">
               <p className="text-2xl font-bold text-orange-600">
                 {stats.escape}
               </p>
-              <p className="text-xs text-muted-foreground">{t("reports.noExit")}</p>
+              <p className="text-xs text-muted-foreground">
+                {t("reports.noExit")}
+              </p>
             </div>
             <div className="text-center space-y-1 bg-violet-100 border-2 border-violet-300 rounded-lg p-3">
               <p className="text-2xl font-bold text-violet-600">
                 {stats.course}
               </p>
-              <p className="text-xs text-muted-foreground">{t("classes.course")}</p>
+              <p className="text-xs text-muted-foreground">
+                {t("classes.course")}
+              </p>
             </div>
             <div className="text-center space-y-1 bg-red-100 border-2 border-red-300 rounded-lg p-3">
               <p className="text-2xl font-bold text-red-600">
                 {stats.violations}
               </p>
-              <p className="text-xs text-muted-foreground">{t("teacher.violations")}</p>
+              <p className="text-xs text-muted-foreground">
+                {t("teacher.violations")}
+              </p>
             </div>
           </div>
 
@@ -200,7 +211,6 @@ export default function ReportSummary({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="text-right"
-               
               />
 
               <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -257,7 +267,9 @@ export default function ReportSummary({
                       ))}
                     </div>
                   ) : (
-                    <p className="text-center text-sm text-muted-foreground py-4">{t("teacher.noPresent")}</p>
+                    <p className="text-center text-sm text-muted-foreground py-4">
+                      {t("teacher.noPresent")}
+                    </p>
                   )}
                 </TabsContent>
 
@@ -281,7 +293,9 @@ export default function ReportSummary({
                       ))}
                     </div>
                   ) : (
-                    <p className="text-center text-sm text-muted-foreground py-4">{t("teacher.noAbsent")}</p>
+                    <p className="text-center text-sm text-muted-foreground py-4">
+                      {t("teacher.noAbsent")}
+                    </p>
                   )}
                 </TabsContent>
 
@@ -305,7 +319,9 @@ export default function ReportSummary({
                       ))}
                     </div>
                   ) : (
-                    <p className="text-center text-sm text-muted-foreground py-4">{t("teacher.noNoExit")}</p>
+                    <p className="text-center text-sm text-muted-foreground py-4">
+                      {t("teacher.noNoExit")}
+                    </p>
                   )}
                 </TabsContent>
 
@@ -329,7 +345,9 @@ export default function ReportSummary({
                       ))}
                     </div>
                   ) : (
-                    <p className="text-center text-sm text-muted-foreground py-4">{t("teacher.noCourseStudents")}</p>
+                    <p className="text-center text-sm text-muted-foreground py-4">
+                      {t("teacher.noCourseStudents")}
+                    </p>
                   )}
                 </TabsContent>
                 {/* Violations Tab */}
@@ -362,7 +380,9 @@ export default function ReportSummary({
                       ))}
                     </div>
                   ) : (
-                    <p className="text-center text-sm text-muted-foreground py-4">{t("teacher.noViolations")}</p>
+                    <p className="text-center text-sm text-muted-foreground py-4">
+                      {t("teacher.noViolations")}
+                    </p>
                   )}
                 </TabsContent>
               </Tabs>
@@ -375,7 +395,9 @@ export default function ReportSummary({
             studentsAbsent.length === 0 &&
             studentsEscaped.length === 0 &&
             studentsOnCourse.length === 0 && (
-              <div className="bg-green-100 border-2 border-green-300 rounded-lg p-3 text-right text-sm text-green-700">{t("teacher.noDataYet")}</div>
+              <div className="bg-green-100 border-2 border-green-300 rounded-lg p-3 text-right text-sm text-green-700">
+                {t("teacher.noDataYet")}
+              </div>
             )}
         </div>
 
@@ -440,7 +462,9 @@ export default function ReportSummary({
               />
             </>
           )}
-          <Button variant="outline" onClick={() => onOpenChange(false)}>{t("common.close")}</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            {t("common.close")}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

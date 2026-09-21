@@ -207,7 +207,8 @@
     "exitTime": "Check-out time",
     "arrivalTime": "Arrival time",
     "scanSuccessIn": "Checked in successfully",
-    "scanSuccessOut": "Checked out successfully"
+    "scanSuccessOut": "Checked out successfully",
+    "scanPlaceholder": "Scan the barcode here..."
   },
   "teacher": {
     "welcome": "Welcome",

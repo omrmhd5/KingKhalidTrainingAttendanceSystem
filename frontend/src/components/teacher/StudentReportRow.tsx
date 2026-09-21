@@ -2,7 +2,14 @@ import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, XCircle, ArrowRight, AlertCircle, X, GraduationCap } from "lucide-react";
+import {
+  CheckCircle,
+  XCircle,
+  ArrowRight,
+  AlertCircle,
+  X,
+  GraduationCap,
+} from "lucide-react";
 import { Trainee } from "@/lib/traineeApi";
 import ViolationModal from "@/components/teacher/ViolationModal";
 
@@ -28,13 +35,6 @@ interface StudentReportRowProps {
   onViolationRemove: (studentId: string, index: number) => void;
 }
 
-const violationLabels: Record<1 | 2 | 3 | 4, string> = {
-  1: t("teacher.sleep"),
-  2: t("teacher.phone"),
-  3: t("teacher.disrespect"),
-  4: t("teacher.rules"),
-};
-
 export default function StudentReportRow({
   report,
   onStatusChange,
@@ -43,6 +43,12 @@ export default function StudentReportRow({
 }: StudentReportRowProps) {
   const { t, i18n } = useTranslation();
   const [violationModalOpen, setViolationModalOpen] = useState(false);
+  const violationLabels: Record<1 | 2 | 3 | 4, string> = {
+    1: t("teacher.sleep"),
+    2: t("teacher.phone"),
+    3: t("teacher.disrespect"),
+    4: t("teacher.rules"),
+  };
 
   const getStatusColor = (status: string | null) => {
     switch (status) {
@@ -62,8 +68,7 @@ export default function StudentReportRow({
   return (
     <>
       <div
-        className={`p-3 rounded-lg border-2 transition-colors ${getStatusColor(report.status)}`}
-       >
+        className={`p-3 rounded-lg border-2 transition-colors ${getStatusColor(report.status)}`}>
         {/* Student Info */}
         <div className="flex items-center justify-between mb-2">
           <div className="flex-1">
